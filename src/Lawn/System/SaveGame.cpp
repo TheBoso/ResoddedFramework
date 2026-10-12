@@ -13,7 +13,8 @@
 // 3: chill/ice/butter counters moved into status effect components
 // 4: helm/shield/balloon moved into armour components
 // 5: plant traits (spikes, walls, Torchwood converter...) added to the archetypes
-static constexpr uint32_t SAVE_VERSION = 5;
+// 6: plant behaviours (explosions, fuses, state machines) added to the archetypes
+static constexpr uint32_t SAVE_VERSION = 6;
 
 template <typename T>
 void SaveContext::SyncVar(T &aValue, const std::string &aName)

@@ -1,0 +1,324 @@
+#include "PlantBehaviours.h"
+#include "../Board.h"
+#include "../../LawnApp.h"
+#include "../../Resources.h"
+#include "../System/Achievements.h"
+#include "../../Sexy.TodLib/Reanimator.h"
+
+REGISTER_COMPONENT(FuseComponent)
+REGISTER_COMPONENT(DoomFuseComponent)
+REGISTER_COMPONENT(ExplodeComponent)
+REGISTER_COMPONENT(BurnRowComponent)
+REGISTER_COMPONENT(FreezeAllComponent)
+REGISTER_COMPONENT(SquashBehaviour)
+REGISTER_COMPONENT(ChomperBehaviour)
+REGISTER_COMPONENT(FlowerPotBehaviour)
+REGISTER_COMPONENT(LilyPadBehaviour)
+REGISTER_COMPONENT(ImitaterBehaviour)
+REGISTER_COMPONENT(CobCannonBehaviour)
+REGISTER_COMPONENT(CactusBehaviour)
+REGISTER_COMPONENT(MagnetShroomBehaviour)
+REGISTER_COMPONENT(GoldMagnetBehaviour)
+REGISTER_COMPONENT(SunShroomGrowthBehaviour)
+REGISTER_COMPONENT(GraveBusterBehaviour)
+REGISTER_COMPONENT(PotatoMineArmingBehaviour)
+REGISTER_COMPONENT(SpikeweedBehaviour)
+REGISTER_COMPONENT(TangleKelpBehaviour)
+REGISTER_COMPONENT(ScaredyShroomBehaviour)
+REGISTER_COMPONENT(BloverBehaviour)
+REGISTER_COMPONENT(UmbrellaBehaviour)
+REGISTER_COMPONENT(CoffeeBeanBehaviour)
+
+// ─── FuseComponent ───────────────────────────────────────────────────────────
+
+void FuseComponent::UpdateBehaviour(Plant *thePlant)
+{
+	if (thePlant->mIsAsleep || thePlant->mState == PlantState::STATE_DOINGSPECIAL)
+		return;
+
+	thePlant->mState = PlantState::STATE_DOINGSPECIAL;
+	thePlant->mDoSpecialCountdown = mFuseTicks;
+	OnLit(thePlant);
+}
+
+void FuseComponent::Serialize(ComponentArchive &theArchive)
+{
+	theArchive.Value(mFuseTicks);
+}
+
+void DoomFuseComponent::OnLit(Plant *thePlant)
+{
+	Reanimation *aBodyReanim = GetApp()->ReanimationTryToGet(thePlant->mBodyReanimID);
+	if (aBodyReanim && aBodyReanim->TrackExists("anim_explode"))
+	{
+		aBodyReanim->SetFramesForLayer("anim_explode");
+		aBodyReanim->mAnimRate = 23.0f;
+		aBodyReanim->mLoopType = ReanimLoopType::REANIM_PLAY_ONCE_AND_HOLD;
+		aBodyReanim->SetShakeOverride("DoomShroom_head1", 1.0f);
+		aBodyReanim->SetShakeOverride("DoomShroom_head2", 2.0f);
+		aBodyReanim->SetShakeOverride("DoomShroom_head3", 2.0f);
+	}
+	GetApp()->PlayFoley(FoleyType::FOLEY_REVERSE_EXPLOSION);
+}
+
+// ─── ExplodeComponent ────────────────────────────────────────────────────────
+
+ExplodeComponent *ExplodeComponent::CherryBomb()
+{
+	auto *anExplode = new ExplodeComponent();
+	anExplode->mAchievement = AchievementID::ACHIEVEMENT_EXPLODONATOR;
+	anExplode->mAchievementMinZombies = 10;
+	anExplode->mAchievementRadius = 250;
+	anExplode->mAchievementRowRange = 3;
+	return anExplode;
+}
+
+ExplodeComponent *ExplodeComponent::DoomShroom()
+{
+	auto *anExplode = new ExplodeComponent();
+	anExplode->mRadius = 250;
+	anExplode->mRowRange = 3;
+	anExplode->mFoley1 = FoleyType::NUM_FOLEY;
+	anExplode->mFoley2 = FoleyType::NUM_FOLEY;
+	anExplode->mSoundId = ResourceId::SOUND_DOOMSHROOM_ID;
+	anExplode->mParticle = ParticleEffect::PARTICLE_DOOM;
+	anExplode->mCraterTicks = 18000;
+	anExplode->mKillsNearbyPlants = true;
+	return anExplode;
+}
+
+ExplodeComponent *ExplodeComponent::PotatoMine()
+{
+	auto *anExplode = new ExplodeComponent();
+	anExplode->mRadius = 60;
+	anExplode->mRowRange = 0;
+	anExplode->mBurns = false;
+	anExplode->mCenterOffsetX = -20;
+	anExplode->mFoley1 = FoleyType::NUM_FOLEY;
+	anExplode->mFoley2 = FoleyType::NUM_FOLEY;
+	anExplode->mSoundId = ResourceId::SOUND_POTATO_MINE_ID;
+	anExplode->mParticle = ParticleEffect::PARTICLE_POTATO_MINE;
+	anExplode->mParticleInRow = true;
+	anExplode->mAchievement = AchievementID::ACHIEVEMENT_SPUDOW;
+	anExplode->mAchievementInIZombie = false;
+	return anExplode;
+}
+
+void ExplodeComponent::DoSpecial(Plant *thePlant)
+{
+	LawnApp *anApp = GetApp();
+	Board *aBoard = GetBoard();
+	int aCenterX = thePlant->mX + thePlant->mWidth / 2;
+	int aCenterY = thePlant->mY + thePlant->mHeight / 2;
+	int aBlastX = aCenterX + mCenterOffsetX;
+	int aDamageRangeFlags = thePlant->GetDamageRangeFlags(PlantWeapon::WEAPON_PRIMARY);
+
+	if (mFoley1 != FoleyType::NUM_FOLEY)
+		anApp->PlayFoley(mFoley1);
+	if (mFoley2 != FoleyType::NUM_FOLEY)
+		anApp->PlayFoley(mFoley2);
+	if (mSoundId >= 0)
+		anApp->PlaySample(GetSoundById(mSoundId));
+
+	if (mAchievement >= 0 && (mAchievementInIZombie || !anApp->IsIZombieLevel()))
+	{
+		bool isEarned = mAchievementMinZombies < 0;
+		if (!isEarned)
+		{
+			std::vector<Zombie *> aZombies = aBoard->GetZombiesInRadius(
+			    thePlant->mRow, aBlastX, aCenterY, mAchievementRadius, mAchievementRowRange, aDamageRangeFlags);
+			isEarned = (int)aZombies.size() > mAchievementMinZombies;
+		}
+		if (isEarned)
+		{
+			anApp->mAchievements->GiveAchievement((AchievementID)mAchievement);
+		}
+	}
+
+	aBoard->KillAllZombiesInRadius(thePlant->mRow, aBlastX, aCenterY, mRadius, mRowRange, mBurns, aDamageRangeFlags);
+	if (mKillsNearbyPlants)
+	{
+		thePlant->KillAllPlantsNearDoom();
+	}
+
+	int aRenderOrder = mParticleInRow ? Board::MakeRenderOrder(RenderLayer::RENDER_LAYER_PARTICLE, thePlant->mRow, 0)
+	                                  : (int)RenderLayer::RENDER_LAYER_TOP;
+	anApp->AddTodParticle(aCenterX, aCenterY, aRenderOrder, mParticle);
+	if (mCraterTicks > 0)
+	{
+		aBoard->AddACrater(thePlant->mPlantCol, thePlant->mRow)->mGridItemCounter = mCraterTicks;
+	}
+	aBoard->ShakeBoard(3, -4);
+
+	thePlant->Die();
+}
+
+void ExplodeComponent::Serialize(ComponentArchive &theArchive)
+{
+	theArchive.Value(mRadius);
+	theArchive.Value(mRowRange);
+	theArchive.Value(mBurns);
+	theArchive.Value(mCenterOffsetX);
+	theArchive.Value(mFoley1);
+	theArchive.Value(mFoley2);
+	theArchive.Value(mSoundId);
+	theArchive.Value(mParticle);
+	theArchive.Value(mParticleInRow);
+	theArchive.Value(mCraterTicks);
+	theArchive.Value(mKillsNearbyPlants);
+	theArchive.Value(mAchievement);
+	theArchive.Value(mAchievementMinZombies);
+	theArchive.Value(mAchievementRadius);
+	theArchive.Value(mAchievementRowRange);
+	theArchive.Value(mAchievementInIZombie);
+}
+
+// ─── BurnRowComponent ────────────────────────────────────────────────────────
+
+void BurnRowComponent::DoSpecial(Plant *thePlant)
+{
+	LawnApp *anApp = GetApp();
+	Board *aBoard = GetBoard();
+	anApp->PlayFoley(FoleyType::FOLEY_JALAPENO_IGNITE);
+	anApp->PlayFoley(FoleyType::FOLEY_JUICY);
+
+	for (int aRow = thePlant->mRow - mRowSpread; aRow <= thePlant->mRow + mRowSpread; aRow++)
+	{
+		if (aRow < 0 || aRow >= MAX_GRID_SIZE_Y)
+			continue;
+
+		aBoard->DoFwoosh(aRow);
+		if (aRow == thePlant->mRow)
+		{
+			aBoard->ShakeBoard(3, -4);
+		}
+		thePlant->BurnRow(aRow);
+		// Melts the ice the Zamboni left behind
+		aBoard->mIceTimer[aRow] = 20;
+	}
+
+	thePlant->Die();
+}
+
+void BurnRowComponent::Serialize(ComponentArchive &theArchive)
+{
+	theArchive.Value(mRowSpread);
+}
+
+// ─── FreezeAllComponent ──────────────────────────────────────────────────────
+
+void FreezeAllComponent::DoSpecial(Plant *thePlant)
+{
+	GetApp()->PlayFoley(FoleyType::FOLEY_FROZEN);
+	thePlant->IceZombies();
+	GetApp()->AddTodParticle(thePlant->mX + thePlant->mWidth / 2, thePlant->mY + thePlant->mHeight / 2,
+	                         (int)RenderLayer::RENDER_LAYER_TOP, ParticleEffect::PARTICLE_ICE_TRAP);
+	thePlant->Die();
+}
+
+// ─── Vanilla state machines ──────────────────────────────────────────────────
+
+void SquashBehaviour::UpdateBehaviour(Plant *thePlant)
+{
+	thePlant->UpdateSquash();
+}
+
+void ChomperBehaviour::UpdateBehaviour(Plant *thePlant)
+{
+	thePlant->UpdateChomper();
+}
+
+void FlowerPotBehaviour::UpdateBehaviour(Plant *thePlant)
+{
+	thePlant->UpdateFlowerPot();
+}
+
+void LilyPadBehaviour::UpdateBehaviour(Plant *thePlant)
+{
+	thePlant->UpdateLilypad();
+}
+
+void ImitaterBehaviour::UpdateBehaviour(Plant *thePlant)
+{
+	thePlant->UpdateImitater();
+}
+
+void CobCannonBehaviour::UpdateBehaviour(Plant *thePlant)
+{
+	thePlant->UpdateCobCannon();
+}
+
+void CactusBehaviour::UpdateBehaviour(Plant *thePlant)
+{
+	thePlant->UpdateCactus();
+}
+
+void MagnetShroomBehaviour::UpdateBehaviour(Plant *thePlant)
+{
+	thePlant->UpdateMagnetShroom();
+}
+
+void GoldMagnetBehaviour::UpdateBehaviour(Plant *thePlant)
+{
+	thePlant->UpdateGoldMagnetShroom();
+}
+
+void SunShroomGrowthBehaviour::UpdateBehaviour(Plant *thePlant)
+{
+	thePlant->UpdateSunShroom();
+}
+
+void GraveBusterBehaviour::UpdateBehaviour(Plant *thePlant)
+{
+	thePlant->UpdateGraveBuster();
+}
+
+void PotatoMineArmingBehaviour::UpdateBehaviour(Plant *thePlant)
+{
+	thePlant->UpdatePotato();
+}
+
+void SpikeweedBehaviour::UpdateBehaviour(Plant *thePlant)
+{
+	thePlant->UpdateSpikeweed();
+}
+
+void TangleKelpBehaviour::UpdateBehaviour(Plant *thePlant)
+{
+	thePlant->UpdateTanglekelp();
+}
+
+void ScaredyShroomBehaviour::UpdateBehaviour(Plant *thePlant)
+{
+	thePlant->UpdateScaredyShroom();
+}
+
+void BloverBehaviour::UpdateBehaviour(Plant *thePlant)
+{
+	thePlant->UpdateBlover();
+}
+
+void BloverBehaviour::DoSpecial(Plant *thePlant)
+{
+	thePlant->BloverSpecial();
+}
+
+void UmbrellaBehaviour::UpdateBehaviour(Plant *thePlant)
+{
+	thePlant->UpdateUmbrella();
+}
+
+void UmbrellaBehaviour::DoSpecial(Plant *thePlant)
+{
+	thePlant->UmbrellaSpecial();
+}
+
+void CoffeeBeanBehaviour::UpdateBehaviour(Plant *thePlant)
+{
+	thePlant->UpdateCoffeeBean();
+}
+
+void CoffeeBeanBehaviour::DoSpecial(Plant *thePlant)
+{
+	thePlant->CoffeeBeanSpecial();
+}

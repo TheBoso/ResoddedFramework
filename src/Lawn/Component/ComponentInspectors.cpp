@@ -224,6 +224,33 @@ void OnDeathComponent::DrawInspector()
 	}
 }
 
+void FuseComponent::DrawInspector()
+{
+	ImGui::InputInt("Fuse ticks", &mFuseTicks);
+	if (Plant *aPlant = GetPlant())
+	{
+		ImGui::Text("Countdown: %d", aPlant->mDoSpecialCountdown);
+		if (ImGui::Button("Go off now"))
+		{
+			aPlant->DoSpecial();
+		}
+	}
+}
+
+void ExplodeComponent::DrawInspector()
+{
+	ImGui::InputInt("Radius", &mRadius);
+	ImGui::InputInt("Rows above/below", &mRowRange);
+	ImGui::Checkbox("Burns", &mBurns);
+	ImGui::Checkbox("Kills nearby plants", &mKillsNearbyPlants);
+	ImGui::InputInt("Crater ticks", &mCraterTicks);
+}
+
+void BurnRowComponent::DrawInspector()
+{
+	ImGui::SliderInt("Extra rows each side", &mRowSpread, 0, 5);
+}
+
 void TeamComponent::DrawInspector()
 {
 	TeamInput("Team", mTeam);
@@ -343,6 +370,15 @@ void HelmComponent::DrawInspector()
 {
 }
 void ShieldComponent::DrawInspector()
+{
+}
+void FuseComponent::DrawInspector()
+{
+}
+void ExplodeComponent::DrawInspector()
+{
+}
+void BurnRowComponent::DrawInspector()
 {
 }
 void SpikesComponent::DrawInspector()

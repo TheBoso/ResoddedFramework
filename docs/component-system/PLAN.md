@@ -71,6 +71,8 @@ Debug build → ImGui debugger → **Board → Components**:
 | `SpikesComponent`, `TallComponent`, `WallComponent`, `RepelOnEatenComponent`, `InedibleComponent`, `ActivatesWhenEatenComponent`, `MineComponent` | Plant traits zombies react to | Spikeweed/Spikerock, Tall-nut, Wall-nut/Tall-nut/Pumpkin, Garlic, instant plants/Tangle Kelp, Blover/Ice-shroom, Potato Mine |
 | `ProjectileConverterComponent` | Converts projectiles passing through (pea -> fireball) | Torchwood |
 | `OnDeathComponent` | Runs lambdas / named actions when the entity dies | custom content |
+| `PlantBehaviourComponent` subclasses | Per-tick plant behaviour and activation (`UpdateBehaviour`, `DoSpecial`) | every plant with a special ability |
+| `ExplodeComponent` / `BurnRowComponent` / `FreezeAllComponent` / `FuseComponent` | Instant-use effects as data | Cherry Bomb, Doom-shroom, Potato Mine, Jalapeño, Ice-shroom |
 | `ProducerComponent` | Drops sun/coins on a timer (rate, count, rare coin, Big Time bonus, final-wave cutoff) | Sunflower, Twin Sunflower, Marigold |
 | `SunShroomProducerComponent` | Producer subclass: small sun while small, none while growing | Sun-shroom |
 | `ShooterComponent` | Generic projectile shooter (straight or lobbed) that targets the nearest hostile plant **or** zombie in its row; `CreateLike(seed)` copies a plant's shot | Zombotany builds, custom content |
@@ -143,11 +145,24 @@ hypnosis, team-based projectile collision, generic shooter, plant heads, produce
 - Done: `OnDeathComponent` runs lambdas when its entity dies (plant destroyed or shovelled, zombie body removed),
   with named actions (`OnDeathComponent::RegisterAction`) that survive saving and can be added from the debugger.
   Built-in examples: `SpawnImp`, `DropSun`.
-- Next: the plant state machines still dispatched by seed type in `Plant::UpdateAbilities` (Chomper, Squash, Potato
-  Mine arming, Cherry Bomb/Jalapeño/Doom-shroom explosions, Magnet-shroom, Umbrella Leaf, Cob Cannon...) become
-  behaviour components, then vanilla plant shooting moves onto `ShooterComponent` (needs per-plant muzzle offsets and
-  the Threepeater/Starfruit spreads as shot patterns). Placement traits (aquatic, nocturnal, flying, upgrades) are
-  needed before a plant exists (seed packets), so they belong in the plant definitions (Phase 5), not components.
+- Done: plant behaviours (`PlantBehaviours.h`). The seed-type switches in `Plant::UpdateAbilities` and
+  `Plant::DoSpecial` are gone: both run the plant's `PlantBehaviourComponent`s instead (`UpdateBehaviour` /
+  `DoSpecial`), at the same spot as before, so timing and the asleep/squished/Bungee rules are unchanged. A plant can
+  have several behaviours.
+  - Data-driven, code moved out of Plant: `ExplodeComponent` (Cherry Bomb, Doom-shroom, Potato Mine presets: radius,
+    rows, burn, sound, particle, crater, achievement), `BurnRowComponent` (Jalapeño, with an optional row spread),
+    `FreezeAllComponent` (Ice-shroom), `FuseComponent` (lights when awake) and `DoomFuseComponent` (its swelling
+    animation).
+  - Thin behaviours whose code is still in Plant.cpp (`ChomperBehaviour` calls `Plant::UpdateChomper`, etc.):
+    Squash, Chomper, Blover, Umbrella Leaf, Coffee Bean, Flower Pot, Lily Pad, Imitater, Cob Cannon, Cactus,
+    Magnet-shroom, Gold Magnet, Sun-shroom growth, Grave Buster, Potato Mine arming, Spikeweed, Tangle Kelp,
+    Scaredy-shroom. They can already be removed, combined or moved to other plants, but they drive the original
+    plant's animations.
+  - `SAVE_VERSION` 6.
+- Next: move the thin behaviours' code from Plant.cpp into their components (each one becomes self-contained and
+  data-driven where possible), then vanilla plant shooting onto `ShooterComponent` (needs per-plant muzzle offsets
+  and the Threepeater/Starfruit spreads as shot patterns). Placement traits (aquatic, nocturnal, flying, upgrades)
+  are needed before a plant exists (seed packets), so they belong in the plant definitions (Phase 5).
 - Still seed-checked in Zombie.cpp, by design for now: Bungee grab rules, sleep-icon offsets, I, Zombie and tutorial
   rules, and Tangle Kelp/Squash tracking their own target.
 

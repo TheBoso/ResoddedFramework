@@ -214,8 +214,13 @@ class Plant : public GameObject
 	/// @param theClickCount Button state flags
 	void MouseDown(int x, int y, int theClickCount);
 
-	/// @brief Trigger the Plant's Special
+	/// @brief Trigger the Plant's Special (runs its behaviour components' DoSpecial)
 	void DoSpecial();
+
+	/// @brief The activations behind BloverBehaviour, UmbrellaBehaviour and CoffeeBeanBehaviour
+	void BloverSpecial();
+	void UmbrellaSpecial();
+	void CoffeeBeanSpecial();
 
 	/// @brief Fire a shot at a Zombie
 	/// @param theTargetZombie [OPTIONAL] Zombie to aim at
@@ -421,12 +426,6 @@ class Plant : public GameObject
 	/// @brief Draw the magnet items
 	/// @param g Graphics object
 	void DrawMagnetItems(Graphics *g);
-
-	/// @brief Update the DoomShroom
-	void UpdateDoomShroom();
-
-	/// @brief Update the IceShroom
-	void UpdateIceShroom();
 
 	/// @brief Update the PotatoMine
 	void UpdatePotato();

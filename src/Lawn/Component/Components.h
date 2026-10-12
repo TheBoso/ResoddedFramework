@@ -94,6 +94,7 @@ class LowProfileComponent : public Component
 #include "ArmorComponents.h"
 #include "HealthComponent.h"
 #include "OnDeathComponent.h"
+#include "PlantBehaviours.h"
 #include "PlantTraits.h"
 #include "ProducerComponent.h"
 #include "StatusEffects.h"

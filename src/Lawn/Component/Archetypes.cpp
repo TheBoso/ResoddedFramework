@@ -77,6 +77,87 @@ static ProducerComponent *CreateVanillaProducer(SeedType theSeedType, int theRat
 	}
 }
 
+/// @brief The behaviour components of the vanilla plants (what used to be the seed switches in Plant::UpdateAbilities
+/// and Plant::DoSpecial)
+static void AddVanillaBehaviours(Plant *thePlant)
+{
+	switch (thePlant->mSeedType)
+	{
+	case SeedType::SEED_CHERRYBOMB:
+		thePlant->AddComponent(ExplodeComponent::CherryBomb());
+		break;
+	case SeedType::SEED_DOOMSHROOM:
+		thePlant->AddComponent<DoomFuseComponent>(100);
+		thePlant->AddComponent(ExplodeComponent::DoomShroom());
+		break;
+	case SeedType::SEED_POTATOMINE:
+		thePlant->AddComponent<PotatoMineArmingBehaviour>();
+		thePlant->AddComponent(ExplodeComponent::PotatoMine());
+		break;
+	case SeedType::SEED_JALAPENO:
+		thePlant->AddComponent<BurnRowComponent>(0);
+		break;
+	case SeedType::SEED_ICESHROOM:
+		thePlant->AddComponent<FuseComponent>(100);
+		thePlant->AddComponent<FreezeAllComponent>();
+		break;
+	case SeedType::SEED_SQUASH:
+		thePlant->AddComponent<SquashBehaviour>();
+		break;
+	case SeedType::SEED_CHOMPER:
+		thePlant->AddComponent<ChomperBehaviour>();
+		break;
+	case SeedType::SEED_BLOVER:
+		thePlant->AddComponent<BloverBehaviour>();
+		break;
+	case SeedType::SEED_FLOWERPOT:
+		thePlant->AddComponent<FlowerPotBehaviour>();
+		break;
+	case SeedType::SEED_LILYPAD:
+		thePlant->AddComponent<LilyPadBehaviour>();
+		break;
+	case SeedType::SEED_IMITATER:
+		thePlant->AddComponent<ImitaterBehaviour>();
+		break;
+	case SeedType::SEED_INSTANT_COFFEE:
+		thePlant->AddComponent<CoffeeBeanBehaviour>();
+		break;
+	case SeedType::SEED_UMBRELLA:
+		thePlant->AddComponent<UmbrellaBehaviour>();
+		break;
+	case SeedType::SEED_COBCANNON:
+		thePlant->AddComponent<CobCannonBehaviour>();
+		break;
+	case SeedType::SEED_CACTUS:
+		thePlant->AddComponent<CactusBehaviour>();
+		break;
+	case SeedType::SEED_MAGNETSHROOM:
+		thePlant->AddComponent<MagnetShroomBehaviour>();
+		break;
+	case SeedType::SEED_GOLD_MAGNET:
+		thePlant->AddComponent<GoldMagnetBehaviour>();
+		break;
+	case SeedType::SEED_SUNSHROOM:
+		thePlant->AddComponent<SunShroomGrowthBehaviour>();
+		break;
+	case SeedType::SEED_GRAVEBUSTER:
+		thePlant->AddComponent<GraveBusterBehaviour>();
+		break;
+	case SeedType::SEED_SPIKEWEED:
+	case SeedType::SEED_SPIKEROCK:
+		thePlant->AddComponent<SpikeweedBehaviour>();
+		break;
+	case SeedType::SEED_TANGLEKELP:
+		thePlant->AddComponent<TangleKelpBehaviour>();
+		break;
+	case SeedType::SEED_SCAREDYSHROOM:
+		thePlant->AddComponent<ScaredyShroomBehaviour>();
+		break;
+	default:
+		break;
+	}
+}
+
 void Archetypes::ApplyPlantDefaults(Plant *thePlant, bool theFromOldSave)
 {
 	if (!thePlant->GetEntityRef())
@@ -90,6 +171,8 @@ void Archetypes::ApplyPlantDefaults(Plant *thePlant, bool theFromOldSave)
 	{
 		thePlant->AddComponent<LowProfileComponent>();
 	}
+	AddVanillaBehaviours(thePlant);
+
 	switch (thePlant->mSeedType)
 	{
 	case SeedType::SEED_HYPNOSHROOM:

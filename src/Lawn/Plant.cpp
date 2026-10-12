@@ -1514,35 +1514,6 @@ void Plant::UpdateSquash()
 	}
 }
 
-void Plant::UpdateDoomShroom()
-{
-	if (mIsAsleep || mState == PlantState::STATE_DOINGSPECIAL)
-		return;
-
-	mState = PlantState::STATE_DOINGSPECIAL;
-	mDoSpecialCountdown = 100;
-
-	Reanimation *aBodyReanim = mApp->ReanimationTryToGet(mBodyReanimID);
-	TOD_ASSERT(aBodyReanim);
-
-	aBodyReanim->SetFramesForLayer("anim_explode");
-	aBodyReanim->mAnimRate = 23.0f;
-	aBodyReanim->mLoopType = ReanimLoopType::REANIM_PLAY_ONCE_AND_HOLD;
-	aBodyReanim->SetShakeOverride("DoomShroom_head1", 1.0f);
-	aBodyReanim->SetShakeOverride("DoomShroom_head2", 2.0f);
-	aBodyReanim->SetShakeOverride("DoomShroom_head3", 2.0f);
-	mApp->PlayFoley(FoleyType::FOLEY_REVERSE_EXPLOSION);
-}
-
-void Plant::UpdateIceShroom()
-{
-	if (!mIsAsleep && mState != PlantState::STATE_DOINGSPECIAL)
-	{
-		mState = PlantState::STATE_DOINGSPECIAL;
-		mDoSpecialCountdown = 100;
-	}
-}
-
 void Plant::UpdateBlover()
 {
 	Reanimation *aBodyReanim = mApp->ReanimationGet(mBodyReanimID);
@@ -2519,46 +2490,15 @@ void Plant::UpdateAbilities()
 		return;
 	}
 
-	if (mSeedType == SeedType::SEED_SQUASH)
-		UpdateSquash();
-	else if (mSeedType == SeedType::SEED_DOOMSHROOM)
-		UpdateDoomShroom();
-	else if (mSeedType == SeedType::SEED_ICESHROOM)
-		UpdateIceShroom();
-	else if (mSeedType == SeedType::SEED_CHOMPER)
-		UpdateChomper();
-	else if (mSeedType == SeedType::SEED_BLOVER)
-		UpdateBlover();
-	else if (mSeedType == SeedType::SEED_FLOWERPOT)
-		UpdateFlowerPot();
-	else if (mSeedType == SeedType::SEED_LILYPAD)
-		UpdateLilypad();
-	else if (mSeedType == SeedType::SEED_IMITATER)
-		UpdateImitater();
-	else if (mSeedType == SeedType::SEED_INSTANT_COFFEE)
-		UpdateCoffeeBean();
-	else if (mSeedType == SeedType::SEED_UMBRELLA)
-		UpdateUmbrella();
-	else if (mSeedType == SeedType::SEED_COBCANNON)
-		UpdateCobCannon();
-	else if (mSeedType == SeedType::SEED_CACTUS)
-		UpdateCactus();
-	else if (mSeedType == SeedType::SEED_MAGNETSHROOM)
-		UpdateMagnetShroom();
-	else if (mSeedType == SeedType::SEED_GOLD_MAGNET)
-		UpdateGoldMagnetShroom();
-	else if (mSeedType == SeedType::SEED_SUNSHROOM)
-		UpdateSunShroom();
-	else if (mSeedType == SeedType::SEED_GRAVEBUSTER)
-		UpdateGraveBuster();
-	else if (mSeedType == SeedType::SEED_POTATOMINE)
-		UpdatePotato();
-	else if (mSeedType == SeedType::SEED_SPIKEWEED || mSeedType == SeedType::SEED_SPIKEROCK)
-		UpdateSpikeweed();
-	else if (mSeedType == SeedType::SEED_TANGLEKELP)
-		UpdateTanglekelp();
-	else if (mSeedType == SeedType::SEED_SCAREDYSHROOM)
-		UpdateScaredyShroom();
+	// Seed-specific state machines are behaviour components (see Component/PlantBehaviours.h)
+	ForEachComponent(
+	    [this](Component &theComponent)
+	    {
+		    if (theComponent.IsA(GetComponentTypeId<PlantBehaviourComponent>()))
+		    {
+			    static_cast<PlantBehaviourComponent &>(theComponent).UpdateBehaviour(this);
+		    }
+	    });
 
 	if (mSubclass == PlantSubClass::SUBCLASS_SHOOTER)
 	{
@@ -4326,111 +4266,48 @@ void Plant::KillAllPlantsNearDoom()
 
 void Plant::DoSpecial()
 {
-	int aPosX = mX + mWidth / 2;
-	int aPosY = mY + mHeight / 2;
-	int aDamageRangeFlags = GetDamageRangeFlags(PlantWeapon::WEAPON_PRIMARY);
+	// What "activating" means is up to the plant's behaviour components (exploding, blowing, waking a mushroom...)
+	ForEachComponent(
+	    [this](Component &theComponent)
+	    {
+		    if (theComponent.IsA(GetComponentTypeId<PlantBehaviourComponent>()))
+		    {
+			    static_cast<PlantBehaviourComponent &>(theComponent).DoSpecial(this);
+		    }
+	    });
+}
 
-	switch (mSeedType)
+void Plant::BloverSpecial()
+{
+	if (mState != PlantState::STATE_DOINGSPECIAL)
 	{
-	case SeedType::SEED_BLOVER: {
-		if (mState != PlantState::STATE_DOINGSPECIAL)
-		{
-			mState = PlantState::STATE_DOINGSPECIAL;
-			BlowAwayFliers(mX, mRow);
-		}
-		break;
-	}
-	case SeedType::SEED_CHERRYBOMB: {
-		mApp->PlayFoley(FoleyType::FOLEY_CHERRYBOMB);
-		mApp->PlayFoley(FoleyType::FOLEY_JUICY);
-
-		std::vector<Zombie *> aZombiesInRange =
-		    mBoard->GetZombiesInRadius(mRow, aPosX, aPosY, 250, 3, aDamageRangeFlags);
-		if (aZombiesInRange.size() > 10)
-			mApp->mAchievements->GiveAchievement(AchievementID::ACHIEVEMENT_EXPLODONATOR);
-		mBoard->KillAllZombiesInRadius(mRow, aPosX, aPosY, 115, 1, true, aDamageRangeFlags);
-
-		mApp->AddTodParticle(aPosX, aPosY, (int)RenderLayer::RENDER_LAYER_TOP, ParticleEffect::PARTICLE_POWIE);
-		mBoard->ShakeBoard(3, -4);
-
-		Die();
-		break;
-	}
-	case SeedType::SEED_DOOMSHROOM: {
-		mApp->PlaySample(SOUND_DOOMSHROOM);
-
-		mBoard->KillAllZombiesInRadius(mRow, aPosX, aPosY, 250, 3, true, aDamageRangeFlags);
-		KillAllPlantsNearDoom();
-
-		mApp->AddTodParticle(aPosX, aPosY, (int)RenderLayer::RENDER_LAYER_TOP, ParticleEffect::PARTICLE_DOOM);
-		mBoard->AddACrater(mPlantCol, mRow)->mGridItemCounter = 18000;
-		mBoard->ShakeBoard(3, -4);
-
-		Die();
-		break;
-	}
-	case SeedType::SEED_JALAPENO: {
-		mApp->PlayFoley(FoleyType::FOLEY_JALAPENO_IGNITE);
-		mApp->PlayFoley(FoleyType::FOLEY_JUICY);
-
-		mBoard->DoFwoosh(mRow);
-		mBoard->ShakeBoard(3, -4);
-
-		BurnRow(mRow);
-		mBoard->mIceTimer[mRow] = 20;
-
-		Die();
-		break;
-	}
-	case SeedType::SEED_UMBRELLA: {
-		if (mState != PlantState::STATE_UMBRELLA_TRIGGERED && mState != PlantState::STATE_UMBRELLA_REFLECTING)
-		{
-			mState = PlantState::STATE_UMBRELLA_TRIGGERED;
-			mStateCountdown = 5;
-
-			PlayBodyReanim("anim_block", ReanimLoopType::REANIM_PLAY_ONCE_AND_HOLD, 0, 22.0f);
-		}
-
-		break;
-	}
-	case SeedType::SEED_ICESHROOM: {
-		mApp->PlayFoley(FoleyType::FOLEY_FROZEN);
-		IceZombies();
-		mApp->AddTodParticle(aPosX, aPosY, (int)RenderLayer::RENDER_LAYER_TOP, ParticleEffect::PARTICLE_ICE_TRAP);
-
-		Die();
-		break;
-	}
-	case SeedType::SEED_POTATOMINE: {
-		aPosX = mX + mWidth / 2 - 20;
-		aPosY = mY + mHeight / 2;
-
-		mApp->PlaySample(SOUND_POTATO_MINE);
-		mBoard->KillAllZombiesInRadius(mRow, aPosX, aPosY, 60, 0, false, aDamageRangeFlags);
-		if (!mApp->IsIZombieLevel())
-			mApp->mAchievements->GiveAchievement(AchievementID::ACHIEVEMENT_SPUDOW);
-
-		int aRenderPosition = Board::MakeRenderOrder(RenderLayer::RENDER_LAYER_PARTICLE, mRow, 0);
-		mApp->AddTodParticle(aPosX + 20.0f, aPosY, aRenderPosition, ParticleEffect::PARTICLE_POTATO_MINE);
-		mBoard->ShakeBoard(3, -4);
-
-		Die();
-		break;
-	}
-	case SeedType::SEED_INSTANT_COFFEE: {
-		Plant *aPlant = mBoard->GetTopPlantAt(mPlantCol, mRow, PlantPriority::TOPPLANT_ONLY_NORMAL_POSITION);
-		if (aPlant && aPlant->mIsAsleep)
-		{
-			aPlant->mWakeUpCounter = 100;
-		}
-
 		mState = PlantState::STATE_DOINGSPECIAL;
-		PlayBodyReanim("anim_crumble", ReanimLoopType::REANIM_PLAY_ONCE_AND_HOLD, 20, 22.0f);
-		mApp->PlayFoley(FoleyType::FOLEY_COFFEE);
+		BlowAwayFliers(mX, mRow);
+	}
+}
 
-		break;
+void Plant::UmbrellaSpecial()
+{
+	if (mState != PlantState::STATE_UMBRELLA_TRIGGERED && mState != PlantState::STATE_UMBRELLA_REFLECTING)
+	{
+		mState = PlantState::STATE_UMBRELLA_TRIGGERED;
+		mStateCountdown = 5;
+
+		PlayBodyReanim("anim_block", ReanimLoopType::REANIM_PLAY_ONCE_AND_HOLD, 0, 22.0f);
 	}
+}
+
+void Plant::CoffeeBeanSpecial()
+{
+	Plant *aPlant = mBoard->GetTopPlantAt(mPlantCol, mRow, PlantPriority::TOPPLANT_ONLY_NORMAL_POSITION);
+	if (aPlant && aPlant->mIsAsleep)
+	{
+		aPlant->mWakeUpCounter = 100;
 	}
+
+	mState = PlantState::STATE_DOINGSPECIAL;
+	PlayBodyReanim("anim_crumble", ReanimLoopType::REANIM_PLAY_ONCE_AND_HOLD, 20, 22.0f);
+	mApp->PlayFoley(FoleyType::FOLEY_COFFEE);
 }
 
 void Plant::ImitaterMorph()
