@@ -19,7 +19,8 @@
 // 9: zombie behaviours moved into components
 // 10: zombie traits (giant, vehicle, dance troupe, swimmer, walker)
 // 11: zombie bodies (shadow, head, charred remains) and the Flag Zombie behaviour
-static constexpr uint32_t SAVE_VERSION = 11;
+// 12: zombie body death/sound/house data, bodies for Jack-in-the-Box, Bungee and Dr. Zomboss
+static constexpr uint32_t SAVE_VERSION = 12;
 
 template <typename T>
 void SaveContext::SyncVar(T &aValue, const std::string &aName)

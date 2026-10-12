@@ -213,6 +213,15 @@ hypnosis, team-based projectile collision, generic shooter, plant heads, produce
   so a custom zombie gets a different shadow or head by attaching a body instead of editing Zombie.cpp. The
   Gargantuar shadow/charred look now comes from the body, not `GiantComponent` (a zombie made giant at runtime keeps
   its own look). Zombie.cpp went from 166 to 132 `mZombieType ==` checks. `SAVE_VERSION` 11.
+- Done: behaviour hooks, second batch. `ZombieBehaviourComponent` gained `OnBodyDamaged` (Zamboni, Catapult,
+  Gargantuar and Dr. Zomboss show their own damaged look instead of losing an arm/head), `OnHitByMower` (Dr. Zomboss
+  ignores mowers, vehicles blow up), `OnMowed` (drop the pole/flag/head), `OnBurned`, `HasDeathAnim` (Dolphin Rider
+  out of the pool), `OnDying`, `UpdateDying` (Dr. Zomboss' finale, vehicles blowing up) and `OnRemoved` (Bobsled
+  team, Bungee and Dr. Zomboss take others with them). The bool hooks are asked through `AnyBehaviour` in
+  Zombie.cpp. `ZombieBodyComponent` gained the death animation speed and fall time, puffing when mowed, burning in
+  place / fire only hurting, the appear and song sounds, and where the zombie stands in the house; Jack-in-the-Box,
+  Bungee and Dr. Zomboss got bodies. Gargantuar body cracks moved from `IsGiant()` to `GargantuarBehaviour`.
+  Zombie.cpp went from 132 to 91 checks. `SAVE_VERSION` 12.
 - Next: the remaining checks are mostly single types tied to that zombie's own animation and state (Zamboni ice
   trail, Catapult basketball count, Snorkel/Dolphin pool animations, Dr. Zomboss parts). They move into hooks on the
   zombie's behaviour component (e.g. `OnDeathAnim`, `GetDrawPosition`) so the shared code asks the behaviour instead

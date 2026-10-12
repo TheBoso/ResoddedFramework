@@ -12,7 +12,8 @@ class UnswallowableComponent : public Component
 };
 
 /// @brief A giant (Gargantuars): crushes spikes instead of avoiding them, never loses body parts, deep groans,
-/// falls with a thump. Its death, burn and damage visuals use the Gargantuar animation.
+/// shakes the board as it falls, plays its death animation even when disintegrated. Its look (shadow,
+/// charred remains, cracked body) comes from its ZombieBodyComponent and GargantuarBehaviour.
 class GiantComponent : public Component
 {
 	COMPONENT_TYPE(GiantComponent)

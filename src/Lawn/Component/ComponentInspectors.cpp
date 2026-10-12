@@ -388,6 +388,19 @@ void ZombieBodyComponent::DrawInspector()
 	ImGui::InputInt("Head image id", &mHeadImageId);
 	ImGui::DragFloat("Charred X", &mCharredX, 0.5f);
 	ImGui::DragFloat("Charred Y", &mCharredY, 0.5f);
+	ImGui::Checkbox("Burns in place", &mBurnsInPlace);
+	ImGui::Checkbox("Fire only hurts", &mBurnsAsDamage);
+	ImGui::DragFloatRange2("Death anim speed", &mDeathAnimRateMin, &mDeathAnimRateMax, 0.5f, 1.0f, 60.0f);
+	ImGui::Checkbox("Body falls when dying", &mHasDeathFall);
+	if (mHasDeathFall)
+	{
+		ImGui::SliderFloat("Fall time", &mDeathFallTime, 0.0f, 1.0f);
+	}
+	ImGui::Checkbox("Puffs when mowed", &mPuffsWhenMowed);
+	ImGui::Checkbox("Death anim when disintegrated", &mPlaysDeathAnimWhenDisintegrated);
+	ImGui::DragFloat("House X", &mHouseX, 0.5f);
+	ImGui::DragFloat("House Y", &mHouseY, 0.5f);
+	ImGui::Checkbox("Idles in house", &mIdlesInHouse);
 }
 
 void TeamComponent::DrawInspector()

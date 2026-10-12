@@ -391,8 +391,8 @@ static void AddVanillaZombieTraits(Zombie *theZombie)
 	}
 }
 
-/// @brief The bodies of the vanilla zombies that differ from the regular zombie (shadow, flying head, charred
-/// remains)
+/// @brief The bodies of the vanilla zombies that differ from the regular zombie (shadow, flying head, death
+/// animation, charred remains, sounds, place in the house)
 static void AddVanillaZombieBody(Zombie *theZombie)
 {
 	ZombieBodyComponent aBody;
@@ -410,29 +410,43 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 	switch (theZombie->mZombieType)
 	{
 	case ZombieType::ZOMBIE_FOOTBALL:
+		aBody.SetDeathFall(0.52f);
+		aBody.SetDeathAnimRate(24.0f);
+		aBody.mPoolHouseX = -10.0f;
+		aBody.mRoofHouseX = -14.0f;
 		aBody.SetShadow(20.0f, 0.0f, 16.0f);
 		aBody.mShadowForwardXPerScale = 21.0f;
 		aBody.mShadowBackwardXPerScale = -11.0f;
 		aSetHead(ResourceId::IMAGE_ZOMBIEFOOTBALLHEAD_ID);
 		break;
 	case ZombieType::ZOMBIE_NEWSPAPER:
+		aBody.SetDeathFall(0.63f);
 		aBody.SetShadow(29.0f, 5.0f, 4.0f);
 		aBody.mHeadParticle = ParticleEffect::PARTICLE_ZOMBIE_NEWSPAPER_HEAD;
 		break;
 	case ZombieType::ZOMBIE_POLEVAULTER:
+		aBody.SetDeathFall(0.68f);
+		aBody.mIdlesInHouse = false;
 		aBody.SetShadow(36.0f, -5.0f, 11.0f);
 		aSetHead(ResourceId::IMAGE_ZOMBIEPOLEVAULTERHEAD_ID);
 		break;
 	case ZombieType::ZOMBIE_BOBSLED:
+		aBody.SetDeathFall(0.81f);
 		aBody.SetShadow(20.0f, 13.0f, 13.0f);
 		aSetHead(ResourceId::IMAGE_ZOMBIEBOBSLEDHEAD_ID);
 		break;
 	case ZombieType::ZOMBIE_IMP:
+		aBody.mHasDeathFall = false;
+		aBody.mPuffsWhenMowed = true;
 		aBody.SetShadow(25.0f, 13.0f, 7.0f, 0.6f);
 		aSetHead(ResourceId::IMAGE_ZOMBIEIMPHEAD_ID);
 		aSetCharred(ReanimationType::REANIM_ZOMBIE_CHARRED_IMP, 16.0f, -10.0f);
 		break;
 	case ZombieType::ZOMBIE_DIGGER:
+		aBody.SetDeathFall(0.85f);
+		aBody.SetDeathAnimRate(18.0f);
+		aBody.mPuffsWhenMowed = true;
+		aBody.mSongFoley = FoleyType::FOLEY_DIGGER;
 		aBody.SetShadow(17.0f, 14.0f, 5.0f);
 		aSetHead(ResourceId::IMAGE_ZOMBIEDIGGERHEAD_ID);
 		aSetCharred(ReanimationType::REANIM_ZOMBIE_CHARRED_DIGGER, 22.0f, -10.0f);
@@ -440,45 +454,84 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 		strcpy(aBody.mCharredAnim, "anim_crumble");
 		break;
 	case ZombieType::ZOMBIE_SNORKEL:
+		aBody.mHasDeathFall = false;
+		aBody.SetDeathAnimRate(14.0f);
 		aBody.SetShadow(35.0f, -2.0f, 5.0f);
 		aSetHead(ResourceId::IMAGE_REANIM_ZOMBIE_SNORKLE_HEAD_ID);
 		break;
 	case ZombieType::ZOMBIE_DOLPHIN_RIDER:
+		aBody.mHasDeathFall = false;
+		aBody.mPuffsWhenMowed = true;
+		aBody.mAppearFoley = FoleyType::FOLEY_DOLPHIN_APPEARS;
 		aBody.SetShadow(19.0f, 15.0f, 11.0f);
 		aSetHead(ResourceId::IMAGE_ZOMBIEDOLPHINRIDERHEAD_ID);
 		break;
 	case ZombieType::ZOMBIE_YETI:
+		aBody.SetDeathFall(0.68f);
+		aBody.SetDeathAnimRate(14.0f);
+		aBody.mPuffsWhenMowed = true;
+		aBody.mBurnsInPlace = true;
 		aBody.SetShadow(3.0f, 20.0f, 20.0f);
 		aSetHead(ResourceId::IMAGE_ZOMBIEYETIHEAD_ID);
 		break;
 	case ZombieType::ZOMBIE_GARGANTUAR:
 	case ZombieType::ZOMBIE_REDEYE_GARGANTUAR:
+		aBody.SetDeathFall(0.86f);
+		aBody.SetDeathAnimRate(14.0f);
+		aBody.mHouseY = 30.0f;
+		aBody.mRoofHouseY = 5.0f;
 		aBody.SetShadow(27.0f, 27.0f, 7.0f, 1.5f);
 		aSetCharred(ReanimationType::REANIM_ZOMBIE_CHARRED_GARGANTUAR, 7.0f, -20.0f);
 		break;
 	case ZombieType::ZOMBIE_BALLOON:
+		aBody.SetDeathFall(0.68f);
+		aBody.mAppearFoley = FoleyType::FOLEY_BALLOONINFLATE;
 		aBody.SetShadow(23.0f, 11.0f, 13.0f);
 		aBody.mHeadParticle = ParticleEffect::PARTICLE_ZOMBIE_BALLOON_HEAD;
 		aSetCharred(ReanimationType::REANIM_ZOMBIE_CHARRED, 22.0f, 21.0f);
 		break;
 	case ZombieType::ZOMBIE_DANCER:
+		aBody.SetDeathFall(0.83f);
 		aSetHead(ResourceId::IMAGE_ZOMBIEDANCERHEAD_ID, "Zombie_disco_chops", "Zombie_disco_glasses");
 		aBody.mHeadRenderOffset = -1;
 		break;
 	case ZombieType::ZOMBIE_BACKUP_DANCER:
+		aBody.SetDeathFall(0.83f);
 		aSetHead(ResourceId::IMAGE_ZOMBIEBACKUPDANCERHEAD_ID, "Zombie_disco_chops", "Zombie_backup_stash");
 		break;
 	case ZombieType::ZOMBIE_LADDER:
+		aBody.SetDeathFall(0.62f);
 		aSetHead(ResourceId::IMAGE_ZOMBIELADDERHEAD_ID);
 		break;
 	case ZombieType::ZOMBIE_POGO:
+		aBody.SetDeathFall(0.84f);
 		aBody.mHeadParticle = ParticleEffect::PARTICLE_ZOMBIE_POGO_HEAD;
 		break;
 	case ZombieType::ZOMBIE_ZAMBONI:
+		aBody.mHasDeathFall = false;
+		aBody.mAppearFoley = FoleyType::FOLEY_ZAMBONI;
+		aBody.mHouseY = 15.0f;
+		aBody.mRoofHouseX = -28.0f;
 		aSetCharred(ReanimationType::REANIM_ZOMBIE_CHARRED_ZAMBONI, 83.0f, -26.0f);
 		break;
 	case ZombieType::ZOMBIE_CATAPULT:
+		aBody.mHasDeathFall = false;
 		aSetCharred(ReanimationType::REANIM_ZOMBIE_CHARRED_CATAPULT, -14.0f, -30.0f);
+		break;
+	case ZombieType::ZOMBIE_JACK_IN_THE_BOX:
+		aBody.SetDeathFall(0.64f);
+		aBody.mSongFoley = FoleyType::FOLEY_JACKINTHEBOX;
+		break;
+	case ZombieType::ZOMBIE_BUNGEE:
+		aBody.mHasDeathFall = false;
+		aBody.mPuffsWhenMowed = true;
+		aBody.mBurnsInPlace = true;
+		break;
+	case ZombieType::ZOMBIE_BOSS:
+		aBody.mHasDeathFall = false;
+		aBody.SetDeathAnimRate(18.0f);
+		aBody.mPlaysDeathAnimWhenDisintegrated = true;
+		aBody.mBurnsAsDamage = true;
 		break;
 	default:
 		return;

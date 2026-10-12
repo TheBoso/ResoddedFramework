@@ -13,6 +13,20 @@ void ZombieBodyComponent::SetShadow(float theForwardX, float theBackwardX, float
 	mShadowScale = theScale;
 }
 
+void ZombieBodyComponent::SetDeathFall(float theTime)
+{
+	mHasDeathFall = true;
+	mDeathFallTime = theTime;
+	mDeathFallTimeAlt = theTime;
+	mDeathFallTimeSuperLong = theTime;
+}
+
+void ZombieBodyComponent::SetDeathAnimRate(float theRate)
+{
+	mDeathAnimRateMin = theRate;
+	mDeathAnimRateMax = theRate;
+}
+
 void ZombieBodyComponent::Serialize(ComponentArchive &theArchive)
 {
 	theArchive.Value(mHasShadowOffsets);
@@ -31,4 +45,22 @@ void ZombieBodyComponent::Serialize(ComponentArchive &theArchive)
 	theArchive.Value(mCharredY);
 	theArchive.Value(mCharredBackwardsX);
 	theArchive.Value(mCharredAnim);
+	theArchive.Value(mBurnsInPlace);
+	theArchive.Value(mBurnsAsDamage);
+	theArchive.Value(mDeathAnimRateMin);
+	theArchive.Value(mDeathAnimRateMax);
+	theArchive.Value(mHasDeathFall);
+	theArchive.Value(mDeathFallTime);
+	theArchive.Value(mDeathFallTimeAlt);
+	theArchive.Value(mDeathFallTimeSuperLong);
+	theArchive.Value(mPlaysDeathAnimWhenDisintegrated);
+	theArchive.Value(mPuffsWhenMowed);
+	theArchive.Value(mAppearFoley);
+	theArchive.Value(mSongFoley);
+	theArchive.Value(mHouseX);
+	theArchive.Value(mHouseY);
+	theArchive.Value(mPoolHouseX);
+	theArchive.Value(mRoofHouseX);
+	theArchive.Value(mRoofHouseY);
+	theArchive.Value(mIdlesInHouse);
 }
