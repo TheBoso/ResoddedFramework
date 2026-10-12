@@ -1110,13 +1110,13 @@ void Challenge::MouseDownWhackAZombie(int theX, int theY)
 
 	if (aTopZombie)
 	{
-		if (aTopZombie->mHelmType != HELMTYPE_NONE)
+		if (aTopZombie->GetHelmType() != HELMTYPE_NONE)
 		{
-			if (aTopZombie->mHelmType == HELMTYPE_PAIL)
+			if (aTopZombie->GetHelmType() == HELMTYPE_PAIL)
 			{
 				mApp->PlayFoley(FOLEY_SHIELD_HIT);
 			}
-			else if (aTopZombie->mHelmType == HELMTYPE_TRAFFIC_CONE)
+			else if (aTopZombie->GetHelmType() == HELMTYPE_TRAFFIC_CONE)
 			{
 				mApp->PlayFoley(FOLEY_PLASTIC_HIT);
 			}

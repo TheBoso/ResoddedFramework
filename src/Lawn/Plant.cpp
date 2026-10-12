@@ -1817,12 +1817,11 @@ void Plant::MagnetShroomAttactItem(Zombie *theZombie)
 	mApp->PlayFoley(FoleyType::FOLEY_MAGNETSHROOM);
 
 	MagnetItem *aMagnetItem = GetFreeMagnetItem();
-	if (theZombie->mHelmType == HelmType::HELMTYPE_PAIL)
+	if (theZombie->GetHelmType() == HelmType::HELMTYPE_PAIL)
 	{
 		int aDamageIndex = theZombie->GetHelmDamageIndex();
 
-		theZombie->Health().mHelmHealth = 0;
-		theZombie->mHelmType = HelmType::HELMTYPE_NONE;
+		theZombie->RemoveComponent<HelmComponent>();
 		theZombie->GetTrackPosition("anim_bucket", aMagnetItem->mPosX, aMagnetItem->mPosY);
 		theZombie->ReanimShowPrefix("anim_bucket", RENDER_GROUP_HIDDEN);
 		theZombie->ReanimShowPrefix("anim_hair", RENDER_GROUP_NORMAL);
@@ -1833,12 +1832,11 @@ void Plant::MagnetShroomAttactItem(Zombie *theZombie)
 		aMagnetItem->mDestOffsetY = RandRangeFloat(-10.0f, 10.0f) + 20.0f;
 		aMagnetItem->mItemType = (MagnetItemType)((int)MagnetItemType::MAGNET_ITEM_PAIL_1 + aDamageIndex);
 	}
-	else if (theZombie->mHelmType == HelmType::HELMTYPE_FOOTBALL)
+	else if (theZombie->GetHelmType() == HelmType::HELMTYPE_FOOTBALL)
 	{
 		int aDamageIndex = theZombie->GetHelmDamageIndex();
 
-		theZombie->Health().mHelmHealth = 0;
-		theZombie->mHelmType = HelmType::HELMTYPE_NONE;
+		theZombie->RemoveComponent<HelmComponent>();
 		theZombie->GetTrackPosition("zombie_football_helmet", aMagnetItem->mPosX, aMagnetItem->mPosY);
 		theZombie->ReanimShowPrefix("zombie_football_helmet", RENDER_GROUP_HIDDEN);
 		theZombie->ReanimShowPrefix("anim_hair", RENDER_GROUP_NORMAL);
@@ -1849,7 +1847,7 @@ void Plant::MagnetShroomAttactItem(Zombie *theZombie)
 		aMagnetItem->mDestOffsetY = RandRangeFloat(-10.0f, 10.0f) + 20.0f;
 		aMagnetItem->mItemType = (MagnetItemType)((int)MagnetItemType::MAGNET_ITEM_FOOTBALL_HELMET_1 + aDamageIndex);
 	}
-	else if (theZombie->mShieldType == ShieldType::SHIELDTYPE_DOOR)
+	else if (theZombie->GetShieldType() == ShieldType::SHIELDTYPE_DOOR)
 	{
 		int aDamageIndex = theZombie->GetShieldDamageIndex();
 
@@ -1868,7 +1866,7 @@ void Plant::MagnetShroomAttactItem(Zombie *theZombie)
 		aMagnetItem->mDestOffsetY = RandRangeFloat(-10.0f, 10.0f);
 		aMagnetItem->mItemType = (MagnetItemType)((int)MagnetItemType::MAGNET_ITEM_DOOR_1 + aDamageIndex);
 	}
-	else if (theZombie->mShieldType == ShieldType::SHIELDTYPE_LADDER)
+	else if (theZombie->GetShieldType() == ShieldType::SHIELDTYPE_LADDER)
 	{
 		int aDamageIndex = theZombie->GetShieldDamageIndex();
 
@@ -2044,10 +2042,10 @@ void Plant::UpdateMagnetShroom()
 				if (!aZombie->mHasObject)
 					continue;
 			}
-			else if (!(aZombie->mHelmType == HelmType::HELMTYPE_PAIL ||
-			           aZombie->mHelmType == HelmType::HELMTYPE_FOOTBALL ||
-			           aZombie->mShieldType == ShieldType::SHIELDTYPE_DOOR ||
-			           aZombie->mShieldType == ShieldType::SHIELDTYPE_LADDER ||
+			else if (!(aZombie->GetHelmType() == HelmType::HELMTYPE_PAIL ||
+			           aZombie->GetHelmType() == HelmType::HELMTYPE_FOOTBALL ||
+			           aZombie->GetShieldType() == ShieldType::SHIELDTYPE_DOOR ||
+			           aZombie->GetShieldType() == ShieldType::SHIELDTYPE_LADDER ||
 			           aZombie->mZombiePhase == ZombiePhase::PHASE_JACK_IN_THE_BOX_RUNNING))
 				continue;
 
@@ -2406,21 +2404,21 @@ void Plant::UpdateBowling()
 			if (mBowlingHits >= 5)
 				mApp->mAchievements->GiveAchievement(AchievementID::ACHIEVEMENT_ROLL_SOME_HEADS);
 
-			if (aZombie->mShieldType == ShieldType::SHIELDTYPE_DOOR && mState != PlantState::STATE_NOTREADY)
+			if (aZombie->GetShieldType() == ShieldType::SHIELDTYPE_DOOR && mState != PlantState::STATE_NOTREADY)
 			{
 				aZombie->TakeDamage(1800, 0U);
 			}
-			else if (aZombie->mShieldType != ShieldType::SHIELDTYPE_NONE)
+			else if (aZombie->GetShieldType() != ShieldType::SHIELDTYPE_NONE)
 			{
 				aZombie->TakeShieldDamage(400, 0U);
 			}
-			else if (aZombie->mHelmType != HelmType::HELMTYPE_NONE)
+			else if (aZombie->GetHelmType() != HelmType::HELMTYPE_NONE)
 			{
-				if (aZombie->mHelmType == HelmType::HELMTYPE_PAIL)
+				if (aZombie->GetHelmType() == HelmType::HELMTYPE_PAIL)
 				{
 					mApp->PlayFoley(FoleyType::FOLEY_SHIELD_HIT);
 				}
-				else if (aZombie->mHelmType == HelmType::HELMTYPE_TRAFFIC_CONE)
+				else if (aZombie->GetHelmType() == HelmType::HELMTYPE_TRAFFIC_CONE)
 				{
 					mApp->PlayFoley(FoleyType::FOLEY_PLASTIC_HIT);
 				}
@@ -4727,6 +4725,12 @@ void Plant::Fire(Zombie *theTargetZombie, int theRow, PlantWeapon thePlantWeapon
 				aRangeY = mBoard->GridToPixelY(8, mRow) - aOriginY;
 			}
 		}
+		else if (Plant *aTargetPlant = FindTargetPlant(theRow, thePlantWeapon))
+		{
+			// No zombie to hit: lob at a hostile plant (hypnotized plants, or this plant is the hypnotized one)
+			aRangeX = (aTargetPlant->mX + aTargetPlant->mWidth / 2 - aOriginX) * aDirection - 30.0f;
+			aRangeY = aTargetPlant->mY - aOriginY;
+		}
 		else
 		{
 			aRangeX = aDirection > 0 ? 700.0f - aOriginX : aOriginX - 100.0f;
@@ -4949,9 +4953,8 @@ Zombie *Plant::FindTargetZombie(int theRow, PlantWeapon thePlantWeapon)
 
 Plant *Plant::FindTargetPlant(int theRow, PlantWeapon thePlantWeapon)
 {
-	// Lobbed shots re-aim at a zombie when they fire, so only straight shooters can target plants for now
-	const PlantShotDefinition &aShot = Archetypes::GetPlantShot(mSeedType);
-	if (aShot.mProjectileType == kNoProjectile || aShot.mArc != ShotArc::Straight)
+	// Only plants that fire projectiles (Fume/Gloom-shroom's area attack only hurts zombies)
+	if (Archetypes::GetPlantShot(mSeedType).mProjectileType == kNoProjectile)
 		return nullptr;
 
 	int aTeam = Teams::Of(this);

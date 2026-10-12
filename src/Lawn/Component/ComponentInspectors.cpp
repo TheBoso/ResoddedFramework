@@ -106,14 +106,31 @@ static void HealthLayerInput(const char *theLabel, int32_t &theHealth, int32_t &
 
 void HealthComponent::DrawInspector()
 {
-	HealthLayerInput("Body", mHealth, mMaxHealth);
-	if (GetZombie())
+	HealthLayerInput("Health", mHealth, mMaxHealth);
+}
+
+void ArmorComponent::DrawInspector()
+{
+	HealthLayerInput("Armour", mHealth, mMaxHealth);
+	if (ImGui::Button("Break"))
 	{
-		HealthLayerInput("Helm", mHelmHealth, mHelmMaxHealth);
-		HealthLayerInput("Shield", mShieldHealth, mShieldMaxHealth);
-		HealthLayerInput("Flying", mFlyingHealth, mFlyingMaxHealth);
-		ImGui::TextDisabled("Armour only shows on zombies that have a helm/shield type");
+		Break(0U);
 	}
+}
+
+void HelmComponent::DrawInspector()
+{
+	static const char *kHelmNames[] = { "None", "Traffic cone", "Bucket", "Football helmet", "Hard hat", "Red eyes",
+	                                    "Headband", "Bobsled", "Wall-nut", "Tall-nut" };
+	ImGui::Text("Type: %s", mType >= 0 && mType < (int)(sizeof(kHelmNames) / sizeof(kHelmNames[0])) ? kHelmNames[mType] : "?");
+	ArmorComponent::DrawInspector();
+}
+
+void ShieldComponent::DrawInspector()
+{
+	static const char *kShieldNames[] = { "None", "Screen door", "Newspaper", "Ladder" };
+	ImGui::Text("Type: %s", mType >= 0 && mType < (int)(sizeof(kShieldNames) / sizeof(kShieldNames[0])) ? kShieldNames[mType] : "?");
+	ArmorComponent::DrawInspector();
 }
 
 void StatusEffectComponent::DrawInspector()
@@ -238,6 +255,15 @@ void HealthComponent::DrawInspector()
 {
 }
 void StatusEffectComponent::DrawInspector()
+{
+}
+void ArmorComponent::DrawInspector()
+{
+}
+void HelmComponent::DrawInspector()
+{
+}
+void ShieldComponent::DrawInspector()
 {
 }
 void TeamComponent::DrawInspector()

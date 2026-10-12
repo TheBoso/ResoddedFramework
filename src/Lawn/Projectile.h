@@ -78,6 +78,10 @@ class Projectile : public GameObject
 	void DoImpact(Zombie *theZombie);
 	/// @brief Splats, particles and other impact visuals (DoImpact without the damage and Die)
 	void PlayImpactEffects(Zombie *theZombie);
+	/// @brief Is the plant hostile and close enough to take splash damage?
+	bool IsPlantHitBySplash(Plant *thePlant);
+	/// @brief Splash damage on hostile plants (full damage on the target, a third on the others)
+	void DoSplashDamagePlants(Plant *theTargetPlant);
 	/// @brief Damage a plant and destroy the projectile
 	void HitPlant(Plant *thePlant);
 	/// @brief Is the zombie hostile to this projectile's team and reachable with its damage range flags?

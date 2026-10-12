@@ -5109,8 +5109,8 @@ int Board::TotalZombiesHealthInWave(int theWaveIndex)
 		if (aZombie->mFromWave == theWaveIndex && !aZombie->mMindControlled && !aZombie->IsDeadOrDying() &&
 		    aZombie->mZombieType != ZombieType::ZOMBIE_BUNGEE && aZombie->mRelatedZombieID == ZombieID::ZOMBIEID_NULL)
 		{
-			HealthComponent &aHealth = aZombie->Health();
-			aTotalHealth += aHealth.mHealth + aHealth.mHelmHealth + aHealth.mShieldHealth * 0.2f + aHealth.mFlyingHealth;
+			aTotalHealth += aZombie->Health().mHealth + aZombie->GetHelmHealth() + aZombie->GetShieldHealth() * 0.2f +
+			                aZombie->GetFlyingHealth();
 		}
 	}
 	return aTotalHealth;

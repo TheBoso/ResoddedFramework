@@ -174,7 +174,16 @@ bool Projectile::CanDamageZombie(Zombie *theZombie)
 
 void Projectile::HitPlant(Plant *thePlant)
 {
-	Combat::DamagePlant(thePlant, GetProjectileDef().mDamage);
+	if (IsSplashDamage(nullptr))
+	{
+		// Melons and fireballs splash onto hostile neighbours, plants and zombies alike
+		DoSplashDamage(nullptr);
+		DoSplashDamagePlants(thePlant);
+	}
+	else
+	{
+		Combat::Damage(thePlant, GetProjectileDef().mDamage);
+	}
 
 	// Plants get the same status effects zombies do (snow peas / winter melons chill, butter sticks)
 	if (TestBit(GetDamageFlags(nullptr), (int)DamageFlags::DAMAGE_FREEZE))
@@ -447,6 +456,47 @@ bool Projectile::IsZombieHitBySplash(Zombie *theZombie)
 	}
 
 	return CanDamageZombie(theZombie) && GetRectOverlap(aProjectileRect, aZombieRect) >= 0;
+}
+
+bool Projectile::IsPlantHitBySplash(Plant *thePlant)
+{
+	if (thePlant->NotOnGround() || !Teams::CanAttack(Teams::Of(this), thePlant))
+		return false;
+
+	// Same reach as for zombies: the next rows over, or only this row for a fireball (which is wider instead)
+	Rect aProjectileRect = GetProjectileRect();
+	int aRowDeviation = thePlant->mRow - mRow;
+	if (mProjectileType == ProjectileType::PROJECTILE_FIREBALL)
+	{
+		aProjectileRect.mWidth = 100;
+		if (aRowDeviation != 0)
+			return false;
+	}
+	else if (aRowDeviation > 1 || aRowDeviation < -1)
+	{
+		return false;
+	}
+
+	return GetRectOverlap(aProjectileRect, thePlant->GetPlantRect()) >= 0;
+}
+
+void Projectile::DoSplashDamagePlants(Plant *theTargetPlant)
+{
+	int aDamage = GetProjectileDef().mDamage;
+	Plant *aPlant = nullptr;
+	while (mBoard->IteratePlants(aPlant))
+	{
+		if (aPlant == theTargetPlant)
+		{
+			Combat::Damage(aPlant, aDamage);
+		}
+		// One plant per square takes the splash: the one a lobbed shot would land on (pumpkin before what's inside)
+		else if (IsPlantHitBySplash(aPlant) &&
+		         mBoard->GetTopPlantAt(aPlant->mPlantCol, aPlant->mRow, PlantPriority::TOPPLANT_CATAPULT_ORDER) == aPlant)
+		{
+			Combat::Damage(aPlant, aDamage / 3);
+		}
+	}
 }
 
 void Projectile::DoSplashDamage(Zombie *theZombie)
@@ -795,13 +845,13 @@ void Projectile::PlayImpactSound(Zombie *theZombie)
 
 	if (aPlayHelmSound && theZombie)
 	{
-		if (theZombie->mHelmType == HELMTYPE_PAIL)
+		if (theZombie->GetHelmType() == HELMTYPE_PAIL)
 		{
 			mApp->PlayFoley(FoleyType::FOLEY_SHIELD_HIT);
 			aPlaySplatSound = false;
 		}
-		else if (theZombie->mHelmType == HELMTYPE_TRAFFIC_CONE || theZombie->mHelmType == HELMTYPE_DIGGER ||
-		         theZombie->mHelmType == HELMTYPE_FOOTBALL)
+		else if (theZombie->GetHelmType() == HELMTYPE_TRAFFIC_CONE || theZombie->GetHelmType() == HELMTYPE_DIGGER ||
+		         theZombie->GetHelmType() == HELMTYPE_FOOTBALL)
 		{
 			mApp->PlayFoley(FoleyType::FOLEY_PLASTIC_HIT);
 		}
@@ -825,6 +875,7 @@ void Projectile::DoImpact(Zombie *theZombie)
 		}
 
 		DoSplashDamage(theZombie);
+		DoSplashDamagePlants(nullptr);
 	}
 	else if (theZombie)
 	{

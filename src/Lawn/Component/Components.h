@@ -91,6 +91,7 @@ class LowProfileComponent : public Component
 	COMPONENT_TYPE(LowProfileComponent)
 };
 
+#include "ArmorComponents.h"
 #include "HealthComponent.h"
 #include "ProducerComponent.h"
 #include "StatusEffects.h"

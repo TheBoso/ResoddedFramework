@@ -55,6 +55,11 @@ bool HypnotizePlant(Plant *thePlant);
 
 namespace Combat
 {
+/// @brief Damage any entity: zombies through their armour (Zombie::TakeDamage), plants through DamagePlant,
+/// anything else with a HealthComponent directly. Every path tells the entity's components (OnDamaged).
+/// @param theDamageFlags DamageFlags bits (DAMAGE_DOESNT_CAUSE_FLASH, DAMAGE_BYPASSES_SHIELD, ...)
+void Damage(GameObject *theTarget, int theDamage, unsigned int theDamageFlags = 0U);
+
 /// @brief Deal damage to a plant and tell its components (OnDamaged).
 /// Plants die from Plant::Update / the eating zombie when their health runs out.
 /// @param theFlash Flash the plant white like a projectile hit (bites flash through the chew animation instead)

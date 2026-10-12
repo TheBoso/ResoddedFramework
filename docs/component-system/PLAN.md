@@ -58,7 +58,8 @@ Debug build → ImGui debugger → **Board → Components**:
 
 | Component | What it does | Used by (archetypes) |
 |---|---|---|
-| `HealthComponent` | Body health + zombie armour layers (helm, shield, flying); `entity->Health()` | every plant and zombie |
+| `HealthComponent` | Body health; `entity->Health()` | every plant and zombie |
+| `HelmComponent` / `ShieldComponent` / `FlyingComponent` | Armour layers with their own health, hit outermost first | Conehead, Buckethead, Football, Digger, Bobsled, Screen Door, Newspaper, Ladder, Balloon, Wall-nut/Tall-nut zombies |
 | `TeamComponent` | Team id (0 plants, 1 zombies, -1 neutral, others custom) + native team | every plant, zombie, projectile |
 | `FacingComponent` | Facing direction + native direction; mirrored plants flip their attack area and shots | plants, zombies |
 | `HypnotizableComponent` | Can be hypnotized; which team it joins; whether it turns around | plants, zombies |
@@ -77,7 +78,7 @@ Debug build → ImGui debugger → **Board → Components**:
   projectiles, plant targeting and splash damage (`Teams::CanAttack`, `Zombie::IsTargetableBy`).
 - Zombies only chew hostile plants and only fight hostile zombies.
 - Hypnotized plants: switch team, get the mind-control tint, mirror their attack area, and straight shooters fire the
-  other way. Their shots hit plants, and other plants shoot at them. Lobbed plants still only aim at zombies (Phase 2).
+  other way. Their shots hit plants, and other plants shoot at them, lobbed ones included.
 
 ### Vanilla behaviour changes in this phase
 
@@ -97,7 +98,7 @@ Small differences that fall out of using one team rule everywhere:
 hypnosis, team-based projectile collision, generic shooter, plant heads, producers replacing
 `Plant::UpdateProductionPlant`.
 
-**Phase 2: health and status effects.**
+**Phase 2: health and status effects (done).**
 - Done: `HealthComponent` (body + zombie helm/shield/flying layers, each with a max). The ten health fields are gone
   from `Plant`/`Zombie`; code uses `entity->Health()` (created on first use, so every plant/zombie has one, including
   Almanac/Zombatar previews, whose components live in an off-board store freed by `~GameObject`). Plant damage goes
@@ -105,9 +106,15 @@ hypnosis, team-based projectile collision, generic shooter, plant heads, produce
   `Component::OnDamaged`. Health is editable live in the debugger's Components tab.
 - Done: `SAVE_VERSION` 2 is now written and checked. Older saves are refused with a message and the level restarts,
   instead of being misread (the Plant/Zombie memory layout changed).
-- Next: a generic `Combat::Damage(entity, amount, flags, source)` for any entity with health, and an ordered layer
-  list instead of the four named zombie layers once helm/shield behaviour (dropping, damage looks) moves out of
-  `Zombie::TakeHelmDamage`/`TakeShieldDamage` into armour components.
+- Done: armour as components. `HelmComponent` (cone, bucket, football helmet, hard hat, Wall-nut/Tall-nut head,
+  bobsled), `ShieldComponent` (screen door, newspaper, ladder) and `FlyingComponent` (balloon) derive from
+  `ArmorComponent` (own health, a layer order, virtual `TakeDamage`/`OnBroken`/`OnDamageStageChanged`).
+  `Zombie::TakeDamage` runs damage through every armour component, outermost layer first, then the body.
+  The per-type looks (track, damaged images, drop particle) are data tables in `ArmorComponents.cpp`.
+  `Zombie::mHelmType`/`mShieldType` are gone (`GetHelmType()`/`GetShieldType()`), and `HealthComponent` is body
+  only. Any zombie can get armour: `zombie->AddComponent<HelmComponent>(HelmType::HELMTYPE_PAIL, 1100)`.
+- Done: `Combat::Damage(entity, amount, flags)` damages any entity: zombies through their armour, plants through
+  `Combat::DamagePlant`, anything else with a `HealthComponent` directly.
 - Done: status effects as components that count down in `OnTick` and clean up in `OnExpired`:
   `ChilledStatus`, `FrozenStatus` (ice trap) and `ButteredStatus`, all deriving from `StatusEffectComponent`.
   They replace `Zombie::mChilledCounter`/`mIceTrapCounter`/`mButteredCounter`; query with `IsChilled()`/`IsFrozen()`/
@@ -116,7 +123,8 @@ hypnosis, team-based projectile collision, generic shooter, plant heads, produce
   apply them. `SAVE_VERSION` is 3.
 - Not a status: vanilla "burn" (Jalapeño, Cherry Bomb) is an instant kill/1800 damage with a charred death animation,
   not a timed effect, so it stays in `Zombie::ApplyBurn`. A damage-over-time `BurningStatus` would be new content.
-- Next: splash damage against plants; lobbed plants aiming at hostile plants.
+- Done: splash damage hits hostile plants too (full damage on the target, a third on the top plant of each
+  square nearby), and lobbed plants aim at hostile plants when there is no zombie to hit. `SAVE_VERSION` is 4.
 
 **Phase 3: plant behaviours.** Move each `Plant::Update*` branch into a component and delete the `mSeedType`
 dispatch in `Plant::UpdateAbilities`: `ExplodeComponent` (Cherry Bomb, Jalapeño, Doom-shroom), `ChomperComponent`,

@@ -144,6 +144,11 @@ class Component
 	/// @brief Another component of the same entity
 	template <typename T> T *GetSibling() const;
 
+  protected:
+	/// @brief Detach this component from its entity (deleted at the end of the tick, so `this` stays valid until
+	/// the caller returns)
+	void RemoveSelf();
+
   private:
 	friend class ComponentRegistry;
 	EntityRef mOwner;

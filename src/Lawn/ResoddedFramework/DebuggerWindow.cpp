@@ -785,10 +785,10 @@ void DebuggerWindow::DrawBoardZombies()
 		ImGui::SameLine();
 		if (ImGui::Button("Full"))
 			z->Health().mHealth = z->Health().mMaxHealth;
-		if (z->mHelmType != HELMTYPE_NONE)
-			ImGui::InputInt("Helm HP", &z->Health().mHelmHealth);
-		if (z->mShieldType != SHIELDTYPE_NONE)
-			ImGui::InputInt("Shield HP", &z->Health().mShieldHealth);
+		if (HelmComponent *aHelm = z->GetHelm())
+			ImGui::InputInt("Helm HP", &aHelm->mHealth);
+		if (ShieldComponent *aShield = z->GetShield())
+			ImGui::InputInt("Shield HP", &aShield->mHealth);
 
 		ImGui::Text("Chilled %d  Frozen %d  Buttered %d (edit in the Components tab)",
 		            StatusEffects::GetTicks<ChilledStatus>(z), StatusEffects::GetTicks<FrozenStatus>(z),

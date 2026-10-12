@@ -142,6 +142,25 @@ bool Hypnosis::HypnotizePlant(Plant *thePlant)
 
 // ─── Combat ──────────────────────────────────────────────────────────────────
 
+void Combat::Damage(GameObject *theTarget, int theDamage, unsigned int theDamageFlags)
+{
+	EntityRef anEntity = theTarget ? theTarget->GetEntityRef() : EntityRef();
+	if (anEntity.mKind == EntityKind::Zombie)
+	{
+		static_cast<Zombie *>(theTarget)->TakeDamage(theDamage, theDamageFlags);
+	}
+	else if (anEntity.mKind == EntityKind::Plant)
+	{
+		DamagePlant(static_cast<Plant *>(theTarget), theDamage,
+		            !TestBit(theDamageFlags, (int)DamageFlags::DAMAGE_DOESNT_CAUSE_FLASH));
+	}
+	else if (HealthComponent *aHealth = theTarget ? theTarget->GetComponent<HealthComponent>() : nullptr)
+	{
+		aHealth->mHealth -= theDamage;
+		theTarget->ForEachComponent([theDamage](Component &theComponent) { theComponent.OnDamaged(theDamage); });
+	}
+}
+
 void Combat::DamagePlant(Plant *thePlant, int theDamage, bool theFlash)
 {
 	thePlant->Health().mHealth -= theDamage;

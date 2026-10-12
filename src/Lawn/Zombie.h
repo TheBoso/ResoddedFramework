@@ -75,6 +75,8 @@ class ZombieDrawPosition
 };
 
 class Plant;
+class HelmComponent;
+class ShieldComponent;
 class Reanimation;
 class TodParticleSystem;
 class Zombatar;
@@ -128,8 +130,6 @@ class Zombie : public GameObject
 	bool mOnHighGround;
 	bool mYuckyFace;
 	int mYuckyFaceCounter;
-	HelmType mHelmType;
-	ShieldType mShieldType;
 	bool mDead;
 	ZombieID mRelatedZombieID;
 	ZombieID mFollowerZombieID[MAX_ZOMBIE_FOLLOWERS];
@@ -266,6 +266,15 @@ class Zombie : public GameObject
 	/// @brief Is the Zombie affected by these damage flags
 	/// @param theDamageFlags Bitmask of damage types
 	bool EffectedByDamage(unsigned int theDamageRangeFlags);
+
+	/// @brief Armour layers (see Component/ArmorComponents.h); nullptr / NONE / 0 when the zombie has none
+	HelmComponent *GetHelm();
+	ShieldComponent *GetShield();
+	HelmType GetHelmType();
+	ShieldType GetShieldType();
+	int GetHelmHealth();
+	int GetShieldHealth();
+	int GetFlyingHealth();
 
 	/// @brief EffectedByDamage without the mind-control (team) rule: can these damage flags reach the Zombie
 	/// in its current state? Team-aware callers combine it with Teams::AreHostile (see Teams::CanAttack).

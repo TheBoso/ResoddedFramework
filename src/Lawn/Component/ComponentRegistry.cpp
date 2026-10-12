@@ -107,6 +107,14 @@ static bool IsAlive(Board *theBoard, EntityRef theEntity)
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
+void Component::RemoveSelf()
+{
+	if (ComponentRegistry *aRegistry = Components::RegistryFor(mBoard))
+	{
+		aRegistry->Remove(mOwner, GetTypeId());
+	}
+}
+
 LawnApp *Component::GetApp() const
 {
 	return mBoard ? mBoard->mApp : nullptr;

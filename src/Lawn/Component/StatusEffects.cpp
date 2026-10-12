@@ -31,10 +31,7 @@ void StatusEffectComponent::Expire()
 {
 	mTicksLeft = 0;
 	// Remove first, so OnExpired's code (which checks IsChilled() etc.) already sees the effect gone
-	if (ComponentRegistry *aRegistry = Components::RegistryFor(GetBoard()))
-	{
-		aRegistry->Remove(GetOwner(), GetTypeId());
-	}
+	RemoveSelf();
 	OnExpired();
 }
 

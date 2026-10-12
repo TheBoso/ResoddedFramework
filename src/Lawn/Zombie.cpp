@@ -110,8 +110,6 @@ void Zombie::ZombieInitialize(int theRow, ZombieType theType, bool theVariant, Z
 	mHasObject = false;
 	mInPool = false;
 	mOnHighGround = false;
-	mHelmType = HelmType::HELMTYPE_NONE;
-	mShieldType = ShieldType::SHIELDTYPE_NONE;
 	mYuckyFace = false;
 	mYuckyFaceCounter = 0;
 	mAnimCounter = 0;
@@ -133,10 +131,7 @@ void Zombie::ZombieInitialize(int theRow, ZombieType theType, bool theVariant, Z
 	mFlatTires = false;
 	mScaleZombie = 1.0f;
 	mUseLadderCol = -1;
-	Health().mShieldHealth = 0;
-	Health().mHelmHealth = 0;
 	mAltitude = 0.0f;
-	Health().mFlyingHealth = 0;
 	mOriginalAnimRate = 0.0f;
 	mAttachmentID = AttachmentID::ATTACHMENTID_NULL;
 	mSummonCounter = 0;
@@ -195,21 +190,18 @@ void Zombie::ZombieInitialize(int theRow, ZombieType theType, bool theVariant, Z
 		LoadPlainZombieReanim();
 		ReanimShowPrefix("anim_cone", RENDER_GROUP_NORMAL);
 		ReanimShowPrefix("anim_hair", RENDER_GROUP_HIDDEN);
-		mHelmType = HelmType::HELMTYPE_TRAFFIC_CONE;
-		Health().mHelmHealth = 370;
+		AddComponent<HelmComponent>(HelmType::HELMTYPE_TRAFFIC_CONE, 370);
 		break;
 
 	case ZombieType::ZOMBIE_PAIL:
 		LoadPlainZombieReanim();
 		ReanimShowPrefix("anim_bucket", RENDER_GROUP_NORMAL);
 		ReanimShowPrefix("anim_hair", RENDER_GROUP_HIDDEN);
-		mHelmType = HelmType::HELMTYPE_PAIL;
-		Health().mHelmHealth = 1100;
+		AddComponent<HelmComponent>(HelmType::HELMTYPE_PAIL, 1100);
 		break;
 
 	case ZombieType::ZOMBIE_DOOR:
-		mShieldType = ShieldType::SHIELDTYPE_DOOR;
-		Health().mShieldHealth = 1100;
+		AddComponent<ShieldComponent>(ShieldType::SHIELDTYPE_DOOR, 1100);
 		LoadPlainZombieReanim();
 		AttachShield();
 		break;
@@ -223,8 +215,7 @@ void Zombie::ZombieInitialize(int theRow, ZombieType theType, bool theVariant, Z
 
 	case ZombieType::ZOMBIE_LADDER:
 		Health().mHealth = 500;
-		Health().mShieldHealth = 500;
-		mShieldType = ShieldType::SHIELDTYPE_LADDER;
+		AddComponent<ShieldComponent>(ShieldType::SHIELDTYPE_LADDER, 500);
 		mZombieAttackRect = Rect(10, 0, 50, 115);
 		if (IsOnBoard())
 		{
@@ -276,15 +267,13 @@ void Zombie::ZombieInitialize(int theRow, ZombieType theType, bool theVariant, Z
 	case ZombieType::ZOMBIE_FOOTBALL:
 		mZombieRect = Rect(50, 0, 57, 115);
 		ReanimShowPrefix("anim_hair", RENDER_GROUP_HIDDEN);
-		mHelmType = HelmType::HELMTYPE_FOOTBALL;
-		Health().mHelmHealth = 1400;
+		AddComponent<HelmComponent>(HelmType::HELMTYPE_FOOTBALL, 1400);
 		mAnimTicksPerFrame = 6;
 		mVariant = false;
 		break;
 
 	case ZombieType::ZOMBIE_DIGGER: {
-		mHelmType = HelmType::HELMTYPE_DIGGER;
-		Health().mHelmHealth = 100;
+		AddComponent<HelmComponent>(HelmType::HELMTYPE_DIGGER, 100);
 		mVariant = false;
 		mHasObject = true;
 		mZombieRect = Rect(50, 0, 28, 115);
@@ -487,8 +476,7 @@ void Zombie::ZombieInitialize(int theRow, ZombieType theType, bool theVariant, Z
 		{
 			mPosX = WIDE_BOARD_WIDTH + 80;
 			mZombieRect = Rect(-50, 0, 275, 115);
-			mHelmType = HelmType::HELMTYPE_BOBSLED;
-			Health().mHelmHealth = 300;
+			AddComponent<HelmComponent>(HelmType::HELMTYPE_BOBSLED, 300);
 			mAltitude = -10.0f;
 		}
 
@@ -548,8 +536,7 @@ void Zombie::ZombieInitialize(int theRow, ZombieType theType, bool theVariant, Z
 	case ZombieType::ZOMBIE_NEWSPAPER:
 		mZombieAttackRect = Rect(20, 0, 50, 115);
 		mZombiePhase = ZombiePhase::PHASE_NEWSPAPER_READING;
-		mShieldType = ShieldType::SHIELDTYPE_NEWSPAPER;
-		Health().mShieldHealth = 150;
+		AddComponent<ShieldComponent>(ShieldType::SHIELDTYPE_NEWSPAPER, 150);
 		mVariant = false;
 		AttachShield();
 		break;
@@ -575,7 +562,7 @@ void Zombie::ZombieInitialize(int theRow, ZombieType theType, bool theVariant, Z
 		aPropellerReanim->mLoopType = ReanimLoopType::REANIM_LOOP_FULL_LAST_FRAME;
 		aPropellerReanim->AttachToAnotherReanimation(aBodyReanim, "hat");
 
-		Health().mFlyingHealth = 20;
+		AddComponent<FlyingComponent>(20);
 		mZombieRect = Rect(36, 30, 42, 115);
 		mZombieAttackRect = Rect(20, 30, 50, 115);
 		mVariant = false;
@@ -683,8 +670,7 @@ void Zombie::ZombieInitialize(int theRow, ZombieType theType, bool theVariant, Z
 		aBodyReanim->mFrameBasePose = 0;
 		TodScaleRotateTransformMatrix(aAttachEffect->mOffset, 50.0f, 0.0f, 0.2f, -0.8f, 0.8f);
 
-		mHelmType = HelmType::HELMTYPE_WALLNUT;
-		Health().mHelmHealth = 1100;
+		AddComponent<HelmComponent>(HelmType::HELMTYPE_WALLNUT, 1100);
 		mVariant = false;
 		break;
 	}
@@ -704,8 +690,7 @@ void Zombie::ZombieInitialize(int theRow, ZombieType theType, bool theVariant, Z
 		aBodyReanim->mFrameBasePose = 0;
 		TodScaleRotateTransformMatrix(aAttachEffect->mOffset, 37.0f, 0.0f, 0.2f, -0.8f, 0.8f);
 
-		mHelmType = HelmType::HELMTYPE_TALLNUT;
-		Health().mHelmHealth = 2200;
+		AddComponent<HelmComponent>(HelmType::HELMTYPE_TALLNUT, 2200);
 		mVariant = false;
 		mPosX += 30.0f;
 		break;
@@ -800,9 +785,7 @@ void Zombie::ZombieInitialize(int theRow, ZombieType theType, bool theVariant, Z
 	{
 		mScaleZombie = 0.5f;
 		Health().mHealth /= 4;
-		Health().mHelmHealth /= 4;
-		Health().mShieldHealth /= 4;
-		Health().mFlyingHealth /= 4;
+		Armor::ForEach(this, [](ArmorComponent &theArmor) { theArmor.mHealth /= 4; });
 	}
 
 	UpdateAnimSpeed();
@@ -812,9 +795,7 @@ void Zombie::ZombieInitialize(int theRow, ZombieType theType, bool theVariant, Z
 	}
 
 	Health().mMaxHealth = Health().mHealth;
-	Health().mHelmMaxHealth = Health().mHelmHealth;
-	Health().mShieldMaxHealth = Health().mShieldHealth;
-	Health().mFlyingMaxHealth = Health().mFlyingHealth;
+	Armor::ForEach(this, [](ArmorComponent &theArmor) { theArmor.mMaxHealth = theArmor.mHealth; });
 	mDead = false;
 	mX = (int)mPosX;
 	mY = (int)mPosY;
@@ -1530,8 +1511,7 @@ void Zombie::PogoBreak(unsigned int theDamageFlags)
 	StartWalkAnim(0);
 	mZombieRect = Rect(36, 17, 42, 115);
 	mZombieAttackRect = Rect(20, 17, 50, 115);
-	Health().mShieldHealth = 0;
-	mShieldType = ShieldType::SHIELDTYPE_NONE;
+	RemoveComponent<ShieldComponent>();
 	mHasObject = false;
 }
 
@@ -1597,7 +1577,7 @@ void Zombie::UpdateZombiePogo()
 			mApp->AddTodParticle(aPlant->mX + 60, aPlant->mY - 20, mRenderOrder + 1,
 			                     ParticleEffect::PARTICLE_TALL_NUT_BLOCK);
 
-			mShieldType = ShieldType::SHIELDTYPE_NONE;
+			RemoveComponent<ShieldComponent>();
 			PogoBreak(0U);
 			return;
 		}
@@ -3958,7 +3938,7 @@ void Zombie::DropArm(unsigned int theDamageFlags)
 	{
 		return;
 	}
-	if (mShieldType == ShieldType::SHIELDTYPE_DOOR || mShieldType == ShieldType::SHIELDTYPE_NEWSPAPER)
+	if (GetShieldType() == ShieldType::SHIELDTYPE_DOOR || GetShieldType() == ShieldType::SHIELDTYPE_NEWSPAPER)
 	{
 		return;
 	}
@@ -5275,7 +5255,7 @@ void Zombie::DrawZombieHead(Graphics *g, const ZombieDrawPosition &theDrawPos, i
     {
         DrawZombiePart(g, IMAGE_ZOMBIE, mFrame, ZombieParts::PART_HEAD_EATING, theDrawPos);
 
-        if (Health().mHelmHealth == 0)
+        if (GetHelmHealth() == 0)
         {
             DrawZombiePart(g, IMAGE_ZOMBIE, 5, ZombieParts::PART_HAIR, theDrawPos);
         }
@@ -5289,7 +5269,7 @@ void Zombie::DrawZombieHead(Graphics *g, const ZombieDrawPosition &theDrawPos, i
             DrawZombiePart(g, IMAGE_ZOMBIE, theFrame, ZombieParts::PART_TONGUE, theDrawPos);
         }
 
-        if (Health().mHelmHealth == 0)
+        if (GetHelmHealth() == 0)
         {
             DrawZombiePart(g, IMAGE_ZOMBIE, theFrame, ZombieParts::PART_HAIR, theDrawPos);
         }
@@ -5896,7 +5876,7 @@ void Zombie::DrawReanim(Graphics *g, const ZombieDrawPosition &theDrawPos, int t
 		aBodyReanim->DrawRenderGroup(g, RENDER_GROUP_ZOMBATAR_COSMETICS);
 	}
 
-	if (mShieldType != ShieldType::SHIELDTYPE_NONE)
+	if (GetShieldType() != ShieldType::SHIELDTYPE_NONE)
 	{
 		if (mZombiePhase == ZombiePhase::PHASE_ZOMBIE_BURNED)
 		{
@@ -5929,8 +5909,8 @@ void Zombie::DrawReanim(Graphics *g, const ZombieDrawPosition &theDrawPos, int t
 		g->mTransX -= aShieldHitOffset;
 	}
 
-	if (mShieldType == ShieldType::SHIELDTYPE_NEWSPAPER || mShieldType == ShieldType::SHIELDTYPE_DOOR ||
-	    mShieldType == ShieldType::SHIELDTYPE_LADDER)
+	if (GetShieldType() == ShieldType::SHIELDTYPE_NEWSPAPER || GetShieldType() == ShieldType::SHIELDTYPE_DOOR ||
+	    GetShieldType() == ShieldType::SHIELDTYPE_LADDER)
 	{
 		aBodyReanim->mColorOverride = aColorOverride;
 		aBodyReanim->mExtraAdditiveColor = aExtraAdditiveColor;
@@ -5943,17 +5923,8 @@ void Zombie::DrawReanim(Graphics *g, const ZombieDrawPosition &theDrawPos, int t
 
 int Zombie::GetHelmDamageIndex()
 {
-	if (Health().mHelmHealth < Health().mHelmMaxHealth / 3)
-	{
-		return 2;
-	}
-
-	if (Health().mHelmHealth < Health().mHelmMaxHealth * 2 / 3)
-	{
-		return 1;
-	}
-
-	return 0;
+	HelmComponent *aHelm = GetHelm();
+	return aHelm ? aHelm->GetDamageStage() : 0;
 }
 
 int Zombie::GetBodyDamageIndex()
@@ -5990,17 +5961,8 @@ int Zombie::GetBodyDamageIndex()
 
 int Zombie::GetShieldDamageIndex()
 {
-	if (Health().mShieldHealth < Health().mShieldMaxHealth / 3)
-	{
-		return 2;
-	}
-
-	if (Health().mShieldHealth < Health().mShieldMaxHealth * 2 / 3)
-	{
-		return 1;
-	}
-
-	return 0;
+	ShieldComponent *aShield = GetShield();
+	return aShield ? aShield->GetDamageStage() : 0;
 }
 
 void Zombie::DrawBungeeCord(Graphics *g, int theOffsetX, int theOffsetY)
@@ -6888,7 +6850,7 @@ void Zombie::StartEating()
 			PlayZombieReanim("anim_eat", ReanimLoopType::REANIM_LOOP, 20, 0.0f);
 		}
 
-		if (mShieldType == ShieldType::SHIELDTYPE_DOOR)
+		if (GetShieldType() == ShieldType::SHIELDTYPE_DOOR)
 		{
 			ShowDoorArms(false);
 		}
@@ -6960,7 +6922,7 @@ void Zombie::StopEating()
 		StartWalkAnim(20);
 	}
 
-	if (mShieldType == ShieldType::SHIELDTYPE_DOOR)
+	if (GetShieldType() == ShieldType::SHIELDTYPE_DOOR)
 	{
 		ShowDoorArms(true);
 	}
@@ -7688,12 +7650,12 @@ void Zombie::ApplyChill(bool theIsIceTrap)
 
 void Zombie::DropShield(unsigned int theDamageFlags)
 {
-	if (mShieldType == ShieldType::SHIELDTYPE_NONE)
+	if (GetShieldType() == ShieldType::SHIELDTYPE_NONE)
 		return;
 
 	//ZombieDrawPosition aDrawPos;
 	//GetDrawPos(aDrawPos);
-	if (mShieldType == ShieldType::SHIELDTYPE_DOOR)
+	if (GetShieldType() == ShieldType::SHIELDTYPE_DOOR)
 	{
 		DetachShield();
 		if (!TestBit(theDamageFlags, (int)DamageFlags::DAMAGE_DOESNT_LEAVE_BODY))
@@ -7705,7 +7667,7 @@ void Zombie::DropShield(unsigned int theDamageFlags)
 			OverrideParticleScale(aParticle);
 		}
 	}
-	else if (mShieldType == ShieldType::SHIELDTYPE_NEWSPAPER)
+	else if (GetShieldType() == ShieldType::SHIELDTYPE_NEWSPAPER)
 	{
 		StopEating();
 		if (mYuckyFace)
@@ -7735,7 +7697,7 @@ void Zombie::DropShield(unsigned int theDamageFlags)
 			AddAttachedReanim(-11, 0, ReanimationType::REANIM_ZOMBIE_SURPRISE);
 		}
 	}
-	else if (mShieldType == ShieldType::SHIELDTYPE_LADDER)
+	else if (GetShieldType() == ShieldType::SHIELDTYPE_LADDER)
 	{
 		DetachShield();
 		if (!TestBit(theDamageFlags, (int)DamageFlags::DAMAGE_DOESNT_LEAVE_BODY))
@@ -7748,234 +7710,33 @@ void Zombie::DropShield(unsigned int theDamageFlags)
 		}
 	}
 
-	mShieldType = ShieldType::SHIELDTYPE_NONE;
+	RemoveComponent<ShieldComponent>();
 }
 
 int Zombie::TakeShieldDamage(int theDamage, unsigned int theDamageFlags)
 {
-	if (!TestBit(theDamageFlags, (int)DamageFlags::DAMAGE_DOESNT_CAUSE_FLASH))
-	{
-		mShieldJustGotShotCounter = 25;
-		if (mJustGotShotCounter < 0)
-		{
-			mJustGotShotCounter = 0;
-		}
-	}
-
-	if (!TestBit(theDamageFlags, (int)DamageFlags::DAMAGE_DOESNT_CAUSE_FLASH) &&
-	    !TestBit(theDamageFlags, (int)DamageFlags::DAMAGE_HITS_SHIELD_AND_BODY))
-	{
-		mShieldRecoilCounter = 12;
-		if (mShieldType == ShieldType::SHIELDTYPE_DOOR || mShieldType == ShieldType::SHIELDTYPE_LADDER)
-		{
-			mApp->PlayFoley(FoleyType::FOLEY_SHIELD_HIT);
-		}
-	}
-
-	int aDamageIndexBeforeDamage = GetShieldDamageIndex();
-	int aDamageActual = std::min(Health().mShieldHealth, theDamage);
-	int aDamageRemaining = theDamage - aDamageActual;
-	Health().mShieldHealth -= aDamageActual;
-	if (Health().mShieldHealth == 0)
-	{
-		DropShield(theDamageFlags);
-		return aDamageRemaining;
-	}
-
-	int aDamageIndexAfterDamage = GetShieldDamageIndex();
-	if (aDamageIndexAfterDamage != aDamageIndexBeforeDamage)
-	{
-		Reanimation *aBodyReanim = mApp->ReanimationTryToGet(mBodyReanimID);
-		if (mShieldType == ShieldType::SHIELDTYPE_DOOR && aDamageIndexAfterDamage == 1)
-		{
-			TOD_ASSERT(aBodyReanim);
-			aBodyReanim->SetImageOverride("anim_screendoor", IMAGE_REANIM_ZOMBIE_SCREENDOOR2);
-		}
-		else if (mShieldType == ShieldType::SHIELDTYPE_DOOR && aDamageIndexAfterDamage == 2)
-		{
-			TOD_ASSERT(aBodyReanim);
-			aBodyReanim->SetImageOverride("anim_screendoor", IMAGE_REANIM_ZOMBIE_SCREENDOOR3);
-		}
-		else if (mShieldType == ShieldType::SHIELDTYPE_NEWSPAPER && aDamageIndexAfterDamage == 1)
-		{
-			TOD_ASSERT(aBodyReanim);
-			aBodyReanim->SetImageOverride("Zombie_paper_paper", IMAGE_REANIM_ZOMBIE_PAPER_PAPER2);
-		}
-		else if (mShieldType == ShieldType::SHIELDTYPE_NEWSPAPER && aDamageIndexAfterDamage == 2)
-		{
-			TOD_ASSERT(aBodyReanim);
-			aBodyReanim->SetImageOverride("Zombie_paper_paper", IMAGE_REANIM_ZOMBIE_PAPER_PAPER3);
-		}
-		else if (mShieldType == ShieldType::SHIELDTYPE_LADDER && aDamageIndexAfterDamage == 1)
-		{
-			TOD_ASSERT(aBodyReanim);
-			aBodyReanim->SetImageOverride("Zombie_ladder_1", IMAGE_REANIM_ZOMBIE_LADDER_1_DAMAGE1);
-		}
-		else if (mShieldType == ShieldType::SHIELDTYPE_LADDER && aDamageIndexAfterDamage == 2)
-		{
-			TOD_ASSERT(aBodyReanim);
-			aBodyReanim->SetImageOverride("Zombie_ladder_1", IMAGE_REANIM_ZOMBIE_LADDER_1_DAMAGE2);
-		}
-	}
-
-	return aDamageRemaining;
+	ShieldComponent *aShield = GetShield();
+	return aShield ? aShield->TakeDamage(theDamage, theDamageFlags) : theDamage;
 }
 
 void Zombie::DropHelm(unsigned int theDamageFlags)
 {
-	if (mHelmType == HelmType::HELMTYPE_NONE)
-		return;
-
-	ZombieDrawPosition aDrawPos;
-	GetDrawPos(aDrawPos);
-	float aPosX = mPosX + aDrawPos.mImageOffsetX + aDrawPos.mHeadX + 14.0f;
-	float aPosY = mPosY + aDrawPos.mImageOffsetY + aDrawPos.mHeadY + aDrawPos.mBodyY + 18.0f;
-	ParticleEffect aEffect = ParticleEffect::PARTICLE_NONE;
-	if (mHelmType == HelmType::HELMTYPE_TRAFFIC_CONE)
+	if (HelmComponent *aHelm = GetHelm())
 	{
-		GetTrackPosition("anim_cone", aPosX, aPosY);
-		ReanimShowPrefix("anim_cone", RENDER_GROUP_HIDDEN);
-		ReanimShowPrefix("anim_hair", RENDER_GROUP_NORMAL);
-		aEffect = ParticleEffect::PARTICLE_ZOMBIE_TRAFFIC_CONE;
+		aHelm->Break(theDamageFlags);
 	}
-	else if (mHelmType == HelmType::HELMTYPE_PAIL)
-	{
-		GetTrackPosition("anim_bucket", aPosX, aPosY);
-		ReanimShowPrefix("anim_bucket", RENDER_GROUP_HIDDEN);
-		ReanimShowPrefix("anim_hair", RENDER_GROUP_NORMAL);
-		aEffect = ParticleEffect::PARTICLE_ZOMBIE_PAIL;
-	}
-	else if (mHelmType == HelmType::HELMTYPE_FOOTBALL)
-	{
-		GetTrackPosition("zombie_football_helmet", aPosX, aPosY);
-		ReanimShowPrefix("zombie_football_helmet", RENDER_GROUP_HIDDEN);
-		ReanimShowPrefix("anim_hair", RENDER_GROUP_NORMAL);
-		aEffect = ParticleEffect::PARTICLE_ZOMBIE_HELMET;
-	}
-	else if (mHelmType == HelmType::HELMTYPE_DIGGER)
-	{
-		GetTrackPosition("Zombie_digger_hardhat", aPosX, aPosY);
-		ReanimShowTrack("Zombie_digger_hardhat", RENDER_GROUP_HIDDEN);
-		aEffect = ParticleEffect::PARTICLE_ZOMBIE_HEADLIGHT;
-	}
-	else if (mHelmType == HelmType::HELMTYPE_BOBSLED &&
-	         !TestBit(theDamageFlags, (int)DamageFlags::DAMAGE_DOESNT_LEAVE_BODY))
-	{
-		BobsledCrash();
-	}
-
-	if (!TestBit(theDamageFlags, (int)DamageFlags::DAMAGE_DOESNT_LEAVE_BODY) &&
-	    aEffect != ParticleEffect::PARTICLE_NONE)
-	{
-		TodParticleSystem *aParticle = mApp->AddTodParticle(aPosX, aPosY, mRenderOrder + 1, aEffect);
-		OverrideParticleScale(aParticle);
-	}
-
-	mHelmType = HelmType::HELMTYPE_NONE;
 }
 
 int Zombie::TakeHelmDamage(int theDamage, unsigned int theDamageFlags)
 {
-	if (!TestBit(theDamageFlags, (int)DamageFlags::DAMAGE_DOESNT_CAUSE_FLASH))
-	{
-		mJustGotShotCounter = 25;
-	}
-
-	int aDamageIndexBeforeDamage = GetHelmDamageIndex();
-	int aDamageActual = std::min(Health().mHelmHealth, theDamage);
-	int aDamageRemaining = theDamage - aDamageActual;
-	Health().mHelmHealth -= aDamageActual;
-	if (TestBit(theDamageFlags, (int)DamageFlags::DAMAGE_FREEZE))
-	{
-		ApplyChill(false);
-	}
-	if (Health().mHelmHealth == 0)
-	{
-		DropHelm(theDamageFlags);
-		return aDamageRemaining;
-	}
-
-	int aDamageIndexAfterDamage = GetHelmDamageIndex();
-	if (aDamageIndexBeforeDamage != aDamageIndexAfterDamage)
-	{
-		Reanimation *aBodyReanim = mApp->ReanimationTryToGet(mBodyReanimID);
-		if (mHelmType == HelmType::HELMTYPE_TRAFFIC_CONE && aDamageIndexAfterDamage == 1 && aBodyReanim)
-		{
-			aBodyReanim->SetImageOverride("anim_cone", IMAGE_REANIM_ZOMBIE_CONE2);
-		}
-		else if (mHelmType == HelmType::HELMTYPE_TRAFFIC_CONE && aDamageIndexAfterDamage == 2 && aBodyReanim)
-		{
-			aBodyReanim->SetImageOverride("anim_cone", IMAGE_REANIM_ZOMBIE_CONE3);
-		}
-		else if (mHelmType == HelmType::HELMTYPE_PAIL && aDamageIndexAfterDamage == 1)
-		{
-			aBodyReanim->SetImageOverride("anim_bucket", IMAGE_REANIM_ZOMBIE_BUCKET2);
-		}
-		else if (mHelmType == HelmType::HELMTYPE_PAIL && aDamageIndexAfterDamage == 2)
-		{
-			TOD_ASSERT(aBodyReanim);
-			aBodyReanim->SetImageOverride("anim_bucket", IMAGE_REANIM_ZOMBIE_BUCKET3);
-		}
-		else if (mHelmType == HelmType::HELMTYPE_DIGGER && aDamageIndexAfterDamage == 1)
-		{
-			TOD_ASSERT(aBodyReanim);
-			aBodyReanim->SetImageOverride("Zombie_digger_hardhat", IMAGE_REANIM_ZOMBIE_DIGGER_HARDHAT2);
-		}
-		else if (mHelmType == HelmType::HELMTYPE_DIGGER && aDamageIndexAfterDamage == 2)
-		{
-			TOD_ASSERT(aBodyReanim);
-			aBodyReanim->SetImageOverride("Zombie_digger_hardhat", IMAGE_REANIM_ZOMBIE_DIGGER_HARDHAT3);
-		}
-		else if (mHelmType == HelmType::HELMTYPE_FOOTBALL && aDamageIndexAfterDamage == 1)
-		{
-			TOD_ASSERT(aBodyReanim);
-			aBodyReanim->SetImageOverride("zombie_football_helmet", IMAGE_REANIM_ZOMBIE_FOOTBALL_HELMET2);
-		}
-		else if (mHelmType == HelmType::HELMTYPE_FOOTBALL && aDamageIndexAfterDamage == 2)
-		{
-			TOD_ASSERT(aBodyReanim);
-			aBodyReanim->SetImageOverride("zombie_football_helmet", IMAGE_REANIM_ZOMBIE_FOOTBALL_HELMET3);
-		}
-		else if (mHelmType == HelmType::HELMTYPE_WALLNUT && aDamageIndexAfterDamage == 1)
-		{
-			Reanimation *aHeadReanim = mApp->ReanimationGet(mSpecialHeadReanimID);
-			aHeadReanim->SetImageOverride("anim_face", IMAGE_REANIM_WALLNUT_CRACKED1);
-		}
-		else if (mHelmType == HelmType::HELMTYPE_WALLNUT && aDamageIndexAfterDamage == 2)
-		{
-			Reanimation *aHeadReanim = mApp->ReanimationGet(mSpecialHeadReanimID);
-			aHeadReanim->SetImageOverride("anim_face", IMAGE_REANIM_WALLNUT_CRACKED2);
-		}
-		else if (mHelmType == HelmType::HELMTYPE_TALLNUT && aDamageIndexAfterDamage == 1)
-		{
-			Reanimation *aHeadReanim = mApp->ReanimationGet(mSpecialHeadReanimID);
-			aHeadReanim->SetImageOverride("anim_idle", IMAGE_REANIM_TALLNUT_CRACKED1);
-		}
-		else if (mHelmType == HelmType::HELMTYPE_TALLNUT && aDamageIndexAfterDamage == 2)
-		{
-			Reanimation *aHeadReanim = mApp->ReanimationGet(mSpecialHeadReanimID);
-			aHeadReanim->SetImageOverride("anim_idle", IMAGE_REANIM_TALLNUT_CRACKED2);
-		}
-	}
-	return aDamageRemaining;
+	HelmComponent *aHelm = GetHelm();
+	return aHelm ? aHelm->TakeDamage(theDamage, theDamageFlags) : theDamage;
 }
 
 int Zombie::TakeFlyingDamage(int theDamage, unsigned int theDamageFlags)
 {
-	if (!TestBit(theDamageFlags, (int)DamageFlags::DAMAGE_DOESNT_CAUSE_FLASH))
-	{
-		mJustGotShotCounter = 25;
-	}
-
-	int aDamageActual = std::min(Health().mFlyingHealth, theDamage);
-	int aDamageRemaining = theDamage - aDamageActual;
-	Health().mFlyingHealth -= aDamageActual;
-	if (Health().mFlyingHealth == 0)
-	{
-		LandFlyer(theDamageFlags);
-	}
-
-	return aDamageRemaining;
+	FlyingComponent *aFlying = GetComponent<FlyingComponent>();
+	return aFlying ? aFlying->TakeDamage(theDamage, theDamageFlags) : theDamage;
 }
 
 void Zombie::TakeBodyDamage(int theDamage, unsigned int theDamageFlags)
@@ -8137,24 +7898,19 @@ void Zombie::TakeDamage(int theDamage, unsigned int theDamageFlags)
 	if (mZombiePhase == ZombiePhase::PHASE_JACK_IN_THE_BOX_POPPING || IsDeadOrDying())
 		return;
 
-	int aDamageRemaining = theDamage;
+	// Armour soaks up damage first, outermost layer first (balloon, shield, helm); the rest hits the body
+	std::vector<ArmorComponent *> anArmor;
+	Armor::ForEach(this, [&](ArmorComponent &theArmor) { anArmor.push_back(&theArmor); });
+	std::stable_sort(anArmor.begin(), anArmor.end(),
+	                 [](ArmorComponent *a, ArmorComponent *b) { return a->GetLayer() < b->GetLayer(); });
 
-	if (IsFlying())
+	int aDamageRemaining = theDamage;
+	for (ArmorComponent *aLayer : anArmor)
 	{
-		aDamageRemaining = TakeFlyingDamage(aDamageRemaining, theDamageFlags);
-	}
-	if (aDamageRemaining > 0 && mShieldType != ShieldType::SHIELDTYPE_NONE &&
-	    !TestBit(theDamageFlags, (int)DamageFlags::DAMAGE_BYPASSES_SHIELD))
-	{
-		aDamageRemaining = TakeShieldDamage(aDamageRemaining, theDamageFlags);
-		if (TestBit(theDamageFlags, (int)DamageFlags::DAMAGE_HITS_SHIELD_AND_BODY))
+		if (aDamageRemaining > 0 && aLayer->IsHitBy(theDamageFlags))
 		{
-			aDamageRemaining = theDamage;
+			aDamageRemaining = aLayer->TakeDamage(aDamageRemaining, theDamageFlags);
 		}
-	}
-	if (aDamageRemaining > 0 && mHelmType != HelmType::HELMTYPE_NONE)
-	{
-		aDamageRemaining = TakeHelmDamage(aDamageRemaining, theDamageFlags);
 	}
 	if (aDamageRemaining > 0)
 	{
@@ -8253,6 +8009,46 @@ bool Zombie::EffectedByDamage(unsigned int theDamageRangeFlags)
 		return false;
 
 	return IsTargetableBy(theDamageRangeFlags);
+}
+
+HelmComponent *Zombie::GetHelm()
+{
+	return GetComponent<HelmComponent>();
+}
+
+ShieldComponent *Zombie::GetShield()
+{
+	return GetComponent<ShieldComponent>();
+}
+
+HelmType Zombie::GetHelmType()
+{
+	HelmComponent *aHelm = GetHelm();
+	return aHelm ? aHelm->mType : HelmType::HELMTYPE_NONE;
+}
+
+ShieldType Zombie::GetShieldType()
+{
+	ShieldComponent *aShield = GetShield();
+	return aShield ? aShield->mType : ShieldType::SHIELDTYPE_NONE;
+}
+
+int Zombie::GetHelmHealth()
+{
+	HelmComponent *aHelm = GetHelm();
+	return aHelm ? aHelm->mHealth : 0;
+}
+
+int Zombie::GetShieldHealth()
+{
+	ShieldComponent *aShield = GetShield();
+	return aShield ? aShield->mHealth : 0;
+}
+
+int Zombie::GetFlyingHealth()
+{
+	FlyingComponent *aFlying = GetComponent<FlyingComponent>();
+	return aFlying ? aFlying->mHealth : 0;
 }
 
 bool Zombie::IsTargetableBy(unsigned int theDamageRangeFlags)
@@ -8609,7 +8405,7 @@ bool Zombie::IsSquashTarget(Plant *theExcept)
 bool Zombie::IsFireResistant()
 {
 	return mZombieType == ZombieType::ZOMBIE_CATAPULT || mZombieType == ZombieType::ZOMBIE_ZAMBONI ||
-	       mShieldType == ShieldType::SHIELDTYPE_DOOR || mShieldType == ShieldType::SHIELDTYPE_LADDER;
+	       GetShieldType() == ShieldType::SHIELDTYPE_DOOR || GetShieldType() == ShieldType::SHIELDTYPE_LADDER;
 }
 
 void Zombie::BalloonPropellerHatSpin(bool theSpinning)
@@ -8953,19 +8749,19 @@ void Zombie::AttachShield()
 {
 	const char *aTrackName;
 	Reanimation *aBodyReanim = mApp->ReanimationGet(mBodyReanimID);
-	if (mShieldType == ShieldType::SHIELDTYPE_DOOR)
+	if (GetShieldType() == ShieldType::SHIELDTYPE_DOOR)
 	{
 		ShowDoorArms(true);
 		ReanimShowPrefix("Zombie_outerarm_screendoor", RENDER_GROUP_OVER_SHIELD);
 		ReanimShowPrefix("Zombie_innerarm_screendoor_hand", RENDER_GROUP_OVER_SHIELD);
 		aTrackName = "anim_screendoor";
 	}
-	else if (mShieldType == ShieldType::SHIELDTYPE_NEWSPAPER)
+	else if (GetShieldType() == ShieldType::SHIELDTYPE_NEWSPAPER)
 	{
 		ReanimShowPrefix("Zombie_paper_hands", RENDER_GROUP_OVER_SHIELD);
 		aTrackName = "Zombie_paper_paper";
 	}
-	else if (mShieldType == ShieldType::SHIELDTYPE_LADDER)
+	else if (GetShieldType() == ShieldType::SHIELDTYPE_LADDER)
 	{
 		ReanimShowPrefix("Zombie_outerarm", RENDER_GROUP_OVER_SHIELD);
 		aTrackName = "Zombie_ladder_1";
@@ -8983,15 +8779,15 @@ void Zombie::DetachShield()
 	Reanimation *aBodyReanim = mApp->ReanimationTryToGet(mBodyReanimID);
 	if (aBodyReanim)
 	{
-		if (mShieldType == ShieldType::SHIELDTYPE_DOOR)
+		if (GetShieldType() == ShieldType::SHIELDTYPE_DOOR)
 		{
 			ShowDoorArms(false);
 		}
-		else if (mShieldType == ShieldType::SHIELDTYPE_NEWSPAPER)
+		else if (GetShieldType() == ShieldType::SHIELDTYPE_NEWSPAPER)
 		{
 			ReanimShowPrefix("Zombie_paper_hands", RENDER_GROUP_NORMAL);
 		}
-		else if (mShieldType == ShieldType::SHIELDTYPE_LADDER)
+		else if (GetShieldType() == ShieldType::SHIELDTYPE_LADDER)
 		{
 			if (mHasArm)
 			{
@@ -9014,8 +8810,7 @@ void Zombie::DetachShield()
 		}
 	}
 
-	mShieldType = ShieldType::SHIELDTYPE_NONE;
-	Health().mShieldHealth = 0;
+	RemoveComponent<ShieldComponent>();
 }
 
 void Zombie::ReanimShowPrefix(const char *theTrackPrefix, int theRenderGroup)
@@ -9093,7 +8888,7 @@ void Zombie::PlayDeathAnim(unsigned int theDamageFlags)
 	AttachmentReanimTypeDie(mAttachmentID, ReanimationType::REANIM_ZOMBIE_SURPRISE);
 	StopEating();
 
-	if (mShieldType != ShieldType::SHIELDTYPE_NONE)
+	if (GetShieldType() != ShieldType::SHIELDTYPE_NONE)
 	{
 		DropShield(GetBit(DamageFlags::DAMAGE_HITS_SHIELD_AND_BODY));
 	}
