@@ -1,6 +1,7 @@
 // ImGui inspectors for the debugger window's Components section.
 // Each component draws and edits its own fields; a new component only has to override DrawInspector.
 
+#include "Archetypes.h"
 #include "Components.h"
 
 #if LAWN_DEBUG_TOOLS
@@ -313,6 +314,46 @@ void CoffeeBeanBehaviour::DrawInspector()
 	ImGui::InputInt("Wake ticks", &mWakeTicks);
 }
 
+void PlantShooterComponent::DrawInspector()
+{
+	static const char *kPatternNames[] = { "Standard", "Threepeater", "Split Pea", "Starfruit", "Cactus", "Catapult", "Cob Cannon" };
+	static const char *kMotionNames[] = { "Straight", "Lobbed", "Puff", "Backwards", "Homing", "By row", "Cob", "Star" };
+	ImGui::Text("Pattern: %s", kPatternNames[(int)mPattern]);
+	if (Plant *aPlant = GetPlant())
+	{
+		ImGui::InputInt("Launch rate", &aPlant->mLaunchRate);
+	}
+	for (int i = 0; i < 2; i++)
+	{
+		PlantWeaponDef &aWeapon = mWeapons[i];
+		if (i == 1 && mPattern != PlantShotPattern::SplitPea && mPattern != PlantShotPattern::Cactus &&
+		    mAltWeaponChance == 0)
+			break;
+
+		ImGui::PushID(i);
+		ImGui::SeparatorText(i == 0 ? "Main weapon" : "Second weapon");
+		if (aWeapon.mProjectile == kNoProjectile)
+		{
+			ImGui::InputInt("Area damage", &aWeapon.mAreaDamage);
+		}
+		else
+		{
+			int aProjectile = (int)aWeapon.mProjectile;
+			if (ImGui::Combo("Projectile", &aProjectile, kProjectileNames, (int)ProjectileType::NUM_PROJECTILES))
+				aWeapon.mProjectile = (ProjectileType)aProjectile;
+			int aMotion = (int)aWeapon.mMotion;
+			if (ImGui::Combo("Motion", &aMotion, kMotionNames, IM_ARRAYSIZE(kMotionNames)))
+				aWeapon.mMotion = (PlantShotMotion)aMotion;
+			ImGui::InputInt("Muzzle X", &aWeapon.mMuzzleX);
+			ImGui::InputInt("Muzzle Y", &aWeapon.mMuzzleY);
+		}
+		ImGui::Text("Animation: %s", aWeapon.mAnim);
+		ImGui::DragFloat("Animation rate", &aWeapon.mAnimRate, 0.5f, 1.0f, 100.0f);
+		ImGui::InputInt("Shot delay", &aWeapon.mShootDelay);
+		ImGui::PopID();
+	}
+}
+
 void TeamComponent::DrawInspector()
 {
 	TeamInput("Team", mTeam);
@@ -435,6 +476,9 @@ void ShieldComponent::DrawInspector()
 {
 }
 void FuseComponent::DrawInspector()
+{
+}
+void PlantShooterComponent::DrawInspector()
 {
 }
 void SquashBehaviour::DrawInspector()

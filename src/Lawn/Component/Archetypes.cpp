@@ -174,6 +174,10 @@ void Archetypes::ApplyPlantDefaults(Plant *thePlant, bool theFromOldSave)
 		thePlant->AddComponent<LowProfileComponent>();
 	}
 	AddVanillaBehaviours(thePlant);
+	if (PlantShooterComponent *aShooter = PlantShooterComponent::CreateVanilla(thePlant->mSeedType))
+	{
+		thePlant->AddComponent(aShooter);
+	}
 
 	switch (thePlant->mSeedType)
 	{

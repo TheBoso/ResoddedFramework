@@ -217,12 +217,6 @@ class Plant : public GameObject
 	/// @brief Trigger the Plant's Special (runs its behaviour components' DoSpecial)
 	void DoSpecial();
 
-	/// @brief Fire a shot at a Zombie
-	/// @param theTargetZombie [OPTIONAL] Zombie to aim at
-	/// @param theRow The row to shoot in
-	/// @param thePlantWeapon [OPTIONAL] The weapon to use (see PlantWeapon enum)
-	void Fire(Zombie *theTargetZombie, int theRow, PlantWeapon thePlantWeapon = PlantWeapon::WEAPON_PRIMARY);
-
 	/// @brief Try to find a zombie to aim at
 	/// @param theRow The row to shoot in
 	/// @param thePlantWeapon [OPTIONAL] The weapon to use (see PlantWeapon enum)
@@ -232,23 +226,11 @@ class Plant : public GameObject
 	/// @brief Kill the Plant, can't be used anymore after this
 	void Die();
 
-	/// @brief Update shooter Plants
-	void UpdateShooter();
-
-	/// @brief Try to find a zombie to aim at and shoot him
-	/// @param theRow The row to shoot in
-	/// @param thePlantWeapon [OPTIONAL] The weapon to use (see PlantWeapon enum)
-	/// @return True if target was found, false otherwise
-	bool FindTargetAndFire(int theRow, PlantWeapon thePlantWeapon = PlantWeapon::WEAPON_PRIMARY);
-
 	/// @brief Try to find a plant of a hostile team to shoot at (hypnotized plants, or plants facing them)
 	/// @param theRow The row to shoot in
 	/// @param thePlantWeapon [OPTIONAL] The weapon to use (see PlantWeapon enum)
 	/// @return Plant to aim at, can be nullptr
 	Plant *FindTargetPlant(int theRow, PlantWeapon thePlantWeapon = PlantWeapon::WEAPON_PRIMARY);
-
-	/// @brief Launch a Treepeater shot
-	void LaunchThreepeater();
 
 	/// @brief Get the Plant's Spritesheet
 	/// @param theSeedType The Plant's SeedType
@@ -381,9 +363,6 @@ class Plant : public GameObject
 	/// @return True if it's on the high-ground, false otherwise
 	bool IsOnHighGround();
 
-	/// @brief Update the StartFruit
-	void LaunchStarFruit();
-
 	bool FindStarFruitTarget();
 
 	/// @brief Make the Plant Blink
@@ -418,9 +397,6 @@ class Plant : public GameObject
 	/// @param theIsAsleep The state
 	void SetSleeping(bool theIsAsleep);
 
-	/// @brief Update the Shooting State
-	void UpdateShooting();
-
 	/// @brief Draw the Plant's shadow
 	/// @param g Graphics object
 	/// @param theOffsetX The X offset
@@ -440,9 +416,6 @@ class Plant : public GameObject
 
 	/// @brief Update the animations of the Pumpkin
 	void AnimatePumpkin();
-
-	/// @brief Fire a StarFruit shot
-	void StarFruitFire();
 
 	/// @brief Attach a blinking reanimation to the Plant's body reanimation
 	/// @param theReanimBody The Plant's body

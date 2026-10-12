@@ -174,8 +174,15 @@ hypnosis, team-based projectile collision, generic shooter, plant heads, produce
   take the attacker's team; Cherry Bomb, Doom-shroom, Potato Mine, Explode-o-nut, Cob Cannon and Jalapeno hit
   hostile zombies *and* hostile plants (so a hypnotized Cherry Bomb blows up your plants). The Jack-in-the-Box has one
   code path for both teams instead of two `mMindControlled` branches.
-- Next: vanilla plant shooting onto `ShooterComponent` (per-plant muzzle offsets, Threepeater/Starfruit spreads as
-  shot patterns). The remaining `EffectedByDamage` users are zombie/environment code (lawn mowers, Jalapeno/Squash
+- Done: vanilla plant shooting is `PlantShooterComponent` (a `ShooterComponent` subclass, so
+  `GetComponent<ShooterComponent>()` finds plant and zombie shooters alike). `Plant::UpdateShooter`,
+  `FindTargetAndFire`, `UpdateShooting`, `Fire`, `LaunchThreepeater`, `LaunchStarFruit` and `StarFruitFire` moved
+  into it, and their seed branches are data: per weapon the projectile, motion, muzzle, sounds, muzzle particle,
+  shooting animation (track, speed, delay) and area damage; per plant the extra launches, fire ticks, clouds and the
+  alternate-weapon chance. Threepeater, Split Pea, Starfruit, Cactus, catapults and Cob Cannon keep small dedicated
+  code paths picked by a pattern field. The plant's update still drives it, so timing and animations are unchanged.
+  `SAVE_VERSION` 8.
+- Done: hypnotized plants are drawn mirrored (they already aimed and fired the other way). The remaining `EffectedByDamage` users are zombie/environment code (lawn mowers, Jalapeno/Squash
   zombie heads) and move with Phase 4.
 - Still seed-checked in Zombie.cpp, by design for now: Bungee grab rules, sleep-icon offsets, I, Zombie and tutorial
   rules, and Tangle Kelp/Squash tracking their own target.
