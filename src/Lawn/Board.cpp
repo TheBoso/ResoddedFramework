@@ -38,6 +38,8 @@
 #include "../SexyAppFramework/Dialog.h"
 #include "../SexyAppFramework/MTRand.h"
 #include "../Sexy.TodLib/TodParticle.h"
+#include "Component/Archetypes.h"
+#include "Component/ComponentRegistry.h"
 #include "../SexyAppFramework/SysFont.h"
 #include "../Sexy.TodLib/EffectSystem.h"
 #include "../Sexy.TodLib/TodStringFile.h"
@@ -179,6 +181,7 @@ Board::Board(LawnApp *theApp)
 	mTutorialTimer = -1;
 	mTutorialParticleID = ParticleSystemID::PARTICLESYSTEMID_NULL;
 	mChallenge = new Challenge();
+	mComponents = new ComponentRegistry(this);
 	mClip = false;
 	mDebugTextMode = DebugTextMode::DEBUG_TEXT_NONE;
 	mMenuButton = new GameButton(0);
@@ -284,6 +287,7 @@ Board::~Board()
 	}
 	delete mCutScene;
 	delete mChallenge;
+	delete mComponents;
 }
 
 /// @brief Initiate flags for the player
@@ -392,6 +396,8 @@ bool Board::LoadGame(const std::string &theFileName)
 {
 	if (!LawnLoadGame(this, theFileName))
 		return false;
+
+	mComponents->FinishLoading();
 
 	LoadBackgroundImages();
 	mApp->ClearUpdateBacklog();
@@ -2063,6 +2069,7 @@ Plant *Board::NewPlant(int theGridX, int theGridY, SeedType theSeedType, SeedTyp
 	Plant *aPlant = mPlants.DataArrayAlloc();
 	aPlant->mIsOnBoard = true;
 	aPlant->PlantInitialize(theGridX, theGridY, theSeedType, theImitaterType);
+	Archetypes::ApplyPlantDefaults(aPlant);
 	return aPlant;
 }
 
@@ -2407,6 +2414,8 @@ Projectile *Board::AddProjectile(int theX, int theY, int theRenderOrder, int the
 {
 	Projectile *aProjectile = mProjectiles.DataArrayAlloc();
 	aProjectile->ProjectileInitialize(theX, theY, theRenderOrder, theRow, theProjectileType);
+	// Callers assign the shooter's team with Teams::Set; this is only the default
+	Archetypes::ApplyProjectileDefaults(aProjectile);
 	return aProjectile;
 }
 
@@ -2696,12 +2705,14 @@ Zombie *Board::AddZombieInRow(ZombieType theZombieType, int theRow, int theFromW
 	bool aVariant = !Rand(5);
 	Zombie *aZombie = mZombies.DataArrayAlloc();
 	aZombie->ZombieInitialize(theRow, theZombieType, aVariant, nullptr, theFromWave);
+	Archetypes::ApplyZombieDefaults(aZombie);
 	if (theZombieType == ZombieType::ZOMBIE_BOBSLED && aZombie->IsOnBoard())
 	{
 		for (int _i = 0; _i < 3; _i++)
 		{
-			mZombies.DataArrayAlloc()->ZombieInitialize(theRow, ZombieType::ZOMBIE_BOBSLED, false, aZombie,
-			                                            theFromWave);
+			Zombie *aFollower = mZombies.DataArrayAlloc();
+			aFollower->ZombieInitialize(theRow, ZombieType::ZOMBIE_BOBSLED, false, aZombie, theFromWave);
+			Archetypes::ApplyZombieDefaults(aFollower);
 		}
 	}
 	return aZombie;
@@ -2894,7 +2905,7 @@ PlantingReason Board::CanPlantAt(int theGridX, int theGridY, SeedType theSeedTyp
 		{
 			return PlantingReason::PLANTING_OK;
 		}
-		if (aAidPurchased && aPumpkinPlant->mPlantHealth < aPumpkinPlant->mPlantMaxHealth * 2 / 3 &&
+		if (aAidPurchased && aPumpkinPlant->Health().mHealth < aPumpkinPlant->Health().mMaxHealth * 2 / 3 &&
 		    aPumpkinPlant->mSeedType == SeedType::SEED_PUMPKINSHELL &&
 		    aPumpkinPlant->mOnBungeeState != PlantOnBungeeState::GETTING_GRABBED_BY_BUNGEE)
 		{
@@ -2949,7 +2960,7 @@ PlantingReason Board::CanPlantAt(int theGridX, int theGridY, SeedType theSeedTyp
 
 		if ((theSeedType == SeedType::SEED_WALLNUT || theSeedType == SeedType::SEED_TALLNUT) && aAidPurchased)
 		{
-			if (aNormalPlant->mPlantHealth < aNormalPlant->mPlantMaxHealth * 2 / 3 &&
+			if (aNormalPlant->Health().mHealth < aNormalPlant->Health().mMaxHealth * 2 / 3 &&
 			    aNormalPlant->mSeedType == theSeedType &&
 			    aNormalPlant->mOnBungeeState != PlantOnBungeeState::GETTING_GRABBED_BY_BUNGEE)
 			{
@@ -5098,8 +5109,8 @@ int Board::TotalZombiesHealthInWave(int theWaveIndex)
 		if (aZombie->mFromWave == theWaveIndex && !aZombie->mMindControlled && !aZombie->IsDeadOrDying() &&
 		    aZombie->mZombieType != ZombieType::ZOMBIE_BUNGEE && aZombie->mRelatedZombieID == ZombieID::ZOMBIEID_NULL)
 		{
-			aTotalHealth +=
-			    aZombie->mBodyHealth + aZombie->mHelmHealth + aZombie->mShieldHealth * 0.2f + aZombie->mFlyingHealth;
+			HealthComponent &aHealth = aZombie->Health();
+			aTotalHealth += aHealth.mHealth + aHealth.mHelmHealth + aHealth.mShieldHealth * 0.2f + aHealth.mFlyingHealth;
 		}
 	}
 	return aTotalHealth;
@@ -5176,6 +5187,8 @@ void Board::UpdateGameObjects()
 	{
 		aZombie->Update();
 	}
+
+	mComponents->Tick();
 
 	Projectile *aProjectile = nullptr;
 	while (IterateProjectiles(aProjectile))
@@ -5634,7 +5647,8 @@ void Board::UpdateProgressMeter()
 		Zombie *aBoss = GetBossZombie();
 		if (aBoss && !aBoss->IsDeadOrDying())
 		{
-			mProgressMeterWidth = 150 * (aBoss->mBodyMaxHealth - aBoss->mBodyHealth) / aBoss->mBodyMaxHealth;
+			HealthComponent &aBossHealth = aBoss->Health();
+			mProgressMeterWidth = 150 * (aBossHealth.mMaxHealth - aBossHealth.mHealth) / aBossHealth.mMaxHealth;
 		}
 		else
 		{
@@ -7817,7 +7831,7 @@ void Board::DrawDebugText(Graphics *g)
 			aText += StrFormat("Stomp: %d\n", aBossZombie->mBossStompCounter);
 			aText += StrFormat("Bungee: %d\n", aBossZombie->mBossBungeeCounter);
 			aText += StrFormat("Head: %d\n", aBossZombie->mBossHeadCounter);
-			aText += StrFormat("Health: %d of %d\n", aBossZombie->mBodyHealth, aBossZombie->mBodyMaxHealth);
+			aText += StrFormat("Health: %d of %d\n", aBossZombie->Health().mHealth, aBossZombie->Health().mMaxHealth);
 		}
 
 		break;
@@ -9598,6 +9612,8 @@ void Board::ProcessDeleteQueue()
 			}
 		}
 	}
+
+	mComponents->CollectGarbage();
 }
 
 bool Board::HasConveyorBeltSeedBank()

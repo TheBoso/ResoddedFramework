@@ -46,6 +46,13 @@ class DebuggerWindow : public ImGuiWindow
 	// App panel
 	int       mFastLoadModeIdx;
 
+	// Board → Components
+	int       mInspectZombie; // 0 = selected plant, 1 = selected zombie
+	int       mZombotanySeedIdx;
+	int       mZombotanyRow;
+	bool      mZombotanyHypnotized;
+	int       mAddComponentIdx;
+
 	// ── Helpers ────────────────────────────────────────────────────────────
 	void DrawBoardTab();
 	void DrawBoardCheats();
@@ -53,6 +60,7 @@ class DebuggerWindow : public ImGuiWindow
 	void DrawBoardZombies();
 	void DrawBoardWaves();
 	void DrawBoardStats();
+	void DrawBoardComponents();
 	void DrawSaveFileTab();
 	void DrawDebugTab();
 	void DrawAppTab();

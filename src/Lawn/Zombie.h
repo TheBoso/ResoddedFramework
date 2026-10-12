@@ -119,9 +119,6 @@ class Zombie : public GameObject
 	bool mHitUmbrella;
 	Rect mZombieRect;
 	Rect mZombieAttackRect;
-	int mChilledCounter;
-	int mButteredCounter;
-	int mIceTrapCounter;
 	bool mMindControlled;
 	bool mBlowingAway;
 	bool mHasHead;
@@ -132,15 +129,7 @@ class Zombie : public GameObject
 	bool mYuckyFace;
 	int mYuckyFaceCounter;
 	HelmType mHelmType;
-	int mBodyHealth;
-	int mBodyMaxHealth;
-	int mHelmHealth;
-	int mHelmMaxHealth;
 	ShieldType mShieldType;
-	int mShieldHealth;
-	int mShieldMaxHealth;
-	int mFlyingHealth;
-	int mFlyingMaxHealth;
 	bool mDead;
 	ZombieID mRelatedZombieID;
 	ZombieID mFollowerZombieID[MAX_ZOMBIE_FOLLOWERS];
@@ -277,6 +266,11 @@ class Zombie : public GameObject
 	/// @brief Is the Zombie affected by these damage flags
 	/// @param theDamageFlags Bitmask of damage types
 	bool EffectedByDamage(unsigned int theDamageRangeFlags);
+
+	/// @brief EffectedByDamage without the mind-control (team) rule: can these damage flags reach the Zombie
+	/// in its current state? Team-aware callers combine it with Teams::AreHostile (see Teams::CanAttack).
+	/// @param theDamageRangeFlags Bitmask of DamageRangeFlags
+	bool IsTargetableBy(unsigned int theDamageRangeFlags);
 
 	/// @brief Pick a random speed for the Zombie
 	void PickRandomSpeed();

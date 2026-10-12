@@ -38,6 +38,7 @@ class MessageWidget;
 class SeedBank;
 class ToolTipWidget;
 class CutScene;
+class ComponentRegistry;
 class Challenge;
 class Reanimation;
 class DataSync;
@@ -126,6 +127,8 @@ class Board : public Widget, public ButtonListener
 	Font *mDebugFont;
 	CutScene *mCutScene;
 	Challenge *mChallenge;
+	/// Components of every plant, zombie and projectile on this board (see Component/ComponentRegistry.h)
+	ComponentRegistry *mComponents;
 
 #if LAWN_DEBUG_TOOLS
 	Zombie *mDebugSelectedZombie;

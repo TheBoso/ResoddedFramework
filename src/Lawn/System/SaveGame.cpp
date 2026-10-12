@@ -7,8 +7,11 @@
 #include "../../Sexy.TodLib/Attachment.h"
 #include "../../Sexy.TodLib/EffectSystem.h"
 #include "SaveGame.h"
+#include "../Component/ComponentRegistry.h"
 
-static constexpr uint32_t SAVE_VERSION = 1;
+// 2: plant and zombie health moved into HealthComponent (Plant/Zombie memory layout changed)
+// 3: chill/ice/butter counters moved into status effect components
+static constexpr uint32_t SAVE_VERSION = 3;
 
 template <typename T>
 void SaveContext::SyncVar(T &aValue, const std::string &aName)
@@ -650,6 +653,7 @@ void LawnSyncGame(Board *theBoard, SaveContext &theContext)
 	                     ".mBlock");
 	SYNC_DATA_ARRAY(LawnMower, theBoard->mLawnMowers)
 	SYNC_DATA_ARRAY(GridItem, theBoard->mGridItems)
+	theBoard->mComponents->Sync(theContext);
 	SYNC_DATA_ARRAY(TodParticleSystem, theBoard->mApp->mEffectSystem->mParticleHolder->mParticleSystems)
 	SYNC_DATA_ARRAY(TodParticleEmitter, theBoard->mApp->mEffectSystem->mParticleHolder->mEmitters)
 	SYNC_DATA_ARRAY(TodParticle, theBoard->mApp->mEffectSystem->mParticleHolder->mParticles)
@@ -744,6 +748,23 @@ bool LawnLoadGame(Board *theBoard, const std::string &theFilePath)
 	theContext.mReading = true;
 	theContext.LoadScheme(theFilePath + ".schema");
 
+	// Plant/Zombie/... are saved as raw memory, so a save from a build with a different layout can't be read.
+	// Saves from before the version was written have no entry and read as 0.
+	uint32_t aVersion = 0;
+	if (theContext.mSchemeEntries.count("SaveVersion"))
+	{
+		theContext.SyncVar(aVersion, "SaveVersion");
+	}
+	if (aVersion != SAVE_VERSION)
+	{
+		TodErrorMessageBox(StrFormat("This save was made by an older version of the game (save version %u, this "
+		                             "version reads %u). The level will restart.",
+		                             aVersion, SAVE_VERSION)
+		                       .c_str(),
+		                   "Save File Error");
+		return false;
+	}
+
 	LawnSyncGame(theBoard, theContext);
 	if (aReader.fail())
 	{
@@ -764,6 +785,8 @@ bool LawnSaveGame(Board *theBoard, const std::string &theFilePath)
 	theContext.mReading = false;
 	theContext.mCurrentOffset = 0;
 
+	uint32_t aVersion = SAVE_VERSION;
+	theContext.SyncVar(aVersion, "SaveVersion");
 	LawnSyncGame(theBoard, theContext);
 	aSchemaWriter << theContext.mSchema;
 	aSchemaWriter.close();

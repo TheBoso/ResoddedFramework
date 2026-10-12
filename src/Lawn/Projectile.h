@@ -76,6 +76,12 @@ class Projectile : public GameObject
 	/// @brief Hit the Zombie, plays sounds, create particles
 	/// @return theZombie The Zombie to hit
 	void DoImpact(Zombie *theZombie);
+	/// @brief Splats, particles and other impact visuals (DoImpact without the damage and Die)
+	void PlayImpactEffects(Zombie *theZombie);
+	/// @brief Damage a plant and destroy the projectile
+	void HitPlant(Plant *thePlant);
+	/// @brief Is the zombie hostile to this projectile's team and reachable with its damage range flags?
+	bool CanDamageZombie(Zombie *theZombie);
 	/// @brief Update the Motion of the Projectile
 	void UpdateMotion();
 	/// @brief Check for a possible collision

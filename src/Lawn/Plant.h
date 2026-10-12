@@ -148,8 +148,6 @@ class Plant : public GameObject
 	int mFrameLength;
 	int mNumFrames;
 	PlantState mState;
-	int mPlantHealth;
-	int mPlantMaxHealth;
 	PlantSubClass mSubclass;
 	int mDisappearCountdown;
 	int mDoSpecialCountdown;
@@ -234,9 +232,6 @@ class Plant : public GameObject
 	/// @brief Kill the Plant, can't be used anymore after this
 	void Die();
 
-	/// @brief Update production Plants
-	void UpdateProductionPlant();
-
 	/// @brief Update shooter Plants
 	void UpdateShooter();
 
@@ -245,6 +240,12 @@ class Plant : public GameObject
 	/// @param thePlantWeapon [OPTIONAL] The weapon to use (see PlantWeapon enum)
 	/// @return True if target was found, false otherwise
 	bool FindTargetAndFire(int theRow, PlantWeapon thePlantWeapon = PlantWeapon::WEAPON_PRIMARY);
+
+	/// @brief Try to find a plant of a hostile team to shoot at (hypnotized plants, or plants facing them)
+	/// @param theRow The row to shoot in
+	/// @param thePlantWeapon [OPTIONAL] The weapon to use (see PlantWeapon enum)
+	/// @return Plant to aim at, can be nullptr
+	Plant *FindTargetPlant(int theRow, PlantWeapon thePlantWeapon = PlantWeapon::WEAPON_PRIMARY);
 
 	/// @brief Launch a Treepeater shot
 	void LaunchThreepeater();

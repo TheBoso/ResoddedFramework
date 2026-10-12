@@ -21,6 +21,9 @@
 #include "../Sexy.TodLib/TodParticle.h"
 #include "../Sexy.TodLib/EffectSystem.h"
 #include "../Sexy.TodLib/TodStringFile.h"
+#include "Component/Archetypes.h"
+#include "Component/ComponentRegistry.h"
+#include "Component/Teams.h"
 
 PlantDefinition gPlantDefs[SeedType::NUM_SEED_TYPES] = {
 	{ SeedType::SEED_PEASHOOTER,     nullptr, ReanimationType::REANIM_PEASHOOTER,       0,  100, 750,  PlantSubClass::SUBCLASS_SHOOTER, 150,  "PEASHOOTER"     },
@@ -107,7 +110,7 @@ void Plant::PlantInitialize(int theGridX, int theGridY, SeedType theSeedType, Se
 	mSquished = false;
 	mSeedType = theSeedType;
 	mImitaterType = theImitaterType;
-	mPlantHealth = 300;
+	Health().mHealth = 300;
 	mDoSpecialCountdown = 0;
 	mDisappearCountdown = 200;
 	mStateCountdown = 0;
@@ -261,26 +264,26 @@ void Plant::PlantInitialize(int theGridX, int theGridY, SeedType theSeedType, Se
 		break;
 	}
 	case SeedType::SEED_WALLNUT:
-		mPlantHealth = 4000;
+		Health().mHealth = 4000;
 		mBlinkCountdown = 1000 + Sexy::Rand(1000);
 		break;
 	case SeedType::SEED_EXPLODE_O_NUT:
-		mPlantHealth = 4000;
+		Health().mHealth = 4000;
 		mBlinkCountdown = 1000 + Sexy::Rand(1000);
 		aBodyReanim->mColorOverride = Color(255, 64, 64);
 		break;
 	case SeedType::SEED_GIANT_WALLNUT:
-		mPlantHealth = 4000;
+		Health().mHealth = 4000;
 		mBlinkCountdown = 1000 + Sexy::Rand(1000);
 		break;
 	case SeedType::SEED_TALLNUT:
-		mPlantHealth = 8000;
+		Health().mHealth = 8000;
 		mHeight = 80;
 		mBlinkCountdown = 1000 + Sexy::Rand(1000);
 		break;
 	case SeedType::SEED_GARLIC:
 		TOD_ASSERT(aBodyReanim);
-		mPlantHealth = 400;
+		Health().mHealth = 400;
 		aBodyReanim->SetTruncateDisappearingFrames();
 		break;
 	case SeedType::SEED_GOLD_MAGNET:
@@ -369,7 +372,7 @@ void Plant::PlantInitialize(int theGridX, int theGridY, SeedType theSeedType, Se
 		}
 		break;
 	case SeedType::SEED_PUMPKINSHELL: {
-		mPlantHealth = 4000;
+		Health().mHealth = 4000;
 		mWidth = 120;
 
 		TOD_ASSERT(aBodyReanim);
@@ -428,7 +431,7 @@ void Plant::PlantInitialize(int theGridX, int theGridY, SeedType theSeedType, Se
 		aBodyReanim->SetTruncateDisappearingFrames();
 		break;
 	case SeedType::SEED_SPIKEROCK:
-		mPlantHealth = 450;
+		Health().mHealth = 450;
 		TOD_ASSERT(aBodyReanim);
 		break;
 	case SeedType::SEED_SPROUT:
@@ -456,9 +459,9 @@ void Plant::PlantInitialize(int theGridX, int theGridY, SeedType theSeedType, Se
 	    (theSeedType == SeedType::SEED_WALLNUT || theSeedType == SeedType::SEED_SUNFLOWER ||
 	     theSeedType == SeedType::SEED_MARIGOLD))
 	{
-		mPlantHealth *= 2;
+		Health().mHealth *= 2;
 	}
-	mPlantMaxHealth = mPlantHealth;
+	Health().mMaxHealth = Health().mHealth;
 
 	if (mSeedType != SeedType::SEED_FLOWERPOT && IsOnBoard())
 	{
@@ -630,16 +633,16 @@ void Plant::SpikeRockTakeDamage()
 
 	SpikeweedAttack();
 
-	mPlantHealth -= 50;
-	if (mPlantHealth <= 300)
+	Combat::DamagePlant(this, 50, false);
+	if (Health().mHealth <= 300)
 	{
 		aBodyReanim->AssignRenderGroupToTrack("bigspike3", RENDER_GROUP_HIDDEN);
 	}
-	if (mPlantHealth <= 150)
+	if (Health().mHealth <= 150)
 	{
 		aBodyReanim->AssignRenderGroupToTrack("bigspike2", RENDER_GROUP_HIDDEN);
 	}
-	if (mPlantHealth <= 0)
+	if (Health().mHealth <= 0)
 	{
 		mApp->PlayFoley(FoleyType::FOLEY_SQUISH);
 		Die();
@@ -713,7 +716,7 @@ TodParticleSystem *Plant::AddAttachedParticle(int thePosX, int thePosY, int theR
 bool Plant::FindTargetAndFire(int theRow, PlantWeapon thePlantWeapon)
 {
 	Zombie *aZombie = FindTargetZombie(theRow, thePlantWeapon);
-	if (aZombie == nullptr)
+	if (aZombie == nullptr && FindTargetPlant(theRow, thePlantWeapon) == nullptr)
 		return false;
 
 	EndBlink();
@@ -1012,83 +1015,8 @@ void Plant::UpdateShooter()
 
 bool Plant::MakesSun()
 {
-	return mSeedType == SeedType::SEED_SUNFLOWER || mSeedType == SeedType::SEED_TWINSUNFLOWER ||
-	       mSeedType == SeedType::SEED_SUNSHROOM;
-}
-
-void Plant::UpdateProductionPlant()
-{
-	if (!IsInPlay() || mApp->IsIZombieLevel() || mApp->mGameMode == GameMode::GAMEMODE_UPSELL ||
-	    mApp->mGameMode == GameMode::GAMEMODE_INTRO)
-		return;
-
-	if (mBoard->HasLevelAwardDropped())
-		return;
-
-	if (mSeedType == SeedType::SEED_MARIGOLD && mBoard->mCurrentWave == mBoard->mNumWaves)
-	{
-		if (mState != PlantState::STATE_MARIGOLD_ENDING)
-		{
-			mState = PlantState::STATE_MARIGOLD_ENDING;
-			mStateCountdown = 6000;
-		}
-		else if (mStateCountdown <= 0)
-			return;
-	}
-
-	if (mApp->mGameMode == GameMode::GAMEMODE_CHALLENGE_LAST_STAND &&
-	    mBoard->mChallenge->mChallengeState != ChallengeState::STATECHALLENGE_LAST_STAND_ONSLAUGHT)
-		return;
-
-	mLaunchCounter--;
-	if (mLaunchCounter <= 100)
-	{
-		int aFlashCountdown = TodAnimateCurve(100, 0, mLaunchCounter, 0, 100, TodCurves::CURVE_LINEAR);
-		mEatenFlashCountdown = std::max(mEatenFlashCountdown, aFlashCountdown);
-	}
-	if (mLaunchCounter <= 0)
-	{
-		mLaunchCounter = RandRangeInt(mLaunchRate - 150, mLaunchRate);
-		mApp->PlayFoley(FoleyType::FOLEY_SPAWN_SUN);
-
-		if (mSeedType == SeedType::SEED_SUNSHROOM)
-		{
-			if (mState == PlantState::STATE_SUNSHROOM_SMALL)
-			{
-				mBoard->AddCoin(mX, mY, CoinType::COIN_SMALLSUN, CoinMotion::COIN_MOTION_FROM_PLANT);
-			}
-			else
-			{
-				mBoard->AddCoin(mX, mY, CoinType::COIN_SUN, CoinMotion::COIN_MOTION_FROM_PLANT);
-			}
-		}
-		else if (mSeedType == SeedType::SEED_SUNFLOWER)
-		{
-			mBoard->AddCoin(mX, mY, CoinType::COIN_SUN, CoinMotion::COIN_MOTION_FROM_PLANT);
-		}
-		else if (mSeedType == SeedType::SEED_TWINSUNFLOWER)
-		{
-			mBoard->AddCoin(mX, mY, CoinType::COIN_SUN, CoinMotion::COIN_MOTION_FROM_PLANT);
-			mBoard->AddCoin(mX, mY, CoinType::COIN_SUN, CoinMotion::COIN_MOTION_FROM_PLANT);
-		}
-		else if (mSeedType == SeedType::SEED_MARIGOLD)
-		{
-			mBoard->AddCoin(mX, mY, (Sexy::Rand(100) < 10) ? CoinType::COIN_GOLD : CoinType::COIN_SILVER,
-			                CoinMotion::COIN_MOTION_COIN);
-		}
-
-		if (mApp->mGameMode == GameMode::GAMEMODE_CHALLENGE_BIG_TIME)
-		{
-			if (mSeedType == SeedType::SEED_SUNFLOWER)
-			{
-				mBoard->AddCoin(mX, mY, CoinType::COIN_SUN, CoinMotion::COIN_MOTION_FROM_PLANT);
-			}
-			else if (mSeedType == SeedType::SEED_MARIGOLD)
-			{
-				mBoard->AddCoin(mX, mY, CoinType::COIN_SILVER, CoinMotion::COIN_MOTION_COIN);
-			}
-		}
-	}
+	ProducerComponent *aProducer = GetComponent<ProducerComponent>();
+	return aProducer && aProducer->MakesSun();
 }
 
 void Plant::UpdateSunShroom()
@@ -1102,8 +1030,6 @@ void Plant::UpdateSunShroom()
 			mState = PlantState::STATE_SUNSHROOM_GROWING;
 			mApp->PlayFoley(FoleyType::FOLEY_PLANTGROW);
 		}
-
-		UpdateProductionPlant();
 	}
 	else if (mState == PlantState::STATE_SUNSHROOM_GROWING)
 	{
@@ -1113,10 +1039,7 @@ void Plant::UpdateSunShroom()
 			mState = PlantState::STATE_SUNSHROOM_BIG;
 		}
 	}
-	else
-	{
-		UpdateProductionPlant();
-	}
+	// Sun itself comes from the SunShroomProducerComponent
 }
 
 void Plant::UpdateGraveBuster()
@@ -1898,7 +1821,7 @@ void Plant::MagnetShroomAttactItem(Zombie *theZombie)
 	{
 		int aDamageIndex = theZombie->GetHelmDamageIndex();
 
-		theZombie->mHelmHealth = 0;
+		theZombie->Health().mHelmHealth = 0;
 		theZombie->mHelmType = HelmType::HELMTYPE_NONE;
 		theZombie->GetTrackPosition("anim_bucket", aMagnetItem->mPosX, aMagnetItem->mPosY);
 		theZombie->ReanimShowPrefix("anim_bucket", RENDER_GROUP_HIDDEN);
@@ -1914,7 +1837,7 @@ void Plant::MagnetShroomAttactItem(Zombie *theZombie)
 	{
 		int aDamageIndex = theZombie->GetHelmDamageIndex();
 
-		theZombie->mHelmHealth = 0;
+		theZombie->Health().mHelmHealth = 0;
 		theZombie->mHelmType = HelmType::HELMTYPE_NONE;
 		theZombie->GetTrackPosition("zombie_football_helmet", aMagnetItem->mPosX, aMagnetItem->mPosY);
 		theZombie->ReanimShowPrefix("zombie_football_helmet", RENDER_GROUP_HIDDEN);
@@ -2642,8 +2565,6 @@ void Plant::UpdateAbilities()
 		UpdateGoldMagnetShroom();
 	else if (mSeedType == SeedType::SEED_SUNSHROOM)
 		UpdateSunShroom();
-	else if (MakesSun() || mSeedType == SeedType::SEED_MARIGOLD)
-		UpdateProductionPlant();
 	else if (mSeedType == SeedType::SEED_GRAVEBUSTER)
 		UpdateGraveBuster();
 	else if (mSeedType == SeedType::SEED_TORCHWOOD)
@@ -2757,6 +2678,18 @@ void Plant::UpdateReanimColor()
 	else if (mSeedType == SeedType::SEED_EXPLODE_O_NUT)
 	{
 		aColorOverride = Color(255, 64, 64);
+	}
+	else if (IsChilled() || IsFrozen())
+	{
+		aColorOverride = Color(75, 75, 255);
+	}
+	else if (IsButtered())
+	{
+		aColorOverride = Color(255, 255, 128);
+	}
+	else if (Teams::IsConverted(this))
+	{
+		aColorOverride = ZOMBIE_MINDCONTROLLED_COLOR;
 	}
 	else
 	{
@@ -2954,10 +2887,15 @@ void Plant::Update()
 
 	if (doUpdate)
 	{
-		UpdateAbilities();
+		// Frozen or buttered plants stop acting; chilled ones act every other tick
+		bool isHeld = IsFrozen() || IsButtered() || (IsChilled() && mBoard && mBoard->mMainCounter % 2 == 1);
+		if (!isHeld)
+		{
+			UpdateAbilities();
+		}
 		Animate();
 
-		if (mPlantHealth < 0)
+		if (Health().mHealth < 0)
 			Die();
 
 		UpdateReanim();
@@ -3213,7 +3151,7 @@ void Plant::AnimateNuts()
 	}
 
 	Image *aImageOverride = aBodyReanim->GetImageOverride(aTrackToOverride);
-	if (mPlantHealth < mPlantMaxHealth / 3)
+	if (Health().mHealth < Health().mMaxHealth / 3)
 	{
 		if (aImageOverride != aCracked2)
 		{
@@ -3221,7 +3159,7 @@ void Plant::AnimateNuts()
 			mApp->AddTodParticle(aPosX, aPosY, mRenderOrder + 4, ParticleEffect::PARTICLE_WALLNUT_EAT_LARGE);
 		}
 	}
-	else if (mPlantHealth < mPlantMaxHealth * 2 / 3)
+	else if (Health().mHealth < Health().mMaxHealth * 2 / 3)
 	{
 		if (aImageOverride != aCracked1)
 		{
@@ -3254,7 +3192,7 @@ void Plant::AnimateGarlic()
 	Reanimation *aBodyReanim = mApp->ReanimationGet(mBodyReanimID);
 	Image *aImageOverride = aBodyReanim->GetImageOverride("anim_face");
 
-	if (mPlantHealth < mPlantMaxHealth / 3)
+	if (Health().mHealth < Health().mMaxHealth / 3)
 	{
 		if (aImageOverride != IMAGE_REANIM_GARLIC_BODY3)
 		{
@@ -3262,7 +3200,7 @@ void Plant::AnimateGarlic()
 			aBodyReanim->AssignRenderGroupToPrefix("Garlic_stem", RENDER_GROUP_HIDDEN);
 		}
 	}
-	else if (mPlantHealth < mPlantMaxHealth * 2 / 3)
+	else if (Health().mHealth < Health().mMaxHealth * 2 / 3)
 	{
 		if (aImageOverride != IMAGE_REANIM_GARLIC_BODY2)
 		{
@@ -3280,12 +3218,12 @@ void Plant::AnimatePumpkin()
 	Reanimation *aBodyReanim = mApp->ReanimationGet(mBodyReanimID);
 	Image *aImageOverride = aBodyReanim->GetImageOverride("Pumpkin_front");
 
-	if (mPlantHealth < mPlantMaxHealth / 3)
+	if (Health().mHealth < Health().mMaxHealth / 3)
 	{
 		if (aImageOverride != IMAGE_REANIM_PUMPKIN_DAMAGE3)
 			aBodyReanim->SetImageOverride("Pumpkin_front", IMAGE_REANIM_PUMPKIN_DAMAGE3);
 	}
-	else if (mPlantHealth < mPlantMaxHealth * 2 / 3)
+	else if (Health().mHealth < Health().mMaxHealth * 2 / 3)
 	{
 		if (aImageOverride != IMAGE_REANIM_PUMPKIN_DAMAGE1)
 			aBodyReanim->SetImageOverride("Pumpkin_front", IMAGE_REANIM_PUMPKIN_DAMAGE1);
@@ -4606,48 +4544,8 @@ void Plant::Fire(Zombie *theTargetZombie, int theRow, PlantWeapon thePlantWeapon
 		return;
 	}
 
-	ProjectileType aProjectileType;
-	switch (mSeedType)
-	{
-	case SeedType::SEED_PEASHOOTER:
-	case SeedType::SEED_REPEATER:
-	case SeedType::SEED_THREEPEATER:
-	case SeedType::SEED_SPLITPEA:
-	case SeedType::SEED_GATLINGPEA:
-	case SeedType::SEED_LEFTPEATER:
-		aProjectileType = ProjectileType::PROJECTILE_PEA;
-		break;
-	case SeedType::SEED_SNOWPEA:
-		aProjectileType = ProjectileType::PROJECTILE_SNOWPEA;
-		break;
-	case SeedType::SEED_PUFFSHROOM:
-	case SeedType::SEED_SCAREDYSHROOM:
-	case SeedType::SEED_SEASHROOM:
-		aProjectileType = ProjectileType::PROJECTILE_PUFF;
-		break;
-	case SeedType::SEED_CACTUS:
-	case SeedType::SEED_CATTAIL:
-		aProjectileType = ProjectileType::PROJECTILE_SPIKE;
-		break;
-	case SeedType::SEED_CABBAGEPULT:
-		aProjectileType = ProjectileType::PROJECTILE_CABBAGE;
-		break;
-	case SeedType::SEED_KERNELPULT:
-		aProjectileType = ProjectileType::PROJECTILE_KERNEL;
-		break;
-	case SeedType::SEED_MELONPULT:
-		aProjectileType = ProjectileType::PROJECTILE_MELON;
-		break;
-	case SeedType::SEED_WINTERMELON:
-		aProjectileType = ProjectileType::PROJECTILE_WINTERMELON;
-		break;
-	case SeedType::SEED_COBCANNON:
-		aProjectileType = ProjectileType::PROJECTILE_COBBIG;
-		break;
-	default:
-		TOD_ASSERT(false);
-		break;
-	}
+	ProjectileType aProjectileType = Archetypes::GetPlantShot(mSeedType).mProjectileType;
+	TOD_ASSERT(aProjectileType != kNoProjectile);
 	if (mSeedType == SeedType::SEED_KERNELPULT && thePlantWeapon == PlantWeapon::WEAPON_SECONDARY)
 	{
 		aProjectileType = ProjectileType::PROJECTILE_BUTTER;
@@ -4791,8 +4689,16 @@ void Plant::Fire(Zombie *theTargetZombie, int theRow, PlantWeapon thePlantWeapon
 		mApp->AddTodParticle(aOriginX + 27, aOriginY + 13, aRenderPosition, ParticleEffect::PARTICLE_PUFFSHROOM_MUZZLE);
 	}
 
+	// A hypnotized plant fires the other way: mirror the muzzle around the plant's center
+	int aDirection = Teams::IsMirrored(this) ? -1 : 1;
+	if (aDirection < 0)
+	{
+		aOriginX = 2 * (mX + mWidth / 2) - aOriginX - 30;
+	}
+
 	Projectile *aProjectile = mBoard->AddProjectile(aOriginX, aOriginY, mRenderOrder - 1, theRow, aProjectileType);
 	aProjectile->mDamageRangeFlags = GetDamageRangeFlags(thePlantWeapon);
+	Teams::Set(aProjectile, Teams::Of(this));
 
 	if (mSeedType == SeedType::SEED_CABBAGEPULT || mSeedType == SeedType::SEED_KERNELPULT ||
 	    mSeedType == SeedType::SEED_MELONPULT || mSeedType == SeedType::SEED_WINTERMELON)
@@ -4801,7 +4707,7 @@ void Plant::Fire(Zombie *theTargetZombie, int theRow, PlantWeapon thePlantWeapon
 		if (theTargetZombie)
 		{
 			Rect aZombieRect = theTargetZombie->GetZombieRect();
-			aRangeX = theTargetZombie->ZombieTargetLeadX(50.0f) - aOriginX - 30.0f;
+			aRangeX = (theTargetZombie->ZombieTargetLeadX(50.0f) - aOriginX) * aDirection - 30.0f;
 			aRangeY = aZombieRect.mY - aOriginY;
 
 			if (theTargetZombie->mZombiePhase == ZombiePhase::PHASE_DOLPHIN_RIDING)
@@ -4823,7 +4729,7 @@ void Plant::Fire(Zombie *theTargetZombie, int theRow, PlantWeapon thePlantWeapon
 		}
 		else
 		{
-			aRangeX = 700.0f - aOriginX;
+			aRangeX = aDirection > 0 ? 700.0f - aOriginX : aOriginX - 100.0f;
 			aRangeY = 0.0f;
 		}
 		if (aRangeX < 40.0f)
@@ -4832,7 +4738,7 @@ void Plant::Fire(Zombie *theTargetZombie, int theRow, PlantWeapon thePlantWeapon
 		}
 
 		aProjectile->mMotionType = ProjectileMotion::MOTION_LOBBED;
-		aProjectile->mVelX = aRangeX / 120.0f;
+		aProjectile->mVelX = aDirection * aRangeX / 120.0f;
 		aProjectile->mVelY = 0.0f;
 		aProjectile->mVelZ = aRangeY / 120.0f - 7.0f;
 		aProjectile->mAccZ = 0.115f;
@@ -4868,7 +4774,7 @@ void Plant::Fire(Zombie *theTargetZombie, int theRow, PlantWeapon thePlantWeapon
 	{
 		aProjectile->mVelX = 2.0f;
 		aProjectile->mMotionType = ProjectileMotion::MOTION_HOMING;
-		aProjectile->mTargetZombieID = mBoard->ZombieGetID(theTargetZombie);
+		aProjectile->mTargetZombieID = theTargetZombie ? mBoard->ZombieGetID(theTargetZombie) : ZombieID::ZOMBIEID_NULL;
 	}
 	else if (mSeedType == SeedType::SEED_COBCANNON)
 	{
@@ -4881,10 +4787,24 @@ void Plant::Fire(Zombie *theTargetZombie, int theRow, PlantWeapon thePlantWeapon
 		aProjectile->mCobTargetX = mTargetX - 40;
 		aProjectile->mCobTargetRow = mBoard->PixelToGridYKeepOnBoard(mTargetX, mTargetY);
 	}
+
+	if (aDirection < 0)
+	{
+		if (aProjectile->mMotionType == ProjectileMotion::MOTION_STRAIGHT ||
+		    aProjectile->mMotionType == ProjectileMotion::MOTION_PUFF)
+		{
+			aProjectile->mMotionType = ProjectileMotion::MOTION_BACKWARDS;
+		}
+		else if (aProjectile->mMotionType == ProjectileMotion::MOTION_BACKWARDS)
+		{
+			aProjectile->mMotionType = ProjectileMotion::MOTION_STRAIGHT;
+		}
+	}
 }
 
 Zombie *Plant::FindTargetZombie(int theRow, PlantWeapon thePlantWeapon)
 {
+	int aTeam = Teams::Of(this);
 	int aDamageRangeFlags = GetDamageRangeFlags(thePlantWeapon);
 	Rect aAttackRect = GetPlantAttackRect(thePlantWeapon);
 	int aHighestWeight = 0;
@@ -4940,7 +4860,7 @@ Zombie *Plant::FindTargetZombie(int theRow, PlantWeapon thePlantWeapon)
 			}
 		}
 
-		if (aZombie->EffectedByDamage(aDamageRangeFlags))
+		if (Teams::CanAttack(aTeam, aZombie, aDamageRangeFlags))
 		{
 			int aExtraRange = 0;
 
@@ -5027,8 +4947,42 @@ Zombie *Plant::FindTargetZombie(int theRow, PlantWeapon thePlantWeapon)
 	return aBestZombie;
 }
 
+Plant *Plant::FindTargetPlant(int theRow, PlantWeapon thePlantWeapon)
+{
+	// Lobbed shots re-aim at a zombie when they fire, so only straight shooters can target plants for now
+	const PlantShotDefinition &aShot = Archetypes::GetPlantShot(mSeedType);
+	if (aShot.mProjectileType == kNoProjectile || aShot.mArc != ShotArc::Straight)
+		return nullptr;
+
+	int aTeam = Teams::Of(this);
+	Rect aAttackRect = GetPlantAttackRect(thePlantWeapon);
+	Plant *aBestPlant = nullptr;
+	int aBestDistance = 0;
+
+	Plant *aPlant = nullptr;
+	while (mBoard->IteratePlants(aPlant))
+	{
+		if (aPlant == this || aPlant->mRow != theRow || aPlant->NotOnGround() || !Teams::CanAttack(aTeam, aPlant))
+			continue;
+
+		Rect aPlantRect = aPlant->GetPlantRect();
+		if (GetRectOverlap(aAttackRect, aPlantRect) < 0)
+			continue;
+
+		int aDistance = std::abs(aPlantRect.mX - mX);
+		if (aBestPlant == nullptr || aDistance < aBestDistance)
+		{
+			aBestPlant = aPlant;
+			aBestDistance = aDistance;
+		}
+	}
+
+	return aBestPlant;
+}
+
 int Plant::DistanceToClosestZombie()
 {
+	int aTeam = Teams::Of(this);
 	int aDamageRangeFlags = GetDamageRangeFlags(PlantWeapon::WEAPON_PRIMARY);
 	Rect aAttackRect = GetPlantAttackRect(PlantWeapon::WEAPON_PRIMARY);
 	int aClosestDistance = 1000;
@@ -5036,7 +4990,7 @@ int Plant::DistanceToClosestZombie()
 	Zombie *aZombie = nullptr;
 	while (mBoard->IterateZombies(aZombie))
 	{
-		if (aZombie->mRow == mRow && aZombie->EffectedByDamage(aDamageRangeFlags))
+		if (aZombie->mRow == mRow && Teams::CanAttack(aTeam, aZombie, aDamageRangeFlags))
 		{
 			Rect aZombieRect = aZombie->GetZombieRect();
 			int aDistance = -GetRectOverlap(aAttackRect, aZombieRect);
@@ -5327,6 +5281,12 @@ Rect Plant::GetPlantAttackRect(PlantWeapon thePlantWeapon)
 			aRect = Rect(mX + 60, mY, BOARD_WIDTH, mHeight);
 			break;
 		}
+
+	// A hypnotized plant looks the other way: mirror the area around the plant's center
+	if (Teams::IsMirrored(this))
+	{
+		aRect.mX = 2 * (mX + mWidth / 2) - (aRect.mX + aRect.mWidth);
+	}
 
 	return aRect;
 }

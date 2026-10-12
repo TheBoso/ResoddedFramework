@@ -17,6 +17,9 @@
 #include "../Challenge.h"
 #include "../../LawnApp.h"
 #include "../../Sexy.TodLib/TodStringFile.h"
+#include "../Component/ComponentRegistry.h"
+#include "../Component/EntityBuilder.h"
+#include "../Component/Teams.h"
 
 using namespace Sexy;
 
@@ -205,6 +208,11 @@ DebuggerWindow::DebuggerWindow(LawnApp *theApp) : ImGuiWindow(theApp->mImGuiMana
 	mQuickPlantRow = 0;
 	mSpawnZombieTypeIdx = 0;
 	mSpawnZombieRow = 0;
+	mInspectZombie = 0;
+	mZombotanySeedIdx = (int)SeedType::SEED_MELONPULT;
+	mZombotanyRow = 2;
+	mZombotanyHypnotized = false;
+	mAddComponentIdx = 0;
 	mWaveEditorWaveIdx = 0;
 	mAddSunAmount = 100;
 	mSpawnCoinType = (int)COIN_GOLD;
@@ -303,6 +311,11 @@ void DebuggerWindow::DrawBoardTab()
 		if (ImGui::BeginTabItem("Stats"))
 		{
 			DrawBoardStats();
+			ImGui::EndTabItem();
+		}
+		if (ImGui::BeginTabItem("Components"))
+		{
+			DrawBoardComponents();
 			ImGui::EndTabItem();
 		}
 		ImGui::EndTabBar();
@@ -503,14 +516,14 @@ void DebuggerWindow::DrawBoardPlants()
 		ImGui::Text("Selected: %s  Col=%d Row=%d", SeedTypeName(p->mSeedType), p->mPlantCol, p->mRow);
 		ImGui::PushID("selplant");
 
-		int hp = p->mPlantHealth;
+		int hp = p->Health().mHealth;
 		if (ImGui::InputInt("HP", &hp))
-			p->mPlantHealth = std::max(0, hp);
+			p->Health().mHealth = std::max(0, hp);
 		ImGui::SameLine();
 		if (ImGui::Button("Full HP"))
-			p->mPlantHealth = p->mPlantMaxHealth;
+			p->Health().mHealth = p->Health().mMaxHealth;
 
-		ImGui::InputInt("Max HP", &p->mPlantMaxHealth);
+		ImGui::InputInt("Max HP", &p->Health().mMaxHealth);
 		ImGui::InputInt("Launch Rate", &p->mLaunchRate);
 		ImGui::InputInt("State Countdown", &p->mStateCountdown);
 		ImGui::Checkbox("Is Asleep", &p->mIsAsleep);
@@ -563,13 +576,13 @@ void DebuggerWindow::DrawBoardPlants()
 			ImGui::Text("%d", aPlant->mRow);
 			ImGui::TableSetColumnIndex(3);
 			{
-				int hp = aPlant->mPlantHealth;
+				int hp = aPlant->Health().mHealth;
 				ImGui::SetNextItemWidth(70);
 				if (ImGui::InputInt("##hp", &hp))
-					aPlant->mPlantHealth = std::max(0, hp);
+					aPlant->Health().mHealth = std::max(0, hp);
 			}
 			ImGui::TableSetColumnIndex(4);
-			ImGui::Text("%d", aPlant->mPlantMaxHealth);
+			ImGui::Text("%d", aPlant->Health().mMaxHealth);
 			ImGui::TableSetColumnIndex(5);
 			ImGui::TextUnformatted(PlantStateName(aPlant->mState));
 			ImGui::TableSetColumnIndex(6);
@@ -583,7 +596,7 @@ void DebuggerWindow::DrawBoardPlants()
 				aPlant->Die();
 			ImGui::SameLine();
 			if (ImGui::SmallButton("Heal"))
-				aPlant->mPlantHealth = aPlant->mPlantMaxHealth;
+				aPlant->Health().mHealth = aPlant->Health().mMaxHealth;
 			ImGui::PopID();
 		}
 		ImGui::EndTable();
@@ -601,7 +614,121 @@ void DebuggerWindow::DrawBoardPlants()
 	{
 		Plant *aP = nullptr;
 		while (b->IteratePlants(aP))
-			aP->mPlantHealth = aP->mPlantMaxHealth;
+			aP->Health().mHealth = aP->Health().mMaxHealth;
+	}
+}
+
+// ─── Components ──────────────────────────────────────────────
+void DebuggerWindow::DrawBoardComponents()
+{
+	Board *b = mApp->mBoard;
+
+	ImGui::SeparatorText("Spawn");
+	{
+		ImGui::SetNextItemWidth(160);
+		if (ImGui::BeginCombo("Head##zt", SeedTypeName(mZombotanySeedIdx)))
+		{
+			for (int i = 0; i < (int)SeedType::NUM_SEED_TYPES; i++)
+			{
+				if (ImGui::Selectable(SeedTypeName(i), mZombotanySeedIdx == i))
+					mZombotanySeedIdx = i;
+			}
+			ImGui::EndCombo();
+		}
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(60);
+		ImGui::InputInt("Row##zt", &mZombotanyRow);
+		mZombotanyRow = std::max(0, std::min(mZombotanyRow, MAX_GRID_SIZE_Y - 1));
+		ImGui::SameLine();
+		ImGui::Checkbox("Hypnotized##zt", &mZombotanyHypnotized);
+		ImGui::SameLine();
+		if (ImGui::Button("Spawn Zombotany"))
+		{
+			ZombieBuilder aBuilder(b, ZombieType::ZOMBIE_NORMAL);
+			aBuilder.InRow(mZombotanyRow).FromWave(Zombie::ZOMBIE_WAVE_DEBUG).Zombotany((SeedType)mZombotanySeedIdx);
+			if (mZombotanyHypnotized)
+				aBuilder.AtX(100.0f).Hypnotized();
+			b->mDebugSelectedZombie = aBuilder.Spawn();
+			mInspectZombie = 1;
+		}
+		ImGui::TextDisabled("A regular zombie with the plant as its head, shooting like that plant");
+
+		if (ImGui::Button("Plant hypnotized"))
+		{
+			b->mDebugSelectedPlant = PlantBuilder(b, (SeedType)mQuickPlantSeedIdx)
+			                             .At(mQuickPlantCol, mQuickPlantRow)
+			                             .Hypnotized()
+			                             .Spawn();
+			mInspectZombie = 0;
+		}
+		ImGui::SameLine();
+		ImGui::TextDisabled("%s at col %d row %d (set in the Plants tab)", SeedTypeName(mQuickPlantSeedIdx),
+		                    mQuickPlantCol, mQuickPlantRow);
+	}
+
+	ImGui::SeparatorText("Inspector");
+	ImGui::RadioButton("Selected plant", &mInspectZombie, 0);
+	ImGui::SameLine();
+	ImGui::RadioButton("Selected zombie", &mInspectZombie, 1);
+
+	// The selection is a raw pointer: only trust it while it still resolves to a live object
+	GameObject *aTarget = mInspectZombie ? (GameObject *)b->mDebugSelectedZombie : (GameObject *)b->mDebugSelectedPlant;
+	EntityRef anEntity = aTarget ? aTarget->GetEntityRef() : EntityRef();
+	if (!anEntity || anEntity.Resolve(b) != aTarget)
+	{
+		ImGui::TextDisabled(mInspectZombie ? "Click a zombie in-game to select it"
+		                                   : "Select a plant in the Plants tab (or click one in-game)");
+		return;
+	}
+
+	if (Plant *aPlant = anEntity.AsPlant(b))
+	{
+		ImGui::Text("%s  col %d row %d  (id 0x%08X)", SeedTypeName(aPlant->mSeedType), aPlant->mPlantCol, aPlant->mRow,
+		            anEntity.mId);
+		if (ImGui::Button("Hypnotize"))
+			Hypnosis::HypnotizePlant(aPlant);
+	}
+	else if (Zombie *aZombie = anEntity.AsZombie(b))
+	{
+		ImGui::Text("%s  row %d  (id 0x%08X)", ZombieTypeName(aZombie->mZombieType), aZombie->mRow, anEntity.mId);
+		if (!aZombie->mMindControlled && ImGui::Button("Hypnotize"))
+			aZombie->StartMindControlled();
+	}
+
+	aTarget->ForEachComponent(
+	    [&](Component &theComponent)
+	    {
+		    ImGui::PushID(&theComponent);
+		    bool isOpen = ImGui::CollapsingHeader(theComponent.GetTypeName(), ImGuiTreeNodeFlags_DefaultOpen |
+		                                                                          ImGuiTreeNodeFlags_AllowOverlap);
+		    ImGui::SameLine(ImGui::GetContentRegionAvail().x - 50);
+		    if (ImGui::SmallButton("Remove"))
+		    {
+			    // Removal is deferred to the end of the tick, so this is safe while iterating
+			    b->mComponents->Remove(anEntity, theComponent.GetTypeId());
+		    }
+		    else if (isOpen)
+		    {
+			    ImGui::Indent();
+			    theComponent.DrawInspector();
+			    ImGui::Unindent();
+		    }
+		    ImGui::PopID();
+	    });
+
+	ImGui::Separator();
+	std::vector<const char *> aNames = ComponentFactory::GetRegisteredNames();
+	if (!aNames.empty())
+	{
+		mAddComponentIdx = std::max(0, std::min(mAddComponentIdx, (int)aNames.size() - 1));
+		ImGui::SetNextItemWidth(220);
+		ImGui::Combo("##addcomp", &mAddComponentIdx, aNames.data(), (int)aNames.size());
+		ImGui::SameLine();
+		if (ImGui::Button("Add component"))
+		{
+			// Default-constructed; tweak it in its inspector afterwards
+			aTarget->AddComponent(ComponentFactory::Create(aNames[mAddComponentIdx]));
+		}
 	}
 }
 
@@ -654,18 +781,22 @@ void DebuggerWindow::DrawBoardZombies()
 		ImGui::Text("Phase: %s", ZombiePhaseName(z->mZombiePhase));
 		ImGui::PushID("selz");
 
-		ImGui::InputInt("Body HP", &z->mBodyHealth);
+		ImGui::InputInt("Body HP", &z->Health().mHealth);
 		ImGui::SameLine();
 		if (ImGui::Button("Full"))
-			z->mBodyHealth = z->mBodyMaxHealth;
+			z->Health().mHealth = z->Health().mMaxHealth;
 		if (z->mHelmType != HELMTYPE_NONE)
-			ImGui::InputInt("Helm HP", &z->mHelmHealth);
+			ImGui::InputInt("Helm HP", &z->Health().mHelmHealth);
 		if (z->mShieldType != SHIELDTYPE_NONE)
-			ImGui::InputInt("Shield HP", &z->mShieldHealth);
+			ImGui::InputInt("Shield HP", &z->Health().mShieldHealth);
 
-		ImGui::InputInt("Chilled", &z->mChilledCounter);
-		ImGui::InputInt("Buttered", &z->mButteredCounter);
-		ImGui::Checkbox("MindControl", &z->mMindControlled);
+		ImGui::Text("Chilled %d  Frozen %d  Buttered %d (edit in the Components tab)",
+		            StatusEffects::GetTicks<ChilledStatus>(z), StatusEffects::GetTicks<FrozenStatus>(z),
+		            StatusEffects::GetTicks<ButteredStatus>(z));
+		bool isMindControlled = z->mMindControlled;
+		// Goes through StartMindControlled so the zombie's TeamComponent follows
+		if (ImGui::Checkbox("MindControl", &isMindControlled) && isMindControlled)
+			z->StartMindControlled();
 		ImGui::SameLine();
 		ImGui::Checkbox("InPool", &z->mInPool);
 		ImGui::SameLine();
@@ -725,15 +856,15 @@ void DebuggerWindow::DrawBoardZombies()
 			ImGui::Text("%d", z->mRow);
 			ImGui::TableSetColumnIndex(2);
 			{
-				int hp = z->mBodyHealth;
+				int hp = z->Health().mHealth;
 				ImGui::SetNextItemWidth(55);
 				if (ImGui::InputInt("##bh", &hp))
-					z->mBodyHealth = hp;
+					z->Health().mHealth = hp;
 			}
 			ImGui::TableSetColumnIndex(3);
 			ImGui::TextUnformatted(ZombiePhaseName(z->mZombiePhase));
 			ImGui::TableSetColumnIndex(4);
-			ImGui::Text("%d", z->mChilledCounter);
+			ImGui::Text("%d", StatusEffects::GetTicks<ChilledStatus>(z));
 			ImGui::TableSetColumnIndex(5);
 			if (ImGui::SmallButton("Sel"))
 				b->mDebugSelectedZombie = z;

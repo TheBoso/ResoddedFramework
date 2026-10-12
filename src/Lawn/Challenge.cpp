@@ -4848,7 +4848,7 @@ void Challenge::IZombiePlantDropRemainingSun(Plant *thePlant)
 {
 	if (thePlant->mSeedType == SEED_SUNFLOWER)
 	{
-		int aSunCount = thePlant->mPlantHealth / 40 + 1;
+		int aSunCount = thePlant->Health().mHealth / 40 + 1;
 		for (int i = 0; i < aSunCount; i++)
 		{
 			mBoard->AddCoin(thePlant->mX + 5 * i, thePlant->mY, COIN_SUN, COIN_MOTION_FROM_PLANT);
