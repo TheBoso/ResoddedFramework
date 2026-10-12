@@ -217,11 +217,6 @@ class Plant : public GameObject
 	/// @brief Trigger the Plant's Special (runs its behaviour components' DoSpecial)
 	void DoSpecial();
 
-	/// @brief The activations behind BloverBehaviour, UmbrellaBehaviour and CoffeeBeanBehaviour
-	void BloverSpecial();
-	void UmbrellaSpecial();
-	void CoffeeBeanSpecial();
-
 	/// @brief Fire a shot at a Zombie
 	/// @param theTargetZombie [OPTIONAL] Zombie to aim at
 	/// @param theRow The row to shoot in
@@ -333,9 +328,6 @@ class Plant : public GameObject
 	/// @return Target Zombie, can be nullptr
 	Zombie *FindSquashTarget();
 
-	/// @brief Update the Squash
-	void UpdateSquash();
-
 	/// @brief Is the Plant's state not on the Ground?
 	/// @return True if it's not on the ground, false otherwise
 	bool NotOnGround();
@@ -354,9 +346,6 @@ class Plant : public GameObject
 	/// @param theX The minimum X positions of the flying Zombies
 	/// @param theRow The row to blow the flying Zombies away
 	void BlowAwayFliers(int theX, int theRow);
-
-	/// @brief Update the GraveBuster
-	void UpdateGraveBuster();
 
 	/// @brief Attach a particle system to a plant
 	/// @param thePosX The X position of the particle system
@@ -400,9 +389,6 @@ class Plant : public GameObject
 
 	bool FindStarFruitTarget();
 
-	/// @brief Update the Chomper
-	void UpdateChomper();
-
 	/// @brief Make the Plant Blink
 	void DoBlink();
 
@@ -416,9 +402,6 @@ class Plant : public GameObject
 	/// @param theAnimRate The rate the animation plays at
 	void PlayBodyReanim(const char *theTrackName, ReanimLoopType theLoopType, int theBlendTime, float theAnimRate);
 
-	/// @brief Update the MagnetShroom
-	void UpdateMagnetShroom();
-
 	/// @brief Get the first free magnet item
 	/// @return MagnetItem
 	MagnetItem *GetFreeMagnetItem();
@@ -426,9 +409,6 @@ class Plant : public GameObject
 	/// @brief Draw the magnet items
 	/// @param g Graphics object
 	void DrawMagnetItems(Graphics *g);
-
-	/// @brief Update the PotatoMine
-	void UpdatePotato();
 
 	/// @brief Calculate the render order of the Plant
 	/// @return The Render Order
@@ -450,22 +430,13 @@ class Plant : public GameObject
 	/// @param theOffsetY The Y offset
 	void DrawShadow(Graphics *g, float theOffsetX, float theOffsetY);
 
-	/// @brief Update the ScaredyShroom
-	void UpdateScaredyShroom();
-
 	/// @brief Get the distance to the closest Zombie
 	/// @return Distance in pixels
 	int DistanceToClosestZombie();
 
-	/// @brief Update the Spikeweed
-	void UpdateSpikeweed();
-
 	/// @brief Try to attract an item from a Zombie
 	/// @param theZombie The Zombie to attract an item from
 	void MagnetShroomAttactItem(Zombie *theZombie);
-
-	/// @brief Update the SunShroom
-	void UpdateSunShroom();
 
 	/// @brief Update the Bowling Wallnuts
 	void UpdateBowling();
@@ -473,17 +444,8 @@ class Plant : public GameObject
 	/// @brief Update the animations of the Pumpkin
 	void AnimatePumpkin();
 
-	/// @brief Update the Blover
-	void UpdateBlover();
-
-	/// @brief Update the Cactus
-	void UpdateCactus();
-
 	/// @brief Fire a StarFruit shot
 	void StarFruitFire();
-
-	/// @brief Update the TangleKelp
-	void UpdateTanglekelp();
 
 	/// @brief Attach a blinking reanimation to the Plant's body reanimation
 	/// @param theReanimBody The Plant's body
@@ -501,14 +463,8 @@ class Plant : public GameObject
 	/// @return True if it can form an upgrade, false otherwise
 	bool IsPartOfUpgradableTo(SeedType theUpgradedType);
 
-	/// @brief Update the CobCannon
-	void UpdateCobCannon();
-
 	/// @brief Fire a CobCannon shot
 	void CobCannonFire(int theTargetX, int theTargetY);
-
-	/// @brief Update the GoldMagnet
-	void UpdateGoldMagnetShroom();
 
 	/// @brief Is the Plant currently on the Board
 	/// @return True if it belongs to the Board, false otherwise
@@ -516,12 +472,6 @@ class Plant : public GameObject
 
 	/// @brief Remove all visual effects applied to the Plant
 	void RemoveEffects();
-
-	/// @brief Update the CoffeeBean
-	void UpdateCoffeeBean();
-
-	/// @brief Update the UmbrellaLeaf
-	void UpdateUmbrella();
 
 	/// @brief End the Plant's blinking animation
 	void EndBlink();
@@ -538,9 +488,6 @@ class Plant : public GameObject
 
 	/// @brief Morph the Imitater into the imitated Plant
 	void ImitaterMorph();
-
-	/// @brief Update the Imitater
-	void UpdateImitater();
 
 	/// @brief Update the reanimation
 	void UpdateReanim();
@@ -570,12 +517,6 @@ class Plant : public GameObject
 	/// @brief Play the idle animation
 	/// @param theRate The animation rate
 	void PlayIdleAnim(float theRate);
-
-	/// @brief Update the FlowerPot
-	void UpdateFlowerPot();
-
-	/// @brief Update the Lilypad
-	void UpdateLilypad();
 
 	/// @brief Try to find targets for the GoldMagnet
 	void GoldMagnetFindTargets();

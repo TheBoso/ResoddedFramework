@@ -153,14 +153,14 @@ hypnosis, team-based projectile collision, generic shooter, plant heads, produce
     rows, burn, sound, particle, crater, achievement), `BurnRowComponent` (Jalapeño, with an optional row spread),
     `FreezeAllComponent` (Ice-shroom), `FuseComponent` (lights when awake) and `DoomFuseComponent` (its swelling
     animation).
-  - Thin behaviours whose code is still in Plant.cpp (`ChomperBehaviour` calls `Plant::UpdateChomper`, etc.):
-    Squash, Chomper, Blover, Umbrella Leaf, Coffee Bean, Flower Pot, Lily Pad, Imitater, Cob Cannon, Cactus,
-    Magnet-shroom, Gold Magnet, Sun-shroom growth, Grave Buster, Potato Mine arming, Spikeweed, Tangle Kelp,
-    Scaredy-shroom. They can already be removed, combined or moved to other plants, but they drive the original
-    plant's animations.
+  - The state machines of Squash, Chomper, Blover, Umbrella Leaf, Coffee Bean, Flower Pot, Lily Pad, Imitater,
+    Cob Cannon, Cactus, Magnet-shroom, Gold Magnet, Sun-shroom growth, Grave Buster, Potato Mine arming, Spikeweed,
+    Tangle Kelp and Scaredy-shroom moved out of Plant.cpp into their components (`VanillaPlantBehaviours.cpp`).
+    They can be removed, combined or given to other plants, but they play the original plant's animation tracks.
   - `SAVE_VERSION` 6.
-- Next: move the thin behaviours' code from Plant.cpp into their components (each one becomes self-contained and
-  data-driven where possible), then vanilla plant shooting onto `ShooterComponent` (needs per-plant muzzle offsets
+- Next: make the moved behaviours data-driven where it pays off (timings, ranges and animation track names as
+  fields instead of constants), move the helpers they still call on Plant (`FindSquashTarget`,
+  `MagnetShroomAttactItem`, `SpikeweedAttack`...) into them, then vanilla plant shooting onto `ShooterComponent` (needs per-plant muzzle offsets
   and the Threepeater/Starfruit spreads as shot patterns). Placement traits (aquatic, nocturnal, flying, upgrades)
   are needed before a plant exists (seed packets), so they belong in the plant definitions (Phase 5).
 - Still seed-checked in Zombie.cpp, by design for now: Bungee grab rules, sleep-icon offsets, I, Zombie and tutorial

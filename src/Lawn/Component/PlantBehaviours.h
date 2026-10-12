@@ -134,9 +134,9 @@ class FreezeAllComponent : public PlantBehaviourComponent
 };
 
 // ─── Vanilla state machines ──────────────────────────────────────────────────
-// Behaviours whose code still lives in Plant.cpp (Plant::UpdateChomper etc.): each is its own component, so it can
-// be removed, combined or given to another plant, but it drives the original plant's animations, so on a different
-// plant it may not look right. Moving the code into the components is the next step.
+// The behaviours of the vanilla plants (implemented in VanillaPlantBehaviours.cpp). They can be removed, combined or
+// given to another plant, but they play the original plant's animation tracks (anim_bite, anim_lookleft...), so on
+// a plant whose animation lacks those tracks they act without animating.
 
 #define VANILLA_PLANT_BEHAVIOUR(ClassName)                                                                             \
 	class ClassName : public PlantBehaviourComponent                                                                   \
