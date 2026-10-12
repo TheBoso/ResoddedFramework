@@ -390,9 +390,6 @@ class Plant : public GameObject
 	/// @return True if it's on the high-ground, false otherwise
 	bool IsOnHighGround();
 
-	/// @brief Update the Torchwood
-	void UpdateTorchwood();
-
 	/// @brief Update the StartFruit
 	void LaunchStarFruit();
 
@@ -551,6 +548,10 @@ class Plant : public GameObject
 
 	/// @brief Deal damage to the SpikeRock
 	void SpikeRockTakeDamage();
+
+	/// @brief Can the plant use its abilities this tick? (in play, awake, not squished/grabbed/frozen; chilled
+	/// plants only every other tick). Behaviour components check this before acting.
+	bool IsAbleToAct();
 
 	/// @brief Is the Plant spiky?
 	/// @return True if the Plant is spiky, false otherwise

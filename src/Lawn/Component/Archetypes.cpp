@@ -90,9 +90,60 @@ void Archetypes::ApplyPlantDefaults(Plant *thePlant, bool theFromOldSave)
 	{
 		thePlant->AddComponent<LowProfileComponent>();
 	}
-	if (thePlant->mSeedType == SeedType::SEED_HYPNOSHROOM)
+	switch (thePlant->mSeedType)
 	{
+	case SeedType::SEED_HYPNOSHROOM:
 		thePlant->AddComponent<HypnotizeOnEatenComponent>(true);
+		thePlant->AddComponent<InedibleComponent>(true, false);
+		break;
+	case SeedType::SEED_CHERRYBOMB:
+	case SeedType::SEED_JALAPENO:
+	case SeedType::SEED_DOOMSHROOM:
+		thePlant->AddComponent<InedibleComponent>(true, true);
+		break;
+	case SeedType::SEED_ICESHROOM:
+		thePlant->AddComponent<InedibleComponent>(true, true);
+		thePlant->AddComponent<ActivatesWhenEatenComponent>(true);
+		break;
+	case SeedType::SEED_BLOVER:
+		thePlant->AddComponent<InedibleComponent>(false, true);
+		thePlant->AddComponent<ActivatesWhenEatenComponent>(false);
+		break;
+	case SeedType::SEED_SQUASH:
+		thePlant->AddComponent<InedibleComponent>(false, true);
+		break;
+	case SeedType::SEED_TANGLEKELP:
+		thePlant->AddComponent<InedibleComponent>(false, false, true);
+		break;
+	case SeedType::SEED_POTATOMINE:
+		thePlant->AddComponent<MineComponent>();
+		break;
+	case SeedType::SEED_GARLIC:
+		thePlant->AddComponent<RepelOnEatenComponent>();
+		break;
+	case SeedType::SEED_SPIKEWEED:
+		thePlant->AddComponent<SpikesComponent>(false);
+		break;
+	case SeedType::SEED_SPIKEROCK:
+		thePlant->AddComponent<SpikesComponent>(true);
+		break;
+	case SeedType::SEED_WALLNUT:
+		thePlant->AddComponent<WallComponent>(true);
+		break;
+	case SeedType::SEED_TALLNUT:
+		thePlant->AddComponent<WallComponent>(true);
+		thePlant->AddComponent<TallComponent>();
+		break;
+	case SeedType::SEED_PUMPKINSHELL:
+		thePlant->AddComponent<WallComponent>(false);
+		break;
+	case SeedType::SEED_TORCHWOOD:
+		thePlant->AddComponent<ProjectileConverterComponent>()
+		    ->Convert(ProjectileType::PROJECTILE_PEA, ProjectileType::PROJECTILE_FIREBALL)
+		    .Convert(ProjectileType::PROJECTILE_SNOWPEA, ProjectileType::PROJECTILE_PEA);
+		break;
+	default:
+		break;
 	}
 
 	if (ProducerComponent *aProducer = CreateVanillaProducer(thePlant->mSeedType, thePlant->mLaunchRate))

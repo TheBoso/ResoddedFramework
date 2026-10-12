@@ -122,6 +122,8 @@ class Projectile : public GameObject
 	/// @brief Convert the Projectile to a Pea
 	/// @param theGridX The Torchwood's grid X coordinate to avoid changing the Projectile again on the same grid
 	void ConvertToPea(int theGridX);
+	/// @brief Turn into another projectile type once per grid column (ProjectileConverterComponent, e.g. Torchwood)
+	void ConvertTo(ProjectileType theType, int theGridX);
 	/// @brief Does the Projectile deal Splash-Damage
 	/// @param theZombie The Zombie to check
 	/// @return True if the Projectile can deal Splash-Damage to the Zombie, false otherwise

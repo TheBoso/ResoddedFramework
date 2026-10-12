@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <cstring>
+#include <string>
 #include <type_traits>
 #include <vector>
 #include "EntityRef.h"
@@ -51,6 +52,24 @@ class ComponentArchive
 		{
 			const uint8_t *aBytes = reinterpret_cast<const uint8_t *>(&theValue);
 			mBuffer.insert(mBuffer.end(), aBytes, aBytes + sizeof(T));
+		}
+	}
+
+	void String(std::string &theValue)
+	{
+		uint32_t aLength = (uint32_t)theValue.size();
+		Value(aLength);
+		if (mReading)
+		{
+			if (mPos + aLength <= mBuffer.size())
+			{
+				theValue.assign(reinterpret_cast<const char *>(mBuffer.data() + mPos), aLength);
+			}
+			mPos += aLength;
+		}
+		else
+		{
+			mBuffer.insert(mBuffer.end(), theValue.begin(), theValue.end());
 		}
 	}
 
@@ -117,6 +136,10 @@ class Component
 	virtual void OnDamaged(int theDamage)
 	{
 		(void)theDamage;
+	}
+	/// @brief The owner died (Plant::Die, or a zombie's body disappearing in Zombie::DieNoLoot)
+	virtual void OnOwnerDied()
+	{
 	}
 	/// @brief The owner (a zombie) lost its head
 	/// @return True to skip the vanilla head-drop effect (the component handled it)

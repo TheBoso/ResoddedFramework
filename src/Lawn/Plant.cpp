@@ -651,7 +651,19 @@ void Plant::SpikeRockTakeDamage()
 
 bool Plant::IsSpiky()
 {
-	return mSeedType == SeedType::SEED_SPIKEWEED || mSeedType == SeedType::SEED_SPIKEROCK;
+	return HasComponent<SpikesComponent>();
+}
+
+bool Plant::IsAbleToAct()
+{
+	if (!IsInPlay() || mIsAsleep || mSquished || mOnBungeeState != PlantOnBungeeState::NOT_ON_BUNGEE ||
+	    mState == PlantState::STATE_DOINGSPECIAL)
+		return false;
+
+	// Same rules as Plant::Update: frozen/buttered plants pause, chilled ones act every other tick
+	if (IsFrozen() || IsButtered())
+		return false;
+	return !(IsChilled() && mBoard && mBoard->mMainCounter % 2 == 1);
 }
 
 void Plant::DoRowAreaDamage(int theDamage, unsigned int theDamageFlags)
@@ -1317,32 +1329,6 @@ void Plant::UpdateScaredyShroom()
 	if (mState != PlantState::STATE_READY)
 	{
 		mLaunchCounter = mLaunchRate;
-	}
-}
-
-void Plant::UpdateTorchwood()
-{
-	Rect aAttackRect = GetPlantAttackRect(PlantWeapon::WEAPON_PRIMARY);
-
-	Projectile *aProjectile = nullptr;
-	while (mBoard->IterateProjectiles(aProjectile))
-	{
-		if ((aProjectile->mRow == mRow) && (aProjectile->mProjectileType == ProjectileType::PROJECTILE_PEA ||
-		                                    aProjectile->mProjectileType == ProjectileType::PROJECTILE_SNOWPEA))
-		{
-			Rect aProjectileRect = aProjectile->GetProjectileRect();
-			if (GetRectOverlap(aAttackRect, aProjectileRect) >= 10)
-			{
-				if (aProjectile->mProjectileType == ProjectileType::PROJECTILE_PEA)
-				{
-					aProjectile->ConvertToFireball(mPlantCol);
-				}
-				else if (aProjectile->mProjectileType == ProjectileType::PROJECTILE_SNOWPEA)
-				{
-					aProjectile->ConvertToPea(mPlantCol);
-				}
-			}
-		}
 	}
 }
 
@@ -2565,8 +2551,6 @@ void Plant::UpdateAbilities()
 		UpdateSunShroom();
 	else if (mSeedType == SeedType::SEED_GRAVEBUSTER)
 		UpdateGraveBuster();
-	else if (mSeedType == SeedType::SEED_TORCHWOOD)
-		UpdateTorchwood();
 	else if (mSeedType == SeedType::SEED_POTATOMINE)
 		UpdatePotato();
 	else if (mSeedType == SeedType::SEED_SPIKEWEED || mSeedType == SeedType::SEED_SPIKEROCK)
@@ -5009,6 +4993,11 @@ int Plant::DistanceToClosestZombie()
 
 void Plant::Die()
 {
+	if (IsOnBoard() && !mDead)
+	{
+		ForEachComponent([](Component &theComponent) { theComponent.OnOwnerDied(); });
+	}
+
 	if (IsOnBoard() && mSeedType == SeedType::SEED_TANGLEKELP)
 	{
 		Zombie *aZombie = mBoard->ZombieTryToGet(mTargetZombieID);

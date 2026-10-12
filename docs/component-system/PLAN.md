@@ -39,6 +39,8 @@ PlantBuilder(board, SeedType::SEED_SUNFLOWER).At(3, 2)
 - **Saving:** one `Components.Blob` entry in the save schema. Each component is written as name + payload from
   `Serialize`; `REGISTER_COMPONENT(MyComponent)` lets the loader recreate it by name. Unknown names are skipped.
   Fields read in order and missing trailing fields keep their defaults, so components can grow by appending fields.
+- **Adding a component to an archetype** changes what a saved entity should have, so bump `SAVE_VERSION`:
+  loading only fills in defaults for entities with no components at all.
 - **Old saves** have no blob: `ComponentRegistry::FinishLoading` gives every entity its archetype components (and
   carries the old sun countdown over).
 - **Archetypes** (`Archetypes.cpp`): the default component set of each vanilla plant/zombie/projectile, applied at
@@ -66,6 +68,9 @@ Debug build → ImGui debugger → **Board → Components**:
 | `HypnotizeOnEatenComponent` | Hypnotizes whoever bites it | Hypno-shroom |
 | `LowProfileComponent` | Straight projectiles fly over it | Puff/Sun-shroom, Potato Mine, Spikeweed, Spikerock, Lily Pad |
 | `ChilledStatus` / `FrozenStatus` / `ButteredStatus` | Timed status effects (`StatusEffectComponent` subclasses); slow or stop the owner | applied by snow peas, Ice-shroom, Kernel-pult butter |
+| `SpikesComponent`, `TallComponent`, `WallComponent`, `RepelOnEatenComponent`, `InedibleComponent`, `ActivatesWhenEatenComponent`, `MineComponent` | Plant traits zombies react to | Spikeweed/Spikerock, Tall-nut, Wall-nut/Tall-nut/Pumpkin, Garlic, instant plants/Tangle Kelp, Blover/Ice-shroom, Potato Mine |
+| `ProjectileConverterComponent` | Converts projectiles passing through (pea -> fireball) | Torchwood |
+| `OnDeathComponent` | Runs lambdas / named actions when the entity dies | custom content |
 | `ProducerComponent` | Drops sun/coins on a timer (rate, count, rare coin, Big Time bonus, final-wave cutoff) | Sunflower, Twin Sunflower, Marigold |
 | `SunShroomProducerComponent` | Producer subclass: small sun while small, none while growing | Sun-shroom |
 | `ShooterComponent` | Generic projectile shooter (straight or lobbed) that targets the nearest hostile plant **or** zombie in its row; `CreateLike(seed)` copies a plant's shot | Zombotany builds, custom content |
@@ -126,12 +131,25 @@ hypnosis, team-based projectile collision, generic shooter, plant heads, produce
 - Done: splash damage hits hostile plants too (full damage on the target, a third on the top plant of each
   square nearby), and lobbed plants aim at hostile plants when there is no zombie to hit. `SAVE_VERSION` is 4.
 
-**Phase 3: plant behaviours.** Move each `Plant::Update*` branch into a component and delete the `mSeedType`
-dispatch in `Plant::UpdateAbilities`: `ExplodeComponent` (Cherry Bomb, Jalapeño, Doom-shroom), `ChomperComponent`,
-`SquashComponent`, `RepelOnEatenComponent` (Garlic), `SpikesComponent` (Spikeweed/rock), `ArmingComponent`
-(Potato Mine), `ProjectileModifierComponent` (Torchwood), `MagnetComponent`, `UmbrellaComponent`, and placement
-traits (`AquaticComponent`, `NocturnalComponent`, `FlyingComponent`, `UpgradeOfComponent`). Vanilla plant shooting
-moves onto `ShooterComponent` (needs per-plant muzzle offsets and the Threepeater/Starfruit spreads as shot patterns).
+**Phase 3: plant behaviours (in progress).**
+- Done: the seed-type checks *other* code made about plants are now trait components (`PlantTraits.h`):
+  `SpikesComponent` (Spikeweed/Spikerock: `Plant::IsSpiky`, vehicles, crushing), `TallComponent` (Tall-nut stops
+  jumpers), `WallComponent` (Wall-nut/Tall-nut/Pumpkin: chew sound and marks, ladders, I, Zombie double bites),
+  `RepelOnEatenComponent` (Garlic), `InedibleComponent` (instant plants can't be chewed/driven over while awake;
+  Tangle Kelp is ignored), `ActivatesWhenEatenComponent` (Blover), `MineComponent` (Potato Mine) and
+  `ProjectileConverterComponent` (Torchwood; its update moved into the component's `OnTick`, so any plant can
+  light peas). `Plant::IsAbleToAct()` is the shared "awake, not squished/grabbed/frozen" check for behaviour
+  components.
+- Done: `OnDeathComponent` runs lambdas when its entity dies (plant destroyed or shovelled, zombie body removed),
+  with named actions (`OnDeathComponent::RegisterAction`) that survive saving and can be added from the debugger.
+  Built-in examples: `SpawnImp`, `DropSun`.
+- Next: the plant state machines still dispatched by seed type in `Plant::UpdateAbilities` (Chomper, Squash, Potato
+  Mine arming, Cherry Bomb/Jalapeño/Doom-shroom explosions, Magnet-shroom, Umbrella Leaf, Cob Cannon...) become
+  behaviour components, then vanilla plant shooting moves onto `ShooterComponent` (needs per-plant muzzle offsets and
+  the Threepeater/Starfruit spreads as shot patterns). Placement traits (aquatic, nocturnal, flying, upgrades) are
+  needed before a plant exists (seed packets), so they belong in the plant definitions (Phase 5), not components.
+- Still seed-checked in Zombie.cpp, by design for now: Bungee grab rules, sleep-icon offsets, I, Zombie and tutorial
+  rules, and Tangle Kelp/Squash tracking their own target.
 
 **Phase 4: zombie behaviours.** Same for `Zombie::Update*`: `WalkerComponent` (speed, direction from Facing),
 `EaterComponent`, `VaulterComponent`, `ThrowerComponent` (Imp/basketball), `SummonerComponent` (Dancer), then the

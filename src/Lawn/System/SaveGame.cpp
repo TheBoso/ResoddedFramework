@@ -12,7 +12,8 @@
 // 2: plant and zombie health moved into HealthComponent (Plant/Zombie memory layout changed)
 // 3: chill/ice/butter counters moved into status effect components
 // 4: helm/shield/balloon moved into armour components
-static constexpr uint32_t SAVE_VERSION = 4;
+// 5: plant traits (spikes, walls, Torchwood converter...) added to the archetypes
+static constexpr uint32_t SAVE_VERSION = 5;
 
 template <typename T>
 void SaveContext::SyncVar(T &aValue, const std::string &aName)

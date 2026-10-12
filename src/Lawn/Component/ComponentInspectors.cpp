@@ -145,6 +145,85 @@ void StatusEffectComponent::DrawInspector()
 	}
 }
 
+void SpikesComponent::DrawInspector()
+{
+	ImGui::Checkbox("Survives crushing (Spikerock)", &mSurvivesCrushing);
+}
+
+void WallComponent::DrawInspector()
+{
+	ImGui::Checkbox("Shows chew marks", &mShowsChewMarks);
+}
+
+void InedibleComponent::DrawInspector()
+{
+	ImGui::Checkbox("Can't be chewed while awake", &mBlocksChewing);
+	ImGui::Checkbox("Can't be driven over while awake", &mBlocksVehicles);
+	ImGui::Checkbox("Ignored by zombies", &mIgnoredByZombies);
+}
+
+void ActivatesWhenEatenComponent::DrawInspector()
+{
+	ImGui::Checkbox("Only while awake", &mRequiresAwake);
+}
+
+void ProjectileConverterComponent::DrawInspector()
+{
+	for (int i = 0; i < mCount; i++)
+	{
+		ImGui::PushID(i);
+		int aFrom = (int)mFrom[i], aTo = (int)mTo[i];
+		ImGui::SetNextItemWidth(120);
+		if (ImGui::Combo("##from", &aFrom, kProjectileNames, (int)ProjectileType::NUM_PROJECTILES))
+			mFrom[i] = (ProjectileType)aFrom;
+		ImGui::SameLine();
+		ImGui::TextUnformatted("->");
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(120);
+		if (ImGui::Combo("##to", &aTo, kProjectileNames, (int)ProjectileType::NUM_PROJECTILES))
+			mTo[i] = (ProjectileType)aTo;
+		ImGui::PopID();
+	}
+	if (mCount < kMaxConversions && ImGui::Button("Add conversion"))
+	{
+		Convert(ProjectileType::PROJECTILE_PEA, ProjectileType::PROJECTILE_FIREBALL);
+	}
+}
+
+void OnDeathComponent::DrawInspector()
+{
+	for (Entry &anEntry : mEntries)
+	{
+		ImGui::BulletText("%s", anEntry.mName.empty() ? "(code lambda, not saved)" : anEntry.mName.c_str());
+	}
+	if (mEntries.empty())
+	{
+		ImGui::TextDisabled("No actions");
+	}
+
+	static int sActionIdx = 0;
+	std::vector<std::string> aNames = GetRegisteredActionNames();
+	if (!aNames.empty())
+	{
+		sActionIdx = std::clamp(sActionIdx, 0, (int)aNames.size() - 1);
+		ImGui::SetNextItemWidth(160);
+		if (ImGui::BeginCombo("##deathaction", aNames[sActionIdx].c_str()))
+		{
+			for (int i = 0; i < (int)aNames.size(); i++)
+			{
+				if (ImGui::Selectable(aNames[i].c_str(), i == sActionIdx))
+					sActionIdx = i;
+			}
+			ImGui::EndCombo();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Add action"))
+		{
+			Then(aNames[sActionIdx].c_str());
+		}
+	}
+}
+
 void TeamComponent::DrawInspector()
 {
 	TeamInput("Team", mTeam);
@@ -264,6 +343,24 @@ void HelmComponent::DrawInspector()
 {
 }
 void ShieldComponent::DrawInspector()
+{
+}
+void SpikesComponent::DrawInspector()
+{
+}
+void WallComponent::DrawInspector()
+{
+}
+void InedibleComponent::DrawInspector()
+{
+}
+void ActivatesWhenEatenComponent::DrawInspector()
+{
+}
+void ProjectileConverterComponent::DrawInspector()
+{
+}
+void OnDeathComponent::DrawInspector()
 {
 }
 void TeamComponent::DrawInspector()

@@ -205,19 +205,18 @@ void Projectile::HitPlant(Plant *thePlant)
 
 bool Projectile::PeaAboutToHitTorchwood()
 {
+	// A straight shot about to be converted (e.g. lit by a Torchwood) doesn't hit zombies until it is
 	if (mMotionType != ProjectileMotion::MOTION_STRAIGHT)
-		return false;
-
-	if (mProjectileType != ProjectileType::PROJECTILE_PEA && mProjectileType != ProjectileType::PROJECTILE_SNOWPEA)
 		return false;
 
 	Plant *aPlant = nullptr;
 	while (mBoard->IteratePlants(aPlant))
 	{
-		if (aPlant->mSeedType == SeedType::SEED_TORCHWOOD && aPlant->mRow == mRow && !aPlant->NotOnGround() &&
-		    mHitTorchwoodGridX != aPlant->mPlantCol)
+		ProjectileConverterComponent *aConverter = aPlant->GetComponent<ProjectileConverterComponent>();
+		if (aConverter && aConverter->GetConversion(mProjectileType) != mProjectileType && aPlant->mRow == mRow &&
+		    !aPlant->NotOnGround() && mHitTorchwoodGridX != aPlant->mPlantCol)
 		{
-			Rect aPlantAttackRect = aPlant->GetPlantAttackRect(PlantWeapon::WEAPON_PRIMARY);
+			Rect aPlantAttackRect = ProjectileConverterComponent::GetConversionRect(aPlant);
 			Rect aProjectileRect = GetProjectileRect();
 			aProjectileRect.mX += 40;
 
@@ -1272,6 +1271,24 @@ void Projectile::ConvertToFireball(int theGridX)
 	aFirePeaReanim->mLoopType = ReanimLoopType::REANIM_LOOP;
 	aFirePeaReanim->mAnimRate = RandRangeFloat(50.0f, 80.0f);
 	AttachReanim(mAttachmentID, aFirePeaReanim, aOffsetX, aOffsetY);
+}
+
+void Projectile::ConvertTo(ProjectileType theType, int theGridX)
+{
+	if (theType == ProjectileType::PROJECTILE_FIREBALL)
+	{
+		ConvertToFireball(theGridX);
+	}
+	else if (theType == ProjectileType::PROJECTILE_PEA)
+	{
+		ConvertToPea(theGridX);
+	}
+	else if (mHitTorchwoodGridX != theGridX)
+	{
+		AttachmentDie(mAttachmentID);
+		mProjectileType = theType;
+		mHitTorchwoodGridX = theGridX;
+	}
 }
 
 void Projectile::ConvertToPea(int theGridX)
