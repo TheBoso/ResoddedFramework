@@ -138,30 +138,142 @@ class FreezeAllComponent : public PlantBehaviourComponent
 // given to another plant, but they play the original plant's animation tracks (anim_bite, anim_lookleft...), so on
 // a plant whose animation lacks those tracks they act without animating.
 
-#define VANILLA_PLANT_BEHAVIOUR(ClassName)                                                                             \
-	class ClassName : public PlantBehaviourComponent                                                                   \
-	{                                                                                                                  \
-		COMPONENT_SUBTYPE(ClassName, PlantBehaviourComponent)                                                          \
-		void UpdateBehaviour(Plant *thePlant) override;                                                                \
-	};
+#define VANILLA_PLANT_BEHAVIOUR(ClassName)                                                                             	class ClassName : public PlantBehaviourComponent                                                                   	{                                                                                                                  		COMPONENT_SUBTYPE(ClassName, PlantBehaviourComponent)                                                          		void UpdateBehaviour(Plant *thePlant) override;                                                                	};
 
-VANILLA_PLANT_BEHAVIOUR(SquashBehaviour)
-VANILLA_PLANT_BEHAVIOUR(ChomperBehaviour)
+// Behaviours that are pure animation/state bookkeeping, with nothing worth tuning
 VANILLA_PLANT_BEHAVIOUR(FlowerPotBehaviour)
 VANILLA_PLANT_BEHAVIOUR(LilyPadBehaviour)
 VANILLA_PLANT_BEHAVIOUR(ImitaterBehaviour)
 VANILLA_PLANT_BEHAVIOUR(CobCannonBehaviour)
 VANILLA_PLANT_BEHAVIOUR(CactusBehaviour)
-VANILLA_PLANT_BEHAVIOUR(MagnetShroomBehaviour)
-VANILLA_PLANT_BEHAVIOUR(GoldMagnetBehaviour)
 VANILLA_PLANT_BEHAVIOUR(SunShroomGrowthBehaviour)
-VANILLA_PLANT_BEHAVIOUR(GraveBusterBehaviour)
 VANILLA_PLANT_BEHAVIOUR(PotatoMineArmingBehaviour)
-VANILLA_PLANT_BEHAVIOUR(SpikeweedBehaviour)
-VANILLA_PLANT_BEHAVIOUR(TangleKelpBehaviour)
-VANILLA_PLANT_BEHAVIOUR(ScaredyShroomBehaviour)
 
 #undef VANILLA_PLANT_BEHAVIOUR
+
+/// @brief Squash: looks at a zombie coming close, jumps on it and crushes everything it lands on
+class SquashBehaviour : public PlantBehaviourComponent
+{
+	COMPONENT_SUBTYPE(SquashBehaviour, PlantBehaviourComponent)
+	void UpdateBehaviour(Plant *thePlant) override;
+	void Serialize(ComponentArchive &theArchive) override;
+	void DrawInspector() override;
+
+	/// Ticks spent looking at the target, then winding up the jump
+	int32_t mLookTicks = 80;
+	int32_t mWindupTicks = 30;
+	/// Damage to everything it lands on (1800 kills anything but the boss)
+	int32_t mDamage = 1800;
+
+  private:
+	void DoSquashDamage(Plant *thePlant);
+};
+
+/// @brief Chomper: swallows the zombie in front of it whole, then chews for a long time.
+/// Zombies with an UnswallowableComponent (Gargantuars, Dr. Zomboss) just get bitten.
+class ChomperBehaviour : public PlantBehaviourComponent
+{
+	COMPONENT_SUBTYPE(ChomperBehaviour, PlantBehaviourComponent)
+	void UpdateBehaviour(Plant *thePlant) override;
+	void Serialize(ComponentArchive &theArchive) override;
+	void DrawInspector() override;
+
+	/// Ticks from opening the mouth to the bite landing
+	int32_t mBiteTicks = 70;
+	/// Ticks spent chewing a swallowed zombie
+	int32_t mChewTicks = 4000;
+	/// Damage of a bite on a zombie too big to swallow
+	int32_t mBiteDamage = 40;
+};
+
+/// @brief Spikeweed / Spikerock: hurts every zombie standing on it
+class SpikeweedBehaviour : public PlantBehaviourComponent
+{
+	COMPONENT_SUBTYPE(SpikeweedBehaviour, PlantBehaviourComponent)
+
+	SpikeweedBehaviour() = default;
+	SpikeweedBehaviour(int theDamage, int theFirstHitTick, int theSecondHitTick)
+	    : mDamage(theDamage), mFirstHitTick(theFirstHitTick), mSecondHitTick(theSecondHitTick)
+	{
+	}
+
+	void UpdateBehaviour(Plant *thePlant) override;
+	void Serialize(ComponentArchive &theArchive) override;
+	void DrawInspector() override;
+
+	int32_t mDamage = 20;
+	/// Points of the 100-tick attack animation (counting down) where the spikes hit; -1 = no second hit
+	int32_t mFirstHitTick = 75;
+	int32_t mSecondHitTick = -1;
+};
+
+/// @brief Magnet-shroom: pulls metal (buckets, helmets, doors, ladders...) off nearby zombies
+class MagnetShroomBehaviour : public PlantBehaviourComponent
+{
+	COMPONENT_SUBTYPE(MagnetShroomBehaviour, PlantBehaviourComponent)
+	void UpdateBehaviour(Plant *thePlant) override;
+	void Serialize(ComponentArchive &theArchive) override;
+	void DrawInspector() override;
+
+	/// Reach in pixels, larger for zombies busy eating
+	int32_t mRange = 270;
+	int32_t mRangeWhileEating = 320;
+	/// Rows above and below it reaches
+	int32_t mRowRange = 2;
+	/// Ticks before it can pull again
+	int32_t mRechargeTicks = 1500;
+};
+
+/// @brief Gold Magnet: collects coins and diamonds on the lawn every so often
+class GoldMagnetBehaviour : public PlantBehaviourComponent
+{
+	COMPONENT_SUBTYPE(GoldMagnetBehaviour, PlantBehaviourComponent)
+	void UpdateBehaviour(Plant *thePlant) override;
+	void Serialize(ComponentArchive &theArchive) override;
+	void DrawInspector() override;
+
+	/// Ticks between pulls (random between the two)
+	int32_t mRechargeMinTicks = 200;
+	int32_t mRechargeMaxTicks = 300;
+	/// 1 in this many ticks it checks for coins to pull
+	int32_t mPullChance = 50;
+};
+
+/// @brief Grave Buster: eats the grave it is planted on, then drops loot and disappears
+class GraveBusterBehaviour : public PlantBehaviourComponent
+{
+	COMPONENT_SUBTYPE(GraveBusterBehaviour, PlantBehaviourComponent)
+	void UpdateBehaviour(Plant *thePlant) override;
+	void Serialize(ComponentArchive &theArchive) override;
+	void DrawInspector() override;
+
+	int32_t mEatTicks = 400;
+};
+
+/// @brief Tangle Kelp: grabs a zombie in the water and drags it under
+class TangleKelpBehaviour : public PlantBehaviourComponent
+{
+	COMPONENT_SUBTYPE(TangleKelpBehaviour, PlantBehaviourComponent)
+	void UpdateBehaviour(Plant *thePlant) override;
+	void Serialize(ComponentArchive &theArchive) override;
+	void DrawInspector() override;
+
+	/// Ticks from grabbing to the zombie being gone (it is pulled under halfway through)
+	int32_t mGrabTicks = 100;
+};
+
+/// @brief Scaredy-shroom: hides (and stops shooting) while a hostile zombie is close
+class ScaredyShroomBehaviour : public PlantBehaviourComponent
+{
+	COMPONENT_SUBTYPE(ScaredyShroomBehaviour, PlantBehaviourComponent)
+	void UpdateBehaviour(Plant *thePlant) override;
+	void Serialize(ComponentArchive &theArchive) override;
+	void DrawInspector() override;
+
+	int32_t mFearRadius = 120;
+	/// Rows above and below it watches
+	int32_t mFearRowRange = 1;
+};
 
 /// @brief Blover: blows away flying zombies once its intro animation ends
 class BloverBehaviour : public PlantBehaviourComponent
@@ -177,6 +289,11 @@ class UmbrellaBehaviour : public PlantBehaviourComponent
 	COMPONENT_SUBTYPE(UmbrellaBehaviour, PlantBehaviourComponent)
 	void UpdateBehaviour(Plant *thePlant) override;
 	void DoSpecial(Plant *thePlant) override;
+	void Serialize(ComponentArchive &theArchive) override;
+	void DrawInspector() override;
+
+	/// Ticks between being triggered and actually blocking
+	int32_t mTriggerTicks = 5;
 };
 
 /// @brief Coffee Bean: wakes up the mushroom it is planted on, then crumbles
@@ -185,4 +302,9 @@ class CoffeeBeanBehaviour : public PlantBehaviourComponent
 	COMPONENT_SUBTYPE(CoffeeBeanBehaviour, PlantBehaviourComponent)
 	void UpdateBehaviour(Plant *thePlant) override;
 	void DoSpecial(Plant *thePlant) override;
+	void Serialize(ComponentArchive &theArchive) override;
+	void DrawInspector() override;
+
+	/// Ticks until the mushroom is awake
+	int32_t mWakeTicks = 100;
 };

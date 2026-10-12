@@ -683,7 +683,7 @@ void Plant::DoRowAreaDamage(int theDamage, unsigned int theDamageFlags)
 		else if (aDiffY)
 			continue;
 
-		if (aZombie->mOnHighGround == IsOnHighGround() && aZombie->EffectedByDamage(aDamageRangeFlags))
+		if (aZombie->mOnHighGround == IsOnHighGround() && Teams::CanAttack(Teams::Of(this), aZombie, aDamageRangeFlags))
 		{
 			Rect aZombieRect = aZombie->GetZombieRect();
 			if (GetRectOverlap(aAttackRect, aZombieRect) > 0)
@@ -695,7 +695,8 @@ void Plant::DoRowAreaDamage(int theDamage, unsigned int theDamageFlags)
 				{
 					aDamage = 1800;
 
-					if (mSeedType == SeedType::SEED_SPIKEROCK)
+					SpikesComponent *aSpikes = GetComponent<SpikesComponent>();
+					if (aSpikes && aSpikes->mSurvivesCrushing)
 					{
 						SpikeRockTakeDamage();
 					}
@@ -878,7 +879,7 @@ bool Plant::FindStarFruitTarget()
 	while (mBoard->IterateZombies(aZombie))
 	{
 		Rect aZombieRect = aZombie->GetZombieRect();
-		if (aZombie->EffectedByDamage(aDamageRangeFlags))
+		if (Teams::CanAttack(Teams::Of(this), aZombie, aDamageRangeFlags))
 		{
 			if (aZombie->mZombieType == ZombieType::ZOMBIE_BOSS && mPlantCol >= 5)
 				return true;
@@ -1059,28 +1060,6 @@ void Plant::SpikeweedAttack()
 	}
 }
 
-void Plant::DoSquashDamage()
-{
-	int aDamageRangeFlags = GetDamageRangeFlags(PlantWeapon::WEAPON_PRIMARY);
-	Rect aAttackRect = GetPlantAttackRect(PlantWeapon::WEAPON_PRIMARY);
-
-	Zombie *aZombie = nullptr;
-	while (mBoard->IterateZombies(aZombie))
-	{
-		if ((aZombie->mRow == mRow || aZombie->mZombieType == ZombieType::ZOMBIE_BOSS) &&
-		    aZombie->EffectedByDamage(aDamageRangeFlags))
-		{
-			Rect aZombieRect = aZombie->GetZombieRect();
-			if (GetRectOverlap(aAttackRect, aZombieRect) >
-			    (aZombie->mZombieType == ZombieType::ZOMBIE_FOOTBALL ? -20 : 0))
-			{
-				aZombie->TakeDamage(1800, GetBit(DamageFlags::DAMAGE_HITS_SHIELD_AND_BODY) |
-				                              GetBit(DamageFlags::DAMAGE_DOESNT_LEAVE_BODY));
-			}
-		}
-	}
-}
-
 Zombie *Plant::FindSquashTarget()
 {
 	int aDamageRangeFlags = GetDamageRangeFlags(PlantWeapon::WEAPON_PRIMARY);
@@ -1093,7 +1072,7 @@ Zombie *Plant::FindSquashTarget()
 	while (mBoard->IterateZombies(aZombie))
 	{
 		if ((aZombie->mRow == mRow || aZombie->mZombieType == ZombieType::ZOMBIE_BOSS) && aZombie->mHasHead &&
-		    !aZombie->IsTangleKelpTarget() && aZombie->EffectedByDamage(aDamageRangeFlags))
+		    !aZombie->IsTangleKelpTarget() && Teams::CanAttack(Teams::Of(this), aZombie, aDamageRangeFlags))
 		{
 			Rect aZombieRect = aZombie->GetZombieRect();
 
@@ -3364,7 +3343,7 @@ void Plant::BurnRow(int theRow)
 	while (mBoard->IterateZombies(aZombie))
 	{
 		if ((aZombie->mZombieType == ZombieType::ZOMBIE_BOSS || aZombie->mRow == theRow) &&
-		    aZombie->EffectedByDamage(aDamageRangeFlags))
+		    Teams::CanAttack(Teams::Of(this), aZombie, aDamageRangeFlags))
 		{
 			aZombie->RemoveColdEffects();
 			aZombie->ApplyBurn();

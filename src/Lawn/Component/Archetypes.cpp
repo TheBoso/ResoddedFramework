@@ -144,8 +144,10 @@ static void AddVanillaBehaviours(Plant *thePlant)
 		thePlant->AddComponent<GraveBusterBehaviour>();
 		break;
 	case SeedType::SEED_SPIKEWEED:
+		thePlant->AddComponent<SpikeweedBehaviour>(20, 75, -1);
+		break;
 	case SeedType::SEED_SPIKEROCK:
-		thePlant->AddComponent<SpikeweedBehaviour>();
+		thePlant->AddComponent<SpikeweedBehaviour>(20, 69, 33);
 		break;
 	case SeedType::SEED_TANGLEKELP:
 		thePlant->AddComponent<TangleKelpBehaviour>();
@@ -252,6 +254,12 @@ void Archetypes::ApplyZombieDefaults(Zombie *theZombie)
 	FacingComponent *aFacing = theZombie->AddComponent<FacingComponent>(-1);
 	aFacing->mDirection = isHypnotized ? 1 : -1;
 	theZombie->AddComponent<HypnotizableComponent>(TEAM_PLANTS, true);
+
+	if (theZombie->mZombieType == ZombieType::ZOMBIE_GARGANTUAR ||
+	    theZombie->mZombieType == ZombieType::ZOMBIE_REDEYE_GARGANTUAR || theZombie->mZombieType == ZombieType::ZOMBIE_BOSS)
+	{
+		theZombie->AddComponent<UnswallowableComponent>();
+	}
 }
 
 void Archetypes::ApplyProjectileDefaults(Projectile *theProjectile)

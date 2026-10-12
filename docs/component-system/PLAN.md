@@ -73,6 +73,7 @@ Debug build → ImGui debugger → **Board → Components**:
 | `OnDeathComponent` | Runs lambdas / named actions when the entity dies | custom content |
 | `PlantBehaviourComponent` subclasses | Per-tick plant behaviour and activation (`UpdateBehaviour`, `DoSpecial`) | every plant with a special ability |
 | `ExplodeComponent` / `BurnRowComponent` / `FreezeAllComponent` / `FuseComponent` | Instant-use effects as data | Cherry Bomb, Doom-shroom, Potato Mine, Jalapeño, Ice-shroom |
+| `UnswallowableComponent` | Chompers only bite it | Gargantuar, Giga-gargantuar, Dr. Zomboss |
 | `ProducerComponent` | Drops sun/coins on a timer (rate, count, rare coin, Big Time bonus, final-wave cutoff) | Sunflower, Twin Sunflower, Marigold |
 | `SunShroomProducerComponent` | Producer subclass: small sun while small, none while growing | Sun-shroom |
 | `ShooterComponent` | Generic projectile shooter (straight or lobbed) that targets the nearest hostile plant **or** zombie in its row; `CreateLike(seed)` copies a plant's shot | Zombotany builds, custom content |
@@ -158,11 +159,18 @@ hypnosis, team-based projectile collision, generic shooter, plant heads, produce
     Tangle Kelp and Scaredy-shroom moved out of Plant.cpp into their components (`VanillaPlantBehaviours.cpp`).
     They can be removed, combined or given to other plants, but they play the original plant's animation tracks.
   - `SAVE_VERSION` 6.
-- Next: make the moved behaviours data-driven where it pays off (timings, ranges and animation track names as
-  fields instead of constants), move the helpers they still call on Plant (`FindSquashTarget`,
-  `MagnetShroomAttactItem`, `SpikeweedAttack`...) into them, then vanilla plant shooting onto `ShooterComponent` (needs per-plant muzzle offsets
-  and the Threepeater/Starfruit spreads as shot patterns). Placement traits (aquatic, nocturnal, flying, upgrades)
-  are needed before a plant exists (seed packets), so they belong in the plant definitions (Phase 5).
+- Done: the behaviours' gameplay numbers are fields (editable in the debugger, saved per plant): Squash look/windup
+  time and damage, Chomper bite time, chew time and bite damage, Spikeweed damage and hit timing (Spikerock is the
+  same behaviour with two hits), Magnet-shroom range, rows and recharge, Gold Magnet recharge and pull chance, Grave
+  Buster eat time, Tangle Kelp grab time, Scaredy-shroom fear radius and rows, Umbrella Leaf trigger delay, Coffee
+  Bean wake delay. Pure animation/state bookkeeping (Flower Pot, Lily Pad, Imitater, Cob Cannon, Cactus, Sun-shroom
+  growth, Potato Mine arming, Blover) keeps its constants.
+- Done: the last type checks in the behaviours are traits: Spikerock's double hit is data, and Chomper asks for
+  `UnswallowableComponent` (Gargantuars, Dr. Zomboss) instead of zombie types. Squash, Magnet-shroom, Scaredy-shroom,
+  Star Fruit, Spikeweed and Jalapeño target by team. `SAVE_VERSION` 7.
+- Next: board-wide blasts (`Board::KillAllZombiesInRadius`, used by Cherry Bomb, Doom-shroom, Potato Mine, Cob Cannon)
+  don't know the attacker's team yet, so a hypnotized Cherry Bomb still hits zombies. Then vanilla plant shooting
+  onto `ShooterComponent` (per-plant muzzle offsets, Threepeater/Starfruit spreads as shot patterns).
 - Still seed-checked in Zombie.cpp, by design for now: Bungee grab rules, sleep-icon offsets, I, Zombie and tutorial
   rules, and Tangle Kelp/Squash tracking their own target.
 

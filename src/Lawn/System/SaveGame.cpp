@@ -14,7 +14,8 @@
 // 4: helm/shield/balloon moved into armour components
 // 5: plant traits (spikes, walls, Torchwood converter...) added to the archetypes
 // 6: plant behaviours (explosions, fuses, state machines) added to the archetypes
-static constexpr uint32_t SAVE_VERSION = 6;
+// 7: tunable behaviour fields, UnswallowableComponent on Gargantuars and the boss
+static constexpr uint32_t SAVE_VERSION = 7;
 
 template <typename T>
 void SaveContext::SyncVar(T &aValue, const std::string &aName)

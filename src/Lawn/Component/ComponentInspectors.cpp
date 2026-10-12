@@ -251,6 +251,68 @@ void BurnRowComponent::DrawInspector()
 	ImGui::SliderInt("Extra rows each side", &mRowSpread, 0, 5);
 }
 
+void SquashBehaviour::DrawInspector()
+{
+	ImGui::InputInt("Look ticks", &mLookTicks);
+	ImGui::InputInt("Windup ticks", &mWindupTicks);
+	ImGui::InputInt("Damage", &mDamage);
+}
+
+void ChomperBehaviour::DrawInspector()
+{
+	ImGui::InputInt("Bite ticks", &mBiteTicks);
+	ImGui::InputInt("Chew ticks", &mChewTicks);
+	ImGui::InputInt("Bite damage (too big to swallow)", &mBiteDamage);
+}
+
+void SpikeweedBehaviour::DrawInspector()
+{
+	ImGui::InputInt("Damage", &mDamage);
+	ImGui::InputInt("First hit tick", &mFirstHitTick);
+	ImGui::InputInt("Second hit tick (-1 none)", &mSecondHitTick);
+}
+
+void MagnetShroomBehaviour::DrawInspector()
+{
+	ImGui::InputInt("Range", &mRange);
+	ImGui::InputInt("Range (eating zombie)", &mRangeWhileEating);
+	ImGui::InputInt("Rows above/below", &mRowRange);
+	ImGui::InputInt("Recharge ticks", &mRechargeTicks);
+}
+
+void GoldMagnetBehaviour::DrawInspector()
+{
+	ImGui::InputInt("Recharge min", &mRechargeMinTicks);
+	ImGui::InputInt("Recharge max", &mRechargeMaxTicks);
+	ImGui::InputInt("Pull chance (1 in N)", &mPullChance);
+}
+
+void GraveBusterBehaviour::DrawInspector()
+{
+	ImGui::InputInt("Eat ticks", &mEatTicks);
+}
+
+void TangleKelpBehaviour::DrawInspector()
+{
+	ImGui::InputInt("Grab ticks", &mGrabTicks);
+}
+
+void ScaredyShroomBehaviour::DrawInspector()
+{
+	ImGui::InputInt("Fear radius", &mFearRadius);
+	ImGui::InputInt("Rows above/below", &mFearRowRange);
+}
+
+void UmbrellaBehaviour::DrawInspector()
+{
+	ImGui::InputInt("Trigger ticks", &mTriggerTicks);
+}
+
+void CoffeeBeanBehaviour::DrawInspector()
+{
+	ImGui::InputInt("Wake ticks", &mWakeTicks);
+}
+
 void TeamComponent::DrawInspector()
 {
 	TeamInput("Team", mTeam);
@@ -373,6 +435,36 @@ void ShieldComponent::DrawInspector()
 {
 }
 void FuseComponent::DrawInspector()
+{
+}
+void SquashBehaviour::DrawInspector()
+{
+}
+void ChomperBehaviour::DrawInspector()
+{
+}
+void SpikeweedBehaviour::DrawInspector()
+{
+}
+void MagnetShroomBehaviour::DrawInspector()
+{
+}
+void GoldMagnetBehaviour::DrawInspector()
+{
+}
+void GraveBusterBehaviour::DrawInspector()
+{
+}
+void TangleKelpBehaviour::DrawInspector()
+{
+}
+void ScaredyShroomBehaviour::DrawInspector()
+{
+}
+void UmbrellaBehaviour::DrawInspector()
+{
+}
+void CoffeeBeanBehaviour::DrawInspector()
 {
 }
 void ExplodeComponent::DrawInspector()

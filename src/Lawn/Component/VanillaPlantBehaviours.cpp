@@ -39,7 +39,7 @@ void SquashBehaviour::UpdateBehaviour(Plant *thePlant)
 			thePlant->mTargetZombieID = thePlant->mBoard->ZombieGetID(aZombie);
 			thePlant->mTargetX = aZombie->ZombieTargetLeadX(0.0f) - thePlant->mWidth / 2;
 			thePlant->mState = PlantState::STATE_SQUASH_LOOK;
-			thePlant->mStateCountdown = 80;
+			thePlant->mStateCountdown = mLookTicks;
 			thePlant->PlayBodyReanim(thePlant->mTargetX < thePlant->mX ? "anim_lookleft" : "anim_lookright",
 			                         ReanimLoopType::REANIM_PLAY_ONCE_AND_HOLD, 10, 24.0f);
 			thePlant->mApp->PlayFoley(FoleyType::FOLEY_SQUASH_HMM);
@@ -51,7 +51,7 @@ void SquashBehaviour::UpdateBehaviour(Plant *thePlant)
 		{
 			thePlant->PlayBodyReanim("anim_jumpup", ReanimLoopType::REANIM_PLAY_ONCE_AND_HOLD, 20, 24.0f);
 			thePlant->mState = PlantState::STATE_SQUASH_PRE_LAUNCH;
-			thePlant->mStateCountdown = 30;
+			thePlant->mStateCountdown = mWindupTicks;
 		}
 	}
 	else if (thePlant->mState == PlantState::STATE_SQUASH_PRE_LAUNCH)
@@ -94,7 +94,7 @@ void SquashBehaviour::UpdateBehaviour(Plant *thePlant)
 
 			if (thePlant->mStateCountdown == 5)
 			{
-				thePlant->DoSquashDamage();
+				DoSquashDamage(thePlant);
 			}
 
 			if (thePlant->mStateCountdown == 0)
@@ -130,6 +130,36 @@ void SquashBehaviour::UpdateBehaviour(Plant *thePlant)
 	}
 }
 
+void SquashBehaviour::DoSquashDamage(Plant *thePlant)
+{
+	int aTeam = Teams::Of(thePlant);
+	int aDamageRangeFlags = thePlant->GetDamageRangeFlags(PlantWeapon::WEAPON_PRIMARY);
+	Rect aAttackRect = thePlant->GetPlantAttackRect(PlantWeapon::WEAPON_PRIMARY);
+
+	Zombie *aZombie = nullptr;
+	while (thePlant->mBoard->IterateZombies(aZombie))
+	{
+		if ((aZombie->mRow == thePlant->mRow || aZombie->mZombieType == ZombieType::ZOMBIE_BOSS) &&
+		    Teams::CanAttack(aTeam, aZombie, aDamageRangeFlags))
+		{
+			// Football zombies are a bit wider than their hit box
+			Rect aZombieRect = aZombie->GetZombieRect();
+			if (GetRectOverlap(aAttackRect, aZombieRect) > (aZombie->mZombieType == ZombieType::ZOMBIE_FOOTBALL ? -20 : 0))
+			{
+				aZombie->TakeDamage(mDamage, GetBit(DamageFlags::DAMAGE_HITS_SHIELD_AND_BODY) |
+				                                 GetBit(DamageFlags::DAMAGE_DOESNT_LEAVE_BODY));
+			}
+		}
+	}
+}
+
+void SquashBehaviour::Serialize(ComponentArchive &theArchive)
+{
+	theArchive.Value(mLookTicks);
+	theArchive.Value(mWindupTicks);
+	theArchive.Value(mDamage);
+}
+
 void ChomperBehaviour::UpdateBehaviour(Plant *thePlant)
 {
 	Reanimation *aBodyReanim = thePlant->mApp->ReanimationTryToGet(thePlant->mBodyReanimID);
@@ -139,7 +169,7 @@ void ChomperBehaviour::UpdateBehaviour(Plant *thePlant)
 		{
 			thePlant->PlayBodyReanim("anim_bite", ReanimLoopType::REANIM_PLAY_ONCE_AND_HOLD, 20, 24.0f);
 			thePlant->mState = PlantState::STATE_CHOMPER_BITING;
-			thePlant->mStateCountdown = 70;
+			thePlant->mStateCountdown = mBiteTicks;
 		}
 	}
 	else if (thePlant->mState == PlantState::STATE_CHOMPER_BITING)
@@ -149,16 +179,8 @@ void ChomperBehaviour::UpdateBehaviour(Plant *thePlant)
 			thePlant->mApp->PlayFoley(FoleyType::FOLEY_BIGCHOMP);
 
 			Zombie *aZombie = thePlant->FindTargetZombie(thePlant->mRow, PlantWeapon::WEAPON_PRIMARY);
-			bool doBite = false;
-			if (aZombie)
-			{
-				if (aZombie->mZombieType == ZombieType::ZOMBIE_GARGANTUAR ||
-				    aZombie->mZombieType == ZombieType::ZOMBIE_REDEYE_GARGANTUAR ||
-				    aZombie->mZombieType == ZombieType::ZOMBIE_BOSS)
-				{
-					doBite = true;
-				}
-			}
+			// Too big to swallow: just bite it
+			bool doBite = aZombie && aZombie->HasComponent<UnswallowableComponent>();
 			bool doMiss = false;
 			if (aZombie == nullptr)
 			{
@@ -176,7 +198,7 @@ void ChomperBehaviour::UpdateBehaviour(Plant *thePlant)
 			if (doBite)
 			{
 				thePlant->mApp->PlayFoley(FoleyType::FOLEY_SPLAT);
-				aZombie->TakeDamage(40, 0U);
+				aZombie->TakeDamage(mBiteDamage, 0U);
 				thePlant->mState = PlantState::STATE_CHOMPER_BITING_MISSED;
 			}
 			else if (doMiss)
@@ -201,7 +223,7 @@ void ChomperBehaviour::UpdateBehaviour(Plant *thePlant)
 			}
 
 			thePlant->mState = PlantState::STATE_CHOMPER_DIGESTING;
-			thePlant->mStateCountdown = 4000;
+			thePlant->mStateCountdown = mChewTicks;
 		}
 	}
 	else if (thePlant->mState == PlantState::STATE_CHOMPER_DIGESTING)
@@ -218,6 +240,13 @@ void ChomperBehaviour::UpdateBehaviour(Plant *thePlant)
 		thePlant->PlayIdleAnim(aBodyReanim->mDefinition->mFPS);
 		thePlant->mState = PlantState::STATE_READY;
 	}
+}
+
+void ChomperBehaviour::Serialize(ComponentArchive &theArchive)
+{
+	theArchive.Value(mBiteTicks);
+	theArchive.Value(mChewTicks);
+	theArchive.Value(mBiteDamage);
 }
 
 void BloverBehaviour::UpdateBehaviour(Plant *thePlant)
@@ -449,7 +478,7 @@ void MagnetShroomBehaviour::UpdateBehaviour(Plant *thePlant)
 			int aDiffY = aZombie->mRow - thePlant->mRow;
 			Rect aZombieRect = aZombie->GetZombieRect();
 
-			if (aZombie->mMindControlled)
+			if (!Teams::AreHostile(Teams::Of(thePlant), Teams::Of(aZombie)))
 				continue;
 
 			if (!aZombie->mHasHead)
@@ -462,7 +491,7 @@ void MagnetShroomBehaviour::UpdateBehaviour(Plant *thePlant)
 			if (aZombie->IsDeadOrDying())
 				continue;
 
-			if (aZombieRect.mX > BOARD_WIDTH || aDiffY > 2 || aDiffY < -2)
+			if (aZombieRect.mX > BOARD_WIDTH || aDiffY > mRowRange || aDiffY < -mRowRange)
 				continue;
 
 			if (aZombie->mZombiePhase == ZombiePhase::PHASE_DIGGER_TUNNELING ||
@@ -480,7 +509,7 @@ void MagnetShroomBehaviour::UpdateBehaviour(Plant *thePlant)
 			           aZombie->mZombiePhase == ZombiePhase::PHASE_JACK_IN_THE_BOX_RUNNING))
 				continue;
 
-			int aRadius = aZombie->mIsEating ? 320 : 270;
+			int aRadius = aZombie->mIsEating ? mRangeWhileEating : mRange;
 			if (GetCircleRectOverlap(thePlant->mX, thePlant->mY + 20, aRadius, aZombieRect))
 			{
 				float aDistance = Distance2D(thePlant->mX, thePlant->mY, aZombieRect.mX, aZombieRect.mY);
@@ -497,6 +526,7 @@ void MagnetShroomBehaviour::UpdateBehaviour(Plant *thePlant)
 		if (aClosestZombie)
 		{
 			thePlant->MagnetShroomAttactItem(aClosestZombie);
+			thePlant->mStateCountdown = mRechargeTicks;
 			return;
 		}
 
@@ -513,7 +543,7 @@ void MagnetShroomBehaviour::UpdateBehaviour(Plant *thePlant)
 				int aDiffX = abs(aGridItem->mGridX - thePlant->mPlantCol);
 				int aDiffY = abs(aGridItem->mGridY - thePlant->mRow);
 				int aSquareDistance = std::max(aDiffX, aDiffY);
-				if (aSquareDistance <= 2)
+				if (aSquareDistance <= mRowRange)
 				{
 					float aDistance = aSquareDistance + aDiffY * 0.05f;
 					if (aClosestLadder == nullptr || aDistance < aClosestLadderDist)
@@ -528,7 +558,7 @@ void MagnetShroomBehaviour::UpdateBehaviour(Plant *thePlant)
 		if (aClosestLadder)
 		{
 			thePlant->mState = PlantState::STATE_MAGNETSHROOM_SUCKING;
-			thePlant->mStateCountdown = 1500;
+			thePlant->mStateCountdown = mRechargeTicks;
 			thePlant->PlayBodyReanim("anim_shooting", ReanimLoopType::REANIM_PLAY_ONCE_AND_HOLD, 20, 12.0f);
 			thePlant->mApp->PlayFoley(FoleyType::FOLEY_MAGNETSHROOM);
 
@@ -542,6 +572,14 @@ void MagnetShroomBehaviour::UpdateBehaviour(Plant *thePlant)
 			aMagnetItem->mItemType = MagnetItemType::MAGNET_ITEM_LADDER_PLACED;
 		}
 	}
+}
+
+void MagnetShroomBehaviour::Serialize(ComponentArchive &theArchive)
+{
+	theArchive.Value(mRange);
+	theArchive.Value(mRangeWhileEating);
+	theArchive.Value(mRowRange);
+	theArchive.Value(mRechargeTicks);
 }
 
 void GoldMagnetBehaviour::UpdateBehaviour(Plant *thePlant)
@@ -613,15 +651,22 @@ void GoldMagnetBehaviour::UpdateBehaviour(Plant *thePlant)
 		{
 			thePlant->PlayIdleAnim(14.0f);
 			thePlant->mState = PlantState::STATE_MAGNETSHROOM_CHARGING;
-			thePlant->mStateCountdown = RandRangeInt(200, 300);
+			thePlant->mStateCountdown = RandRangeInt(mRechargeMinTicks, std::max(mRechargeMinTicks, mRechargeMaxTicks));
 		}
 	}
-	else if (!thePlant->IsAGoldMagnetAboutToSuck() && Sexy::Rand(50) == 0 && thePlant->FindGoldMagnetTarget())
+	else if (!thePlant->IsAGoldMagnetAboutToSuck() && Sexy::Rand(std::max(mPullChance, 1)) == 0 && thePlant->FindGoldMagnetTarget())
 	{
 		thePlant->mBoard->ShowCoinBank();
 		thePlant->mState = PlantState::STATE_MAGNETSHROOM_SUCKING;
 		thePlant->PlayBodyReanim("anim_attract", ReanimLoopType::REANIM_PLAY_ONCE_AND_HOLD, 20, 12.0f);
 	}
+}
+
+void GoldMagnetBehaviour::Serialize(ComponentArchive &theArchive)
+{
+	theArchive.Value(mRechargeMinTicks);
+	theArchive.Value(mRechargeMaxTicks);
+	theArchive.Value(mPullChance);
 }
 
 void SunShroomGrowthBehaviour::UpdateBehaviour(Plant *thePlant)
@@ -654,7 +699,7 @@ void GraveBusterBehaviour::UpdateBehaviour(Plant *thePlant)
 		if (thePlant->mApp->ReanimationGet(thePlant->mBodyReanimID)->mLoopCount > 0)
 		{
 			thePlant->PlayBodyReanim("anim_idle", ReanimLoopType::REANIM_LOOP, 10, 12.0f);
-			thePlant->mStateCountdown = 400;
+			thePlant->mStateCountdown = mEatTicks;
 			thePlant->mState = PlantState::STATE_GRAVEBUSTER_EATING;
 			thePlant->AddAttachedParticle(thePlant->mX + 40, thePlant->mY + 40, thePlant->mRenderOrder + 4, ParticleEffect::PARTICLE_GRAVE_BUSTER);
 		}
@@ -672,6 +717,11 @@ void GraveBusterBehaviour::UpdateBehaviour(Plant *thePlant)
 		thePlant->Die();
 		thePlant->mBoard->DropLootPiece(thePlant->mX + 40, thePlant->mY, 12);
 	}
+}
+
+void GraveBusterBehaviour::Serialize(ComponentArchive &theArchive)
+{
+	theArchive.Value(mEatTicks);
 }
 
 void PotatoMineArmingBehaviour::UpdateBehaviour(Plant *thePlant)
@@ -738,16 +788,9 @@ void SpikeweedBehaviour::UpdateBehaviour(Plant *thePlant)
 		{
 			thePlant->mState = PlantState::STATE_NOTREADY;
 		}
-		else if (thePlant->mSeedType == SeedType::SEED_SPIKEROCK)
+		else if (thePlant->mStateCountdown == mFirstHitTick || thePlant->mStateCountdown == mSecondHitTick)
 		{
-			if (thePlant->mStateCountdown == 69 || thePlant->mStateCountdown == 33)
-			{
-				thePlant->DoRowAreaDamage(20, GetBit(DamageFlags::DAMAGE_BYPASSES_SHIELD) | GetBit(DamageFlags::DAMAGE_SPIKE));
-			}
-		}
-		else if (thePlant->mStateCountdown == 75)
-		{
-			thePlant->DoRowAreaDamage(20, GetBit(DamageFlags::DAMAGE_BYPASSES_SHIELD) | GetBit(DamageFlags::DAMAGE_SPIKE));
+			thePlant->DoRowAreaDamage(mDamage, GetBit(DamageFlags::DAMAGE_BYPASSES_SHIELD) | GetBit(DamageFlags::DAMAGE_SPIKE));
 		}
 
 		if (aBodyReanim->mLoopCount > 0)
@@ -761,6 +804,13 @@ void SpikeweedBehaviour::UpdateBehaviour(Plant *thePlant)
 	}
 }
 
+void SpikeweedBehaviour::Serialize(ComponentArchive &theArchive)
+{
+	theArchive.Value(mDamage);
+	theArchive.Value(mFirstHitTick);
+	theArchive.Value(mSecondHitTick);
+}
+
 void TangleKelpBehaviour::UpdateBehaviour(Plant *thePlant)
 {
 	if (thePlant->mState != PlantState::STATE_TANGLEKELP_GRABBING)
@@ -770,7 +820,7 @@ void TangleKelpBehaviour::UpdateBehaviour(Plant *thePlant)
 		{
 			thePlant->mApp->PlayFoley(FoleyType::FOLEY_FLOOP);
 			thePlant->mState = PlantState::STATE_TANGLEKELP_GRABBING;
-			thePlant->mStateCountdown = 100;
+			thePlant->mStateCountdown = mGrabTicks;
 			aZombie->PoolSplash(false);
 
 			float aVinesPosX = -13.0f;
@@ -799,7 +849,7 @@ void TangleKelpBehaviour::UpdateBehaviour(Plant *thePlant)
 	}
 	else
 	{
-		if (thePlant->mStateCountdown == 50)
+		if (thePlant->mStateCountdown == mGrabTicks / 2)
 		{
 			Zombie *aZombie = thePlant->mBoard->ZombieTryToGet(thePlant->mTargetZombieID);
 			if (aZombie)
@@ -833,6 +883,11 @@ void TangleKelpBehaviour::UpdateBehaviour(Plant *thePlant)
 	}
 }
 
+void TangleKelpBehaviour::Serialize(ComponentArchive &theArchive)
+{
+	theArchive.Value(mGrabTicks);
+}
+
 void ScaredyShroomBehaviour::UpdateBehaviour(Plant *thePlant)
 {
 	if (thePlant->mShootingCounter > 0)
@@ -845,8 +900,9 @@ void ScaredyShroomBehaviour::UpdateBehaviour(Plant *thePlant)
 	{
 		Rect aZombieRect = aZombie->GetZombieRect();
 		int aDiffY = (aZombie->mZombieType == ZombieType::ZOMBIE_BOSS) ? 0 : (aZombie->mRow - thePlant->mRow);
-		if (!aZombie->mMindControlled && !aZombie->IsDeadOrDying() && aDiffY <= 1 && aDiffY >= -1 &&
-		    GetCircleRectOverlap(thePlant->mX, thePlant->mY + 20.0f, 120, aZombieRect))
+		if (Teams::AreHostile(Teams::Of(thePlant), Teams::Of(aZombie)) && !aZombie->IsDeadOrDying() &&
+		    aDiffY <= mFearRowRange && aDiffY >= -mFearRowRange &&
+		    GetCircleRectOverlap(thePlant->mX, thePlant->mY + 20.0f, mFearRadius, aZombieRect))
 		{
 			aHasZombieNearby = true;
 			break;
@@ -897,6 +953,12 @@ void ScaredyShroomBehaviour::UpdateBehaviour(Plant *thePlant)
 	}
 }
 
+void ScaredyShroomBehaviour::Serialize(ComponentArchive &theArchive)
+{
+	theArchive.Value(mFearRadius);
+	theArchive.Value(mFearRowRange);
+}
+
 void BloverBehaviour::DoSpecial(Plant *thePlant)
 {
 	if (thePlant->mState != PlantState::STATE_DOINGSPECIAL)
@@ -911,7 +973,7 @@ void UmbrellaBehaviour::DoSpecial(Plant *thePlant)
 	if (thePlant->mState != PlantState::STATE_UMBRELLA_TRIGGERED && thePlant->mState != PlantState::STATE_UMBRELLA_REFLECTING)
 	{
 		thePlant->mState = PlantState::STATE_UMBRELLA_TRIGGERED;
-		thePlant->mStateCountdown = 5;
+		thePlant->mStateCountdown = mTriggerTicks;
 
 		thePlant->PlayBodyReanim("anim_block", ReanimLoopType::REANIM_PLAY_ONCE_AND_HOLD, 0, 22.0f);
 	}
@@ -922,10 +984,20 @@ void CoffeeBeanBehaviour::DoSpecial(Plant *thePlant)
 	Plant *aPlant = thePlant->mBoard->GetTopPlantAt(thePlant->mPlantCol, thePlant->mRow, PlantPriority::TOPPLANT_ONLY_NORMAL_POSITION);
 	if (aPlant && aPlant->mIsAsleep)
 	{
-		aPlant->mWakeUpCounter = 100;
+		aPlant->mWakeUpCounter = mWakeTicks;
 	}
 
 	thePlant->mState = PlantState::STATE_DOINGSPECIAL;
 	thePlant->PlayBodyReanim("anim_crumble", ReanimLoopType::REANIM_PLAY_ONCE_AND_HOLD, 20, 22.0f);
 	thePlant->mApp->PlayFoley(FoleyType::FOLEY_COFFEE);
+}
+
+void UmbrellaBehaviour::Serialize(ComponentArchive &theArchive)
+{
+	theArchive.Value(mTriggerTicks);
+}
+
+void CoffeeBeanBehaviour::Serialize(ComponentArchive &theArchive)
+{
+	theArchive.Value(mWakeTicks);
 }

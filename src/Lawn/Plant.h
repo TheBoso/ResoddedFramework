@@ -332,9 +332,6 @@ class Plant : public GameObject
 	/// @return True if it's not on the ground, false otherwise
 	bool NotOnGround();
 
-	/// @brief Do Squash damage to all Zombies in the landing spot
-	void DoSquashDamage();
-
 	/// @brief Burn the row
 	/// @param theRow The row to burn
 	void BurnRow(int theRow);
