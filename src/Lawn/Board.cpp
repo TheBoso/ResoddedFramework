@@ -40,6 +40,7 @@
 #include "../Sexy.TodLib/TodParticle.h"
 #include "Component/Archetypes.h"
 #include "Component/ComponentRegistry.h"
+#include "Component/Teams.h"
 #include "../SexyAppFramework/SysFont.h"
 #include "../Sexy.TodLib/EffectSystem.h"
 #include "../Sexy.TodLib/TodStringFile.h"
@@ -10191,12 +10192,13 @@ bool Board::IterateReanimations(Reanimation *&theReanimation)
 	return false;
 }
 
-void Board::KillAllPlantsInRadius(int theX, int theY, int theRadius)
+void Board::KillAllPlantsInRadius(int theAttackerTeam, int theX, int theY, int theRadius)
 {
 	Plant *aPlant = nullptr;
 	while (IteratePlants(aPlant))
 	{
-		if (GetCircleRectOverlap(theX, theY, theRadius, aPlant->GetPlantRect()))
+		if (Teams::CanAttack(theAttackerTeam, aPlant) &&
+		    GetCircleRectOverlap(theX, theY, theRadius, aPlant->GetPlantRect()))
 		{
 			mPlantsEaten++;
 			aPlant->Die();
@@ -10554,15 +10556,15 @@ bool Board::PlantingRequirementsMet(SeedType theSeedType)
 	}
 }
 
-std::vector<Zombie *> Board::GetZombiesInRadius(int theRow, int theX, int theY, int theRadius, int theRowRange,
-                                                int theDamageRangeFlags)
+std::vector<Zombie *> Board::GetZombiesInRadius(int theAttackerTeam, int theRow, int theX, int theY, int theRadius,
+                                                int theRowRange, int theDamageRangeFlags)
 {
 	std::vector<Zombie *> aVec;
 	aVec.reserve(mZombies.mSize);
 	Zombie *aZombie = nullptr;
 	while (IterateZombies(aZombie))
 	{
-		if (aZombie->EffectedByDamage(theDamageRangeFlags))
+		if (Teams::CanAttack(theAttackerTeam, aZombie, theDamageRangeFlags))
 		{
 			Rect aZombieRect = aZombie->GetZombieRect();
 			int aRowDist = aZombie->mRow - theRow;
@@ -10581,13 +10583,13 @@ std::vector<Zombie *> Board::GetZombiesInRadius(int theRow, int theX, int theY, 
 	return aVec;
 }
 
-void Board::KillAllZombiesInRadius(int theRow, int theX, int theY, int theRadius, int theRowRange, bool theBurn,
-                                   int theDamageRangeFlags)
+void Board::KillAllZombiesInRadius(int theAttackerTeam, int theRow, int theX, int theY, int theRadius, int theRowRange,
+                                   bool theBurn, int theDamageRangeFlags)
 {
 	Zombie *aZombie = nullptr;
 	while (IterateZombies(aZombie))
 	{
-		if (aZombie->EffectedByDamage(theDamageRangeFlags))
+		if (Teams::CanAttack(theAttackerTeam, aZombie, theDamageRangeFlags))
 		{
 			Rect aZombieRect = aZombie->GetZombieRect();
 			int aRowDist = aZombie->mRow - theRow;

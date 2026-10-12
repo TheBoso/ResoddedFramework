@@ -677,7 +677,7 @@ void DebuggerWindow::DrawBoardComponents()
 	if (!anEntity || anEntity.Resolve(b) != aTarget)
 	{
 		ImGui::TextDisabled(mInspectZombie ? "Click a zombie in-game to select it"
-		                                   : "Select a plant in the Plants tab (or click one in-game)");
+		                                   : "Select a plant with its Select button in the Plants tab");
 		return;
 	}
 

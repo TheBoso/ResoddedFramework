@@ -1472,7 +1472,8 @@ void Plant::UpdateBowling()
 			mApp->PlaySample(SOUND_BOWLINGIMPACT2);
 
 			int aDamageRangeFlags = GetDamageRangeFlags(PlantWeapon::WEAPON_PRIMARY) | 32U;
-			mBoard->KillAllZombiesInRadius(mRow, aPosX, aPosY, 90, 1, true, aDamageRangeFlags);
+			mBoard->KillAllZombiesInRadius(Teams::Of(this), mRow, aPosX, aPosY, 90, 1, true, aDamageRangeFlags);
+			mBoard->KillAllPlantsInRadius(Teams::Of(this), aPosX, aPosY, 90);
 			mApp->AddTodParticle(aPosX, aPosY, (int)RenderLayer::RENDER_LAYER_TOP, ParticleEffect::PARTICLE_POWIE);
 			mBoard->ShakeBoard(3, -4);
 

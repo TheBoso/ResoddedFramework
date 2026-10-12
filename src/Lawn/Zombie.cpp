@@ -2159,23 +2159,17 @@ void Zombie::UpdateZombieJackInTheBox()
 		{
 			mApp->PlayFoley(FoleyType::FOLEY_EXPLOSION);
 
+			// Blows up everything on the other side: hypnotized zombies and plants, or zombies if it is hypnotized
 			int aPosX = mX + mWidth / 2;
 			int aPosY = mY + mHeight / 2;
-			if (mMindControlled)
-			{
-				mBoard->KillAllZombiesInRadius(
-				    mRow, aPosX, aPosY, JackInTheBoxZombieRadius, 1, true,
-				    GetBit(DamageRangeFlags::DAMAGES_GROUND) | GetBit(DamageRangeFlags::DAMAGES_SUBMERGED) |
-				        GetBit(DamageRangeFlags::DAMAGES_FLYING) | GetBit(DamageRangeFlags::DAMAGES_DOG) |
-				        GetBit(DamageRangeFlags::DAMAGES_OFF_GROUND) | GetBit(DamageRangeFlags::DAMAGES_DYING) |
-				        GetBit(DamageRangeFlags::DAMAGES_UNDERGROUND));
-			}
-			else
-			{
-				mBoard->KillAllZombiesInRadius(mRow, aPosX, aPosY, JackInTheBoxZombieRadius, 1, true,
-				                               GetBit(DamageRangeFlags::DAMAGES_MINDCONTROLLED));
-				mBoard->KillAllPlantsInRadius(aPosX, aPosY, JackInTheBoxPlantRadius);
-			}
+			int aTeam = Teams::Of(this);
+			mBoard->KillAllZombiesInRadius(
+			    aTeam, mRow, aPosX, aPosY, JackInTheBoxZombieRadius, 1, true,
+			    GetBit(DamageRangeFlags::DAMAGES_GROUND) | GetBit(DamageRangeFlags::DAMAGES_SUBMERGED) |
+			        GetBit(DamageRangeFlags::DAMAGES_FLYING) | GetBit(DamageRangeFlags::DAMAGES_DOG) |
+			        GetBit(DamageRangeFlags::DAMAGES_OFF_GROUND) | GetBit(DamageRangeFlags::DAMAGES_DYING) |
+			        GetBit(DamageRangeFlags::DAMAGES_UNDERGROUND));
+			mBoard->KillAllPlantsInRadius(aTeam, aPosX, aPosY, JackInTheBoxPlantRadius);
 
 			mApp->AddTodParticle(aPosX, aPosY, Board::MakeRenderOrder(RenderLayer::RENDER_LAYER_TOP, 0, 0),
 			                     ParticleEffect::PARTICLE_JACKEXPLODE);

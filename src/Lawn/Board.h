@@ -705,7 +705,8 @@ class Board : public Widget, public ButtonListener
 	/// @param theX The Circle's X Coordinate
 	/// @param theY	The Circle's Y Coordinate
 	/// @param theRadius The Circle's Radius
-	void KillAllPlantsInRadius(int theX, int theY, int theRadius);
+	/// @brief Destroy every plant hostile to theAttackerTeam in the circle
+	void KillAllPlantsInRadius(int theAttackerTeam, int theX, int theY, int theRadius);
 
 	/// @brief Get Pumpkin at the grid coordinate
 	/// @param theGridX The grid X Coordinate
@@ -906,7 +907,8 @@ class Board : public Widget, public ButtonListener
 	/// @param theRadius The Circle's Radius
 	/// @param theRowRange Max row distance it can check
 	/// @param theDamageRangeFlags Damage Flags to filter the Zombies
-	std::vector<Zombie*> GetZombiesInRadius(int theRow, int theX, int theY, int theRadius, int theRowRange, int theDamageRangeFlags);
+	/// @brief Zombies hostile to theAttackerTeam within the circle and rows that these DamageRangeFlags can reach
+	std::vector<Zombie*> GetZombiesInRadius(int theAttackerTeam, int theRow, int theX, int theY, int theRadius, int theRowRange, int theDamageRangeFlags);
 
 	/// @brief Kill all Zombies found in the radius
 	/// @param theX The Circle's X Coordinate
@@ -914,7 +916,8 @@ class Board : public Widget, public ButtonListener
 	/// @param theRadius The Circle's Radius
 	/// @param theRowRange Max row distance it can check
 	/// @param theDamageRangeFlags Damage Flags to filter the Zombies
-	void KillAllZombiesInRadius(int theRow, int theX, int theY, int theRadius, int theRowRange, bool theBurn, int theDamageRangeFlags);
+	/// @brief Blast every zombie hostile to theAttackerTeam in the circle and rows (and the ladders there)
+	void KillAllZombiesInRadius(int theAttackerTeam, int theRow, int theX, int theY, int theRadius, int theRowRange, bool theBurn, int theDamageRangeFlags);
 
 	/// @brief Get the extra width of the SeedBank
 	/// @return The width in pixels

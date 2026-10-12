@@ -97,6 +97,8 @@ Small differences that fall out of using one team rule everywhere:
 - A zombie pea hitting a plant shows its splat 5px higher (shared impact code), and one hitting a hypnotized zombie
   now shows a splat at all.
 - Sun is produced in the component tick right after zombies update, instead of inside the plant's own update.
+- A non-hypnotized Jack-in-the-Box used to hit hypnotized zombies in any state; it now uses the normal reach rules,
+  so e.g. a hypnotized Bungee still in the air is not hit.
 - Chill, ice and butter wear off in the component tick, so a zombie stays affected for at most one extra game tick
   (10 ms) compared to before.
 
@@ -168,9 +170,13 @@ hypnosis, team-based projectile collision, generic shooter, plant heads, produce
 - Done: the last type checks in the behaviours are traits: Spikerock's double hit is data, and Chomper asks for
   `UnswallowableComponent` (Gargantuars, Dr. Zomboss) instead of zombie types. Squash, Magnet-shroom, Scaredy-shroom,
   Star Fruit, Spikeweed and Jalapeño target by team. `SAVE_VERSION` 7.
-- Next: board-wide blasts (`Board::KillAllZombiesInRadius`, used by Cherry Bomb, Doom-shroom, Potato Mine, Cob Cannon)
-  don't know the attacker's team yet, so a hypnotized Cherry Bomb still hits zombies. Then vanilla plant shooting
-  onto `ShooterComponent` (per-plant muzzle offsets, Threepeater/Starfruit spreads as shot patterns).
+- Done: blasts are team-aware. `Board::KillAllZombiesInRadius`, `GetZombiesInRadius` and `KillAllPlantsInRadius`
+  take the attacker's team; Cherry Bomb, Doom-shroom, Potato Mine, Explode-o-nut, Cob Cannon and Jalapeno hit
+  hostile zombies *and* hostile plants (so a hypnotized Cherry Bomb blows up your plants). The Jack-in-the-Box has one
+  code path for both teams instead of two `mMindControlled` branches.
+- Next: vanilla plant shooting onto `ShooterComponent` (per-plant muzzle offsets, Threepeater/Starfruit spreads as
+  shot patterns). The remaining `EffectedByDamage` users are zombie/environment code (lawn mowers, Jalapeno/Squash
+  zombie heads) and move with Phase 4.
 - Still seed-checked in Zombie.cpp, by design for now: Bungee grab rules, sleep-icon offsets, I, Zombie and tutorial
   rules, and Tangle Kelp/Squash tracking their own target.
 

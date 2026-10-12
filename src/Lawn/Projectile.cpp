@@ -659,7 +659,8 @@ void Projectile::UpdateLobMotion()
 	else if (mProjectileType == ProjectileType::PROJECTILE_COBBIG)
 	{
 		int aBeforeGargantuarCount = mBoard->GetLiveGargantuarCount();
-		mBoard->KillAllZombiesInRadius(mRow, mPosX + 80, mPosY + 40, 115, 1, true, mDamageRangeFlags);
+		mBoard->KillAllZombiesInRadius(Teams::Of(this), mRow, mPosX + 80, mPosY + 40, 115, 1, true, mDamageRangeFlags);
+		mBoard->KillAllPlantsInRadius(Teams::Of(this), mPosX + 80, mPosY + 40, 115);
 		int aAfterGargantuarCount = mBoard->GetLiveGargantuarCount();
 		mBoard->mGargantuarsKillsByCornCob += aBeforeGargantuarCount - aAfterGargantuarCount;
 		if (mBoard->mGargantuarsKillsByCornCob >= 2)

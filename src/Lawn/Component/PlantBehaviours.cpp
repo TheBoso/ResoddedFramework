@@ -1,4 +1,5 @@
 #include "PlantBehaviours.h"
+#include "Teams.h"
 #include "../Board.h"
 #include "../../LawnApp.h"
 #include "../../Resources.h"
@@ -112,6 +113,7 @@ void ExplodeComponent::DoSpecial(Plant *thePlant)
 	int aCenterY = thePlant->mY + thePlant->mHeight / 2;
 	int aBlastX = aCenterX + mCenterOffsetX;
 	int aDamageRangeFlags = thePlant->GetDamageRangeFlags(PlantWeapon::WEAPON_PRIMARY);
+	int aTeam = Teams::Of(thePlant);
 
 	if (mFoley1 != FoleyType::NUM_FOLEY)
 		anApp->PlayFoley(mFoley1);
@@ -126,7 +128,7 @@ void ExplodeComponent::DoSpecial(Plant *thePlant)
 		if (!isEarned)
 		{
 			std::vector<Zombie *> aZombies = aBoard->GetZombiesInRadius(
-			    thePlant->mRow, aBlastX, aCenterY, mAchievementRadius, mAchievementRowRange, aDamageRangeFlags);
+			    aTeam, thePlant->mRow, aBlastX, aCenterY, mAchievementRadius, mAchievementRowRange, aDamageRangeFlags);
 			isEarned = (int)aZombies.size() > mAchievementMinZombies;
 		}
 		if (isEarned)
@@ -135,7 +137,10 @@ void ExplodeComponent::DoSpecial(Plant *thePlant)
 		}
 	}
 
-	aBoard->KillAllZombiesInRadius(thePlant->mRow, aBlastX, aCenterY, mRadius, mRowRange, mBurns, aDamageRangeFlags);
+	// Hits whatever is on the other side: zombies, or your plants if this plant was hypnotized
+	aBoard->KillAllZombiesInRadius(aTeam, thePlant->mRow, aBlastX, aCenterY, mRadius, mRowRange, mBurns,
+	                               aDamageRangeFlags);
+	aBoard->KillAllPlantsInRadius(aTeam, aBlastX, aCenterY, mRadius);
 	if (mKillsNearbyPlants)
 	{
 		thePlant->KillAllPlantsNearDoom();
@@ -193,6 +198,17 @@ void BurnRowComponent::DoSpecial(Plant *thePlant)
 			aBoard->ShakeBoard(3, -4);
 		}
 		thePlant->BurnRow(aRow);
+
+		// Hostile plants burn too (when this plant was hypnotized), like the Jalapeno Zombie's fire
+		Plant *aPlant = nullptr;
+		while (aBoard->IteratePlants(aPlant))
+		{
+			if (aPlant->mRow == aRow && !aPlant->NotOnGround() && Teams::CanAttack(Teams::Of(thePlant), aPlant))
+			{
+				aBoard->mPlantsEaten++;
+				aPlant->Die();
+			}
+		}
 		// Melts the ice the Zamboni left behind
 		aBoard->mIceTimer[aRow] = 20;
 	}
