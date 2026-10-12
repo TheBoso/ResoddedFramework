@@ -205,6 +205,14 @@ hypnosis, team-based projectile collision, generic shooter, plant heads, produce
   Jack-in-the-Box, Squash head, the big zombies). Query them with `Zombie::IsGiant()`, `IsVehicle()`,
   `IsInDanceTroupe()`, `IsSwimmer()`, `CrushesSpikes()`. The archetype is applied early in `ZombieInitialize` so the
   first speed pick already sees the walker. Zombie.cpp went from 232 to 184 zombie-type checks. `SAVE_VERSION` 10.
+- Done: behaviour hooks, first batch. `ZombieBehaviourComponent::OnLoseHead` runs in `Zombie::DropHead` where the
+  per-type code was (Pole Vaulter drops its pole, Balloon its hat, Pogo breaks its stick, and the new
+  `FlagBearerBehaviour` drops the flag). The look of each zombie's body is data on `ZombieBodyComponent`: shadow
+  placement (`DrawShadow`), the flying head's particle, image, hidden tracks and draw order (`DropHead`), and the
+  charred remains' reanim, offset and animation (`ApplyBurn`). Zombies without one use the regular zombie's values,
+  so a custom zombie gets a different shadow or head by attaching a body instead of editing Zombie.cpp. The
+  Gargantuar shadow/charred look now comes from the body, not `GiantComponent` (a zombie made giant at runtime keeps
+  its own look). Zombie.cpp went from 166 to 132 `mZombieType ==` checks. `SAVE_VERSION` 11.
 - Next: the remaining checks are mostly single types tied to that zombie's own animation and state (Zamboni ice
   trail, Catapult basketball count, Snorkel/Dolphin pool animations, Dr. Zomboss parts). They move into hooks on the
   zombie's behaviour component (e.g. `OnDeathAnim`, `GetDrawPosition`) so the shared code asks the behaviour instead

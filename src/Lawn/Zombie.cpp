@@ -2201,86 +2201,40 @@ void Zombie::DropHead(unsigned int theDamageFlags)
 	{
 		aEffect = ParticleEffect::PARTICLE_ZOMBIE_HEAD_POOL;
 	}
-	if (mZombieType == ZombieType::ZOMBIE_DANCER)
+	// The head's look comes from the zombie's body, what else happens from its behaviours (Pogo stick breaks...)
+	ZombieBodyComponent *aBody = GetComponent<ZombieBodyComponent>();
+	if (aBody)
 	{
-		aRenderOrder = mRenderOrder - 1;
+		aRenderOrder = mRenderOrder + aBody->mHeadRenderOffset;
+		if (aBody->mHeadParticle != ParticleEffect::PARTICLE_NONE)
+		{
+			aEffect = aBody->mHeadParticle;
+		}
 	}
-	if (mZombieType == ZombieType::ZOMBIE_NEWSPAPER)
-	{
-		aEffect = ParticleEffect::PARTICLE_ZOMBIE_NEWSPAPER_HEAD;
-	}
-	else if (mZombieType == ZombieType::ZOMBIE_POGO)
-	{
-		PogoBreak(theDamageFlags);
-		aEffect = ParticleEffect::PARTICLE_ZOMBIE_POGO_HEAD;
-	}
-	else if (mZombieType == ZombieType::ZOMBIE_BALLOON)
-	{
-		ReanimShowPrefix("anim_hat", RENDER_GROUP_HIDDEN);
-		ReanimShowPrefix("hat", RENDER_GROUP_HIDDEN);
-		aEffect = ParticleEffect::PARTICLE_ZOMBIE_BALLOON_HEAD;
-	}
-	else if (mZombieType == ZombieType::ZOMBIE_POLEVAULTER)
-	{
-		DropPole();
-	}
-	else if (mZombieType == ZombieType::ZOMBIE_FLAG)
-	{
-		DropFlag();
-	}
+	ForEachComponent(
+	    [&](Component &theComponent)
+	    {
+		    if (theComponent.IsA(GetComponentTypeId<ZombieBehaviourComponent>()))
+		    {
+			    static_cast<ZombieBehaviourComponent &>(theComponent).OnLoseHead(this, theDamageFlags);
+		    }
+	    });
 
 	TodParticleSystem *aParticle = mApp->AddTodParticle(aPosX, aPosY, aRenderOrder, aEffect);
 	OverrideParticleColor(aParticle);
 	OverrideParticleScale(aParticle);
-	if (aParticle)
+	if (aParticle && aBody)
 	{
-		if (mZombieType == ZombieType::ZOMBIE_DANCER)
+		for (const char *aPrefix : aBody->mHeadHiddenPrefixes)
 		{
-			ReanimShowPrefix("Zombie_disco_chops", RENDER_GROUP_HIDDEN);
-			ReanimShowPrefix("Zombie_disco_glasses", RENDER_GROUP_HIDDEN);
-			aParticle->OverrideImage(nullptr, IMAGE_ZOMBIEDANCERHEAD);
+			if (aPrefix[0] != '\0')
+			{
+				ReanimShowPrefix(aPrefix, RENDER_GROUP_HIDDEN);
+			}
 		}
-		else if (mZombieType == ZombieType::ZOMBIE_BACKUP_DANCER)
+		if (aBody->mHeadImageId >= 0)
 		{
-			ReanimShowPrefix("Zombie_disco_chops", RENDER_GROUP_HIDDEN);
-			ReanimShowPrefix("Zombie_backup_stash", RENDER_GROUP_HIDDEN);
-			aParticle->OverrideImage(nullptr, IMAGE_ZOMBIEBACKUPDANCERHEAD);
-		}
-		else if (mZombieType == ZombieType::ZOMBIE_BOBSLED)
-		{
-			aParticle->OverrideImage(nullptr, IMAGE_ZOMBIEBOBSLEDHEAD);
-		}
-		else if (mZombieType == ZombieType::ZOMBIE_LADDER)
-		{
-			aParticle->OverrideImage(nullptr, IMAGE_ZOMBIELADDERHEAD);
-		}
-		else if (mZombieType == ZombieType::ZOMBIE_IMP)
-		{
-			aParticle->OverrideImage(nullptr, IMAGE_ZOMBIEIMPHEAD);
-		}
-		else if (mZombieType == ZombieType::ZOMBIE_FOOTBALL)
-		{
-			aParticle->OverrideImage(nullptr, IMAGE_ZOMBIEFOOTBALLHEAD);
-		}
-		else if (mZombieType == ZombieType::ZOMBIE_POLEVAULTER)
-		{
-			aParticle->OverrideImage(nullptr, IMAGE_ZOMBIEPOLEVAULTERHEAD);
-		}
-		else if (mZombieType == ZombieType::ZOMBIE_SNORKEL)
-		{
-			aParticle->OverrideImage(nullptr, IMAGE_REANIM_ZOMBIE_SNORKLE_HEAD);
-		}
-		else if (mZombieType == ZombieType::ZOMBIE_DIGGER)
-		{
-			aParticle->OverrideImage(nullptr, IMAGE_ZOMBIEDIGGERHEAD);
-		}
-		else if (mZombieType == ZombieType::ZOMBIE_DOLPHIN_RIDER)
-		{
-			aParticle->OverrideImage(nullptr, IMAGE_ZOMBIEDOLPHINRIDERHEAD);
-		}
-		else if (mZombieType == ZombieType::ZOMBIE_YETI)
-		{
-			aParticle->OverrideImage(nullptr, IMAGE_ZOMBIEYETIHEAD);
+			aParticle->OverrideImage(nullptr, GetImageById(aBody->mHeadImageId));
 		}
 	}
 
@@ -7104,43 +7058,14 @@ void Zombie::ApplyBurn()
 	}
 	else
 	{
-		ReanimationType aReanimType = ReanimationType::REANIM_ZOMBIE_CHARRED;
-		float aCharredPosX = mPosX + 22.0f;
-		float aCharredPosY = mPosY - 10.0f;
-		if (mZombieType == ZombieType::ZOMBIE_BALLOON)
+		// The charred remains come from the zombie's body (see Component/ZombieBodyComponent.h)
+		ZombieBodyComponent *aBody = GetComponent<ZombieBodyComponent>();
+		ReanimationType aReanimType = aBody ? aBody->mCharredReanim : ReanimationType::REANIM_ZOMBIE_CHARRED;
+		float aCharredPosX = mPosX + (aBody ? aBody->mCharredX : 22.0f);
+		float aCharredPosY = mPosY + (aBody ? aBody->mCharredY : -10.0f);
+		if (aBody && IsWalkingBackwards())
 		{
-			aCharredPosY += 31.0f;
-		}
-		if (mZombieType == ZombieType::ZOMBIE_IMP)
-		{
-			aCharredPosX -= 6.0f;
-			aReanimType = ReanimationType::REANIM_ZOMBIE_CHARRED_IMP;
-		}
-		if (mZombieType == ZombieType::ZOMBIE_DIGGER)
-		{
-			if (IsWalkingBackwards())
-			{
-				aCharredPosX += 14.0f;
-			}
-			aReanimType = ReanimationType::REANIM_ZOMBIE_CHARRED_DIGGER;
-		}
-		if (mZombieType == ZombieType::ZOMBIE_ZAMBONI)
-		{
-			aReanimType = ReanimationType::REANIM_ZOMBIE_CHARRED_ZAMBONI;
-			aCharredPosX += 61.0f;
-			aCharredPosY -= 16.0f;
-		}
-		if (mZombieType == ZombieType::ZOMBIE_CATAPULT)
-		{
-			aReanimType = ReanimationType::REANIM_ZOMBIE_CHARRED_CATAPULT;
-			aCharredPosX -= 36.0f;
-			aCharredPosY -= 20.0f;
-		}
-		if (IsGiant())
-		{
-			aReanimType = ReanimationType::REANIM_ZOMBIE_CHARRED_GARGANTUAR;
-			aCharredPosX -= 15.0f;
-			aCharredPosY -= 10.0f;
+			aCharredPosX += aBody->mCharredBackwardsX;
 		}
 
 		Reanimation *aCharredReanim = mApp->AddReanimation(aCharredPosX, aCharredPosY, mRenderOrder, aReanimType);
@@ -7149,9 +7074,9 @@ void Zombie::ApplyBurn()
 		{
 			aCharredReanim->SetFramesForLayer("anim_crumble_noaxe");
 		}
-		else if (mZombieType == ZombieType::ZOMBIE_DIGGER)
+		else if (aBody && aBody->mCharredAnim[0] != '\0')
 		{
-			aCharredReanim->SetFramesForLayer("anim_crumble");
+			aCharredReanim->SetFramesForLayer(aBody->mCharredAnim);
 		}
 		else if ((IsGiant()) &&
 		         !mHasObject)
@@ -7750,119 +7675,20 @@ void Zombie::DrawShadow(Graphics *g)
 		aShadowType = 1;
 	}
 
-	if (mZombieType == ZombieType::ZOMBIE_FOOTBALL)
+	// Zombies with their own body (see Component/ZombieBodyComponent.h) have their own shadow placement
+	ZombieBodyComponent *aBody = GetComponent<ZombieBodyComponent>();
+	if (aBody && aBody->mHasShadowOffsets)
 	{
 		if (IsWalkingBackwards())
 		{
-			aShadowOffsetX -= 11.0f * mScaleZombie;
+			aShadowOffsetX += aBody->mShadowBackwardX + aBody->mShadowBackwardXPerScale * mScaleZombie;
 		}
 		else
 		{
-			aShadowOffsetX += 20.0f + 21.0f * mScaleZombie;
+			aShadowOffsetX += aBody->mShadowForwardX + aBody->mShadowForwardXPerScale * mScaleZombie;
 		}
-		aShadowOffsetY += 16.0f;
-	}
-	else if (mZombieType == ZombieType::ZOMBIE_NEWSPAPER)
-	{
-		if (IsWalkingBackwards())
-		{
-			aShadowOffsetX += 5.0f;
-		}
-		else
-		{
-			aShadowOffsetX += 29.0f;
-		}
-	}
-	else if (mZombieType == ZombieType::ZOMBIE_POLEVAULTER)
-	{
-		if (IsWalkingBackwards())
-		{
-			aShadowOffsetX += -5.0f;
-		}
-		else
-		{
-			aShadowOffsetX += 36.0f;
-		}
-		aShadowOffsetY += 11.0f;
-	}
-	else if (mZombieType == ZombieType::ZOMBIE_BOBSLED)
-	{
-		if (IsWalkingBackwards())
-		{
-			aShadowOffsetX += 13.0f;
-		}
-		else
-		{
-			aShadowOffsetX += 20.0f;
-		}
-		aShadowOffsetY += 13.0f;
-	}
-	else if (mZombieType == ZombieType::ZOMBIE_IMP)
-	{
-		aScale *= 0.6f;
-		aShadowOffsetY += 7.0f;
-		if (IsWalkingBackwards())
-		{
-			aShadowOffsetX += 13.0f;
-		}
-		else
-		{
-			aShadowOffsetX += 25.0f;
-		}
-	}
-	else if (mZombieType == ZombieType::ZOMBIE_DIGGER)
-	{
-		aShadowOffsetY += 5.0f;
-		if (IsWalkingBackwards())
-		{
-			aShadowOffsetX += 14.0f;
-		}
-		else
-		{
-			aShadowOffsetX += 17.0f;
-		}
-	}
-	else if (mZombieType == ZombieType::ZOMBIE_SNORKEL)
-	{
-		aShadowOffsetY += 5.0f;
-		if (IsWalkingBackwards())
-		{
-			aShadowOffsetX -= 2.0f;
-		}
-		else
-		{
-			aShadowOffsetX += 35.0f;
-		}
-	}
-	else if (mZombieType == ZombieType::ZOMBIE_DOLPHIN_RIDER)
-	{
-		aShadowOffsetY += 11.0f;
-		if (IsWalkingBackwards())
-		{
-			aShadowOffsetX += 15.0f;
-		}
-		else
-		{
-			aShadowOffsetX += 19.0f;
-		}
-	}
-	else if (mZombieType == ZombieType::ZOMBIE_YETI)
-	{
-		aShadowOffsetY += 20.0f;
-		if (IsWalkingBackwards())
-		{
-			aShadowOffsetX += 20.0f;
-		}
-		else
-		{
-			aShadowOffsetX += 3.0f;
-		}
-	}
-	else if (IsGiant())
-	{
-		aScale *= 1.5f;
-		aShadowOffsetX += 27.0f;
-		aShadowOffsetY += 7.0f;
+		aShadowOffsetY += aBody->mShadowY;
+		aScale *= aBody->mShadowScale;
 	}
 	else if (mApp->ReanimationTryToGet(mBodyReanimID) != nullptr)
 	{
@@ -7887,15 +7713,7 @@ void Zombie::DrawShadow(Graphics *g)
 		}
 	}
 
-	if (mZombieType == ZombieType::ZOMBIE_NEWSPAPER)
-	{
-		aShadowOffsetY += 4.0f;
-	}
-	else if (mZombieType == ZombieType::ZOMBIE_BALLOON)
-	{
-		aShadowOffsetY += 13.0f;
-	}
-	else if (mZombieType == ZombieType::ZOMBIE_BUNGEE)
+	if (mZombieType == ZombieType::ZOMBIE_BUNGEE)
 	{
 		aShadowOffsetX -= 12.0f;
 		aScale = TodAnimateCurveFloat(BUNGEE_ZOMBIE_HEIGHT - 1000, 100, mAltitude, 0.1f, 1.5f, TodCurves::CURVE_LINEAR);

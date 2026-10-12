@@ -1,4 +1,6 @@
+#include <cstring>
 #include "Archetypes.h"
+#include "../../Resources.h"
 #include "../Board.h"
 
 // Plants whose fire Plant::Fire turns into a projectile. Fume/Gloom-shroom, Cob Cannon targeting and the
@@ -27,8 +29,12 @@ static const PlantShotDefinition gPlantShotDefs[] = {
 
 // Straight shots pass over these (used to be a hardcoded list in Projectile::FindCollisionTargetPlant)
 static const SeedType gLowProfilePlants[] = {
-	SeedType::SEED_PUFFSHROOM, SeedType::SEED_SUNSHROOM, SeedType::SEED_POTATOMINE,
-	SeedType::SEED_SPIKEWEED,  SeedType::SEED_SPIKEROCK, SeedType::SEED_LILYPAD,
+	SeedType::SEED_PUFFSHROOM,
+	SeedType::SEED_SUNSHROOM,
+	SeedType::SEED_POTATOMINE,
+	SeedType::SEED_SPIKEWEED,
+	SeedType::SEED_SPIKEROCK,
+	SeedType::SEED_LILYPAD,
 };
 
 // Projectiles fired by zombies. Only used to default old saves: every spawner assigns its own team.
@@ -37,7 +43,8 @@ static const ProjectileType gZombieTeamProjectiles[] = {
 	ProjectileType::PROJECTILE_BASKETBALL,
 };
 
-template <typename T, size_t N> static bool Contains(const T (&theList)[N], T theValue)
+template <typename T, size_t N>
+static bool Contains(const T (&theList)[N], T theValue)
 {
 	for (const T &anEntry : theList)
 	{
@@ -52,8 +59,7 @@ static ProducerComponent *CreateVanillaProducer(SeedType theSeedType, int theRat
 {
 	switch (theSeedType)
 	{
-	case SeedType::SEED_SUNFLOWER:
-	{
+	case SeedType::SEED_SUNFLOWER: {
 		auto *aProducer = new ProducerComponent(CoinType::COIN_SUN, 1, theRate);
 		aProducer->mBigTimeBonusCoin = CoinType::COIN_SUN;
 		return aProducer;
@@ -62,8 +68,7 @@ static ProducerComponent *CreateVanillaProducer(SeedType theSeedType, int theRat
 		return new ProducerComponent(CoinType::COIN_SUN, 2, theRate);
 	case SeedType::SEED_SUNSHROOM:
 		return new SunShroomProducerComponent(theRate);
-	case SeedType::SEED_MARIGOLD:
-	{
+	case SeedType::SEED_MARIGOLD: {
 		auto *aProducer = new ProducerComponent(CoinType::COIN_SILVER, 1, theRate);
 		aProducer->mCoinMotion = CoinMotion::COIN_MOTION_COIN;
 		aProducer->mRareCoinType = CoinType::COIN_GOLD;
@@ -322,6 +327,9 @@ static void AddVanillaZombieBehaviours(Zombie *theZombie)
 	case ZombieType::ZOMBIE_POGO:
 		theZombie->AddComponent<PogoBehaviour>();
 		break;
+	case ZombieType::ZOMBIE_FLAG:
+		theZombie->AddComponent<FlagBearerBehaviour>();
+		break;
 	default:
 		break;
 	}
@@ -383,6 +391,102 @@ static void AddVanillaZombieTraits(Zombie *theZombie)
 	}
 }
 
+/// @brief The bodies of the vanilla zombies that differ from the regular zombie (shadow, flying head, charred
+/// remains)
+static void AddVanillaZombieBody(Zombie *theZombie)
+{
+	ZombieBodyComponent aBody;
+	auto aSetHead = [&aBody](int theImageId, const char *theHidden1 = "", const char *theHidden2 = "") {
+		aBody.mHeadImageId = theImageId;
+		strncpy(aBody.mHeadHiddenPrefixes[0], theHidden1, sizeof(aBody.mHeadHiddenPrefixes[0]) - 1);
+		strncpy(aBody.mHeadHiddenPrefixes[1], theHidden2, sizeof(aBody.mHeadHiddenPrefixes[1]) - 1);
+	};
+	auto aSetCharred = [&aBody](ReanimationType theReanim, float theX, float theY) {
+		aBody.mCharredReanim = theReanim;
+		aBody.mCharredX = theX;
+		aBody.mCharredY = theY;
+	};
+
+	switch (theZombie->mZombieType)
+	{
+	case ZombieType::ZOMBIE_FOOTBALL:
+		aBody.SetShadow(20.0f, 0.0f, 16.0f);
+		aBody.mShadowForwardXPerScale = 21.0f;
+		aBody.mShadowBackwardXPerScale = -11.0f;
+		aSetHead(ResourceId::IMAGE_ZOMBIEFOOTBALLHEAD_ID);
+		break;
+	case ZombieType::ZOMBIE_NEWSPAPER:
+		aBody.SetShadow(29.0f, 5.0f, 4.0f);
+		aBody.mHeadParticle = ParticleEffect::PARTICLE_ZOMBIE_NEWSPAPER_HEAD;
+		break;
+	case ZombieType::ZOMBIE_POLEVAULTER:
+		aBody.SetShadow(36.0f, -5.0f, 11.0f);
+		aSetHead(ResourceId::IMAGE_ZOMBIEPOLEVAULTERHEAD_ID);
+		break;
+	case ZombieType::ZOMBIE_BOBSLED:
+		aBody.SetShadow(20.0f, 13.0f, 13.0f);
+		aSetHead(ResourceId::IMAGE_ZOMBIEBOBSLEDHEAD_ID);
+		break;
+	case ZombieType::ZOMBIE_IMP:
+		aBody.SetShadow(25.0f, 13.0f, 7.0f, 0.6f);
+		aSetHead(ResourceId::IMAGE_ZOMBIEIMPHEAD_ID);
+		aSetCharred(ReanimationType::REANIM_ZOMBIE_CHARRED_IMP, 16.0f, -10.0f);
+		break;
+	case ZombieType::ZOMBIE_DIGGER:
+		aBody.SetShadow(17.0f, 14.0f, 5.0f);
+		aSetHead(ResourceId::IMAGE_ZOMBIEDIGGERHEAD_ID);
+		aSetCharred(ReanimationType::REANIM_ZOMBIE_CHARRED_DIGGER, 22.0f, -10.0f);
+		aBody.mCharredBackwardsX = 14.0f;
+		strcpy(aBody.mCharredAnim, "anim_crumble");
+		break;
+	case ZombieType::ZOMBIE_SNORKEL:
+		aBody.SetShadow(35.0f, -2.0f, 5.0f);
+		aSetHead(ResourceId::IMAGE_REANIM_ZOMBIE_SNORKLE_HEAD_ID);
+		break;
+	case ZombieType::ZOMBIE_DOLPHIN_RIDER:
+		aBody.SetShadow(19.0f, 15.0f, 11.0f);
+		aSetHead(ResourceId::IMAGE_ZOMBIEDOLPHINRIDERHEAD_ID);
+		break;
+	case ZombieType::ZOMBIE_YETI:
+		aBody.SetShadow(3.0f, 20.0f, 20.0f);
+		aSetHead(ResourceId::IMAGE_ZOMBIEYETIHEAD_ID);
+		break;
+	case ZombieType::ZOMBIE_GARGANTUAR:
+	case ZombieType::ZOMBIE_REDEYE_GARGANTUAR:
+		aBody.SetShadow(27.0f, 27.0f, 7.0f, 1.5f);
+		aSetCharred(ReanimationType::REANIM_ZOMBIE_CHARRED_GARGANTUAR, 7.0f, -20.0f);
+		break;
+	case ZombieType::ZOMBIE_BALLOON:
+		aBody.SetShadow(23.0f, 11.0f, 13.0f);
+		aBody.mHeadParticle = ParticleEffect::PARTICLE_ZOMBIE_BALLOON_HEAD;
+		aSetCharred(ReanimationType::REANIM_ZOMBIE_CHARRED, 22.0f, 21.0f);
+		break;
+	case ZombieType::ZOMBIE_DANCER:
+		aSetHead(ResourceId::IMAGE_ZOMBIEDANCERHEAD_ID, "Zombie_disco_chops", "Zombie_disco_glasses");
+		aBody.mHeadRenderOffset = -1;
+		break;
+	case ZombieType::ZOMBIE_BACKUP_DANCER:
+		aSetHead(ResourceId::IMAGE_ZOMBIEBACKUPDANCERHEAD_ID, "Zombie_disco_chops", "Zombie_backup_stash");
+		break;
+	case ZombieType::ZOMBIE_LADDER:
+		aSetHead(ResourceId::IMAGE_ZOMBIELADDERHEAD_ID);
+		break;
+	case ZombieType::ZOMBIE_POGO:
+		aBody.mHeadParticle = ParticleEffect::PARTICLE_ZOMBIE_POGO_HEAD;
+		break;
+	case ZombieType::ZOMBIE_ZAMBONI:
+		aSetCharred(ReanimationType::REANIM_ZOMBIE_CHARRED_ZAMBONI, 83.0f, -26.0f);
+		break;
+	case ZombieType::ZOMBIE_CATAPULT:
+		aSetCharred(ReanimationType::REANIM_ZOMBIE_CHARRED_CATAPULT, -14.0f, -30.0f);
+		break;
+	default:
+		return;
+	}
+
+	theZombie->AddComponent(new ZombieBodyComponent(aBody));
+}
+
 void Archetypes::ApplyZombieDefaults(Zombie *theZombie)
 {
 	// Zombies outside a level (Almanac, Zombatar previews) get components too: Pogo and Bungee previews animate
@@ -404,6 +508,7 @@ void Archetypes::ApplyZombieDefaults(Zombie *theZombie)
 
 	AddVanillaZombieBehaviours(theZombie);
 	AddVanillaZombieTraits(theZombie);
+	AddVanillaZombieBody(theZombie);
 }
 
 void Archetypes::ApplyProjectileDefaults(Projectile *theProjectile)

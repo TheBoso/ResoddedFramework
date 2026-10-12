@@ -375,6 +375,21 @@ void WalkerComponent::DrawInspector()
 	}
 }
 
+void ZombieBodyComponent::DrawInspector()
+{
+	ImGui::Checkbox("Own shadow placement", &mHasShadowOffsets);
+	if (mHasShadowOffsets)
+	{
+		ImGui::DragFloat("Shadow X (walking left)", &mShadowForwardX, 0.5f);
+		ImGui::DragFloat("Shadow X (walking right)", &mShadowBackwardX, 0.5f);
+		ImGui::DragFloat("Shadow Y", &mShadowY, 0.5f);
+		ImGui::DragFloat("Shadow scale", &mShadowScale, 0.01f, 0.1f, 4.0f);
+	}
+	ImGui::InputInt("Head image id", &mHeadImageId);
+	ImGui::DragFloat("Charred X", &mCharredX, 0.5f);
+	ImGui::DragFloat("Charred Y", &mCharredY, 0.5f);
+}
+
 void TeamComponent::DrawInspector()
 {
 	TeamInput("Team", mTeam);
@@ -497,6 +512,9 @@ void ShieldComponent::DrawInspector()
 {
 }
 void FuseComponent::DrawInspector()
+{
+}
+void ZombieBodyComponent::DrawInspector()
 {
 }
 void VehicleComponent::DrawInspector()

@@ -18,7 +18,8 @@
 // 8: plant shooting moved into PlantShooterComponent
 // 9: zombie behaviours moved into components
 // 10: zombie traits (giant, vehicle, dance troupe, swimmer, walker)
-static constexpr uint32_t SAVE_VERSION = 10;
+// 11: zombie bodies (shadow, head, charred remains) and the Flag Zombie behaviour
+static constexpr uint32_t SAVE_VERSION = 11;
 
 template <typename T>
 void SaveContext::SyncVar(T &aValue, const std::string &aName)

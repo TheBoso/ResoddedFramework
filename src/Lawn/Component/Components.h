@@ -101,5 +101,6 @@ class LowProfileComponent : public Component
 #include "ShooterComponent.h"
 #include "PlantShooterComponent.h"
 #include "ZombieBehaviours.h"
+#include "ZombieBodyComponent.h"
 #include "ZombieTraits.h"
 #include "PlantHeadComponent.h"

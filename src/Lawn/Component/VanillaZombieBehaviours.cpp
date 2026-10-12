@@ -47,6 +47,7 @@ REGISTER_COMPONENT(SquashHeadBehaviour)
 REGISTER_COMPONENT(BossBehaviour)
 REGISTER_COMPONENT(BungeeBehaviour)
 REGISTER_COMPONENT(PogoBehaviour)
+REGISTER_COMPONENT(FlagBearerBehaviour)
 
 void PolevaulterBehaviour::UpdateActions(Zombie *theZombie)
 {
@@ -1778,4 +1779,30 @@ void PogoBehaviour::UpdateAlways(Zombie *theZombie)
 		theZombie->mVelX = 0.0f;
 		theZombie->mPhaseCounter = POGO_BOUNCE_TIME;
 	}
+}
+
+// ─── Losing the head ─────────────────────────────────────────────────────────
+
+void PolevaulterBehaviour::OnLoseHead(Zombie *theZombie, unsigned int theDamageFlags)
+{
+	(void)theDamageFlags;
+	theZombie->DropPole();
+}
+
+void BalloonBehaviour::OnLoseHead(Zombie *theZombie, unsigned int theDamageFlags)
+{
+	(void)theDamageFlags;
+	theZombie->ReanimShowPrefix("anim_hat", RENDER_GROUP_HIDDEN);
+	theZombie->ReanimShowPrefix("hat", RENDER_GROUP_HIDDEN);
+}
+
+void PogoBehaviour::OnLoseHead(Zombie *theZombie, unsigned int theDamageFlags)
+{
+	theZombie->PogoBreak(theDamageFlags);
+}
+
+void FlagBearerBehaviour::OnLoseHead(Zombie *theZombie, unsigned int theDamageFlags)
+{
+	(void)theDamageFlags;
+	theZombie->DropFlag();
 }

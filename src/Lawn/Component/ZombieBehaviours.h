@@ -29,6 +29,12 @@ class ZombieBehaviourComponent : public Component
 	{
 		(void)theZombie;
 	}
+	/// @brief The zombie just lost its head (called from Zombie::DropHead before the head flies off)
+	virtual void OnLoseHead(Zombie *theZombie, unsigned int theDamageFlags)
+	{
+		(void)theZombie;
+		(void)theDamageFlags;
+	}
 };
 
 // The behaviours of the vanilla zombies (implemented in VanillaZombieBehaviours.cpp, moved from Zombie.cpp).
@@ -42,11 +48,9 @@ class ZombieBehaviourComponent : public Component
 		void Hook(Zombie *theZombie) override;                                                                         \
 	};
 
-ZOMBIE_BEHAVIOUR(PolevaulterBehaviour, UpdateActions)
 ZOMBIE_BEHAVIOUR(CatapultBehaviour, UpdateActions)
 ZOMBIE_BEHAVIOUR(DolphinRiderBehaviour, UpdateActions)
 ZOMBIE_BEHAVIOUR(SnorkelBehaviour, UpdateActions)
-ZOMBIE_BEHAVIOUR(BalloonBehaviour, UpdateActions)
 ZOMBIE_BEHAVIOUR(NewspaperBehaviour, UpdateActions)
 ZOMBIE_BEHAVIOUR(DiggerBehaviour, UpdateActions)
 ZOMBIE_BEHAVIOUR(JackInTheBoxBehaviour, UpdateActions)
@@ -64,6 +68,36 @@ ZOMBIE_BEHAVIOUR(GatlingHeadBehaviour, UpdateActions)
 ZOMBIE_BEHAVIOUR(SquashHeadBehaviour, UpdateActions)
 ZOMBIE_BEHAVIOUR(BossBehaviour, UpdatePlaying)
 ZOMBIE_BEHAVIOUR(BungeeBehaviour, UpdateAlways)
-ZOMBIE_BEHAVIOUR(PogoBehaviour, UpdateAlways)
 
 #undef ZOMBIE_BEHAVIOUR
+
+/// @brief Pole Vaulter: runs, vaults over the first plant, then walks. Drops its pole with its head.
+class PolevaulterBehaviour : public ZombieBehaviourComponent
+{
+	COMPONENT_SUBTYPE(PolevaulterBehaviour, ZombieBehaviourComponent)
+	void UpdateActions(Zombie *theZombie) override;
+	void OnLoseHead(Zombie *theZombie, unsigned int theDamageFlags) override;
+};
+
+/// @brief Balloon Zombie: floats over plants until the balloon pops. Loses its hat with its head.
+class BalloonBehaviour : public ZombieBehaviourComponent
+{
+	COMPONENT_SUBTYPE(BalloonBehaviour, ZombieBehaviourComponent)
+	void UpdateActions(Zombie *theZombie) override;
+	void OnLoseHead(Zombie *theZombie, unsigned int theDamageFlags) override;
+};
+
+/// @brief Pogo Zombie: bounces over plants. The stick breaks when it loses its head.
+class PogoBehaviour : public ZombieBehaviourComponent
+{
+	COMPONENT_SUBTYPE(PogoBehaviour, ZombieBehaviourComponent)
+	void UpdateAlways(Zombie *theZombie) override;
+	void OnLoseHead(Zombie *theZombie, unsigned int theDamageFlags) override;
+};
+
+/// @brief Flag Zombie: drops its flag with its head
+class FlagBearerBehaviour : public ZombieBehaviourComponent
+{
+	COMPONENT_SUBTYPE(FlagBearerBehaviour, ZombieBehaviourComponent)
+	void OnLoseHead(Zombie *theZombie, unsigned int theDamageFlags) override;
+};
