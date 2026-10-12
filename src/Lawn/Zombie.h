@@ -264,6 +264,14 @@ class Zombie : public GameObject
 	/// @param theDamageFlags Bitmask of damage types
 	bool EffectedByDamage(unsigned int theDamageRangeFlags);
 
+	/// @brief Traits (see Component/ZombieTraits.h)
+	bool IsGiant();
+	bool IsVehicle();
+	bool IsInDanceTroupe();
+	bool IsSwimmer();
+	/// @brief Drives over / smashes spiky plants instead of being stopped by them (Gargantuars, Zamboni)
+	bool CrushesSpikes();
+
 	/// @brief Armour layers (see Component/ArmorComponents.h); nullptr / NONE / 0 when the zombie has none
 	HelmComponent *GetHelm();
 	ShieldComponent *GetShield();

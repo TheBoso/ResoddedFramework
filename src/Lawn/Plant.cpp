@@ -689,8 +689,7 @@ void Plant::DoRowAreaDamage(int theDamage, unsigned int theDamageFlags)
 			if (GetRectOverlap(aAttackRect, aZombieRect) > 0)
 			{
 				int aDamage = theDamage;
-				if ((aZombie->mZombieType == ZombieType::ZOMBIE_ZAMBONI ||
-				     aZombie->mZombieType == ZombieType::ZOMBIE_CATAPULT) &&
+				if ((aZombie->IsVehicle()) &&
 				    (TestBit(theDamageFlags, DamageFlags::DAMAGE_SPIKE)))
 				{
 					aDamage = 1800;

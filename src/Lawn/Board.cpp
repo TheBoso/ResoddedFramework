@@ -5282,8 +5282,7 @@ void Board::ZombiesWon(Zombie *theZombie)
 		if (aZombie->GetZombieRect().mX < -50 || aZombie->mZombiePhase == ZombiePhase::PHASE_RISING_FROM_GRAVE ||
 		    aZombie->mZombiePhase == ZombiePhase::PHASE_DANCER_RISING)
 		{
-			if ((aZombie->mZombieType == ZombieType::ZOMBIE_GARGANTUAR ||
-			     aZombie->mZombieType == ZombieType::ZOMBIE_REDEYE_GARGANTUAR) &&
+			if ((aZombie->IsGiant()) &&
 			    aZombie->IsDeadOrDying() && aZombie->mPosX < 140)
 			{
 				aZombie->DieNoLoot();

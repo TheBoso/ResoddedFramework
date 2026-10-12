@@ -354,6 +354,27 @@ void PlantShooterComponent::DrawInspector()
 	}
 }
 
+void VehicleComponent::DrawInspector()
+{
+	ImGui::Checkbox("Crushes spikes", &mCrushesSpikes);
+	ImGui::InputInt("Breaks down below health", &mBreakdownHealth);
+}
+
+void WalkerComponent::DrawInspector()
+{
+	ImGui::DragFloat("Min speed", &mMinSpeed, 0.01f, 0.0f, 5.0f);
+	ImGui::DragFloat("Max speed", &mMaxSpeed, 0.01f, 0.0f, 5.0f);
+	ImGui::InputInt("House edge X", &mHouseEdgeX);
+	if (Zombie *aZombie = GetZombie())
+	{
+		ImGui::Text("Current speed: %.2f", aZombie->mVelX);
+		if (ImGui::Button("Pick a new speed"))
+		{
+			aZombie->PickRandomSpeed();
+		}
+	}
+}
+
 void TeamComponent::DrawInspector()
 {
 	TeamInput("Team", mTeam);
@@ -476,6 +497,12 @@ void ShieldComponent::DrawInspector()
 {
 }
 void FuseComponent::DrawInspector()
+{
+}
+void VehicleComponent::DrawInspector()
+{
+}
+void WalkerComponent::DrawInspector()
 {
 }
 void PlantShooterComponent::DrawInspector()

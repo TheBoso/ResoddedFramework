@@ -327,6 +327,62 @@ static void AddVanillaZombieBehaviours(Zombie *theZombie)
 	}
 }
 
+/// @brief Traits and walking of the vanilla zombies (what used to be lists of zombie types)
+static void AddVanillaZombieTraits(Zombie *theZombie)
+{
+	constexpr float kMin = WalkerComponent::kRegularMinSpeed;
+	constexpr float kMax = WalkerComponent::kRegularMaxSpeed;
+	switch (theZombie->mZombieType)
+	{
+	case ZombieType::ZOMBIE_GARGANTUAR:
+	case ZombieType::ZOMBIE_REDEYE_GARGANTUAR:
+		theZombie->AddComponent<GiantComponent>();
+		theZombie->AddComponent<WalkerComponent>(kMin, kMax, -150);
+		break;
+	case ZombieType::ZOMBIE_POLEVAULTER:
+		theZombie->AddComponent<WalkerComponent>(kMin, kMax, -150);
+		break;
+	case ZombieType::ZOMBIE_ZAMBONI:
+		theZombie->AddComponent<VehicleComponent>(true, 200);
+		theZombie->AddComponent<WalkerComponent>(kMin, kMax, -175);
+		break;
+	case ZombieType::ZOMBIE_CATAPULT:
+		theZombie->AddComponent<VehicleComponent>(false, 200);
+		theZombie->AddComponent<WalkerComponent>(kMin, kMax, -175);
+		break;
+	case ZombieType::ZOMBIE_FOOTBALL:
+		theZombie->AddComponent<WalkerComponent>(0.66f, 0.68f, -175);
+		break;
+	case ZombieType::ZOMBIE_DANCER:
+	case ZombieType::ZOMBIE_BACKUP_DANCER:
+		theZombie->AddComponent<DanceTroupeComponent>();
+		theZombie->AddComponent<WalkerComponent>(0.45f, 0.45f, -130);
+		break;
+	case ZombieType::ZOMBIE_SNORKEL:
+		theZombie->AddComponent<SwimmerComponent>();
+		theZombie->AddComponent<WalkerComponent>(0.66f, 0.68f, -130);
+		break;
+	case ZombieType::ZOMBIE_DOLPHIN_RIDER:
+		theZombie->AddComponent<SwimmerComponent>();
+		break;
+	case ZombieType::ZOMBIE_POGO:
+	case ZombieType::ZOMBIE_FLAG:
+		theZombie->AddComponent<WalkerComponent>(0.45f, 0.45f, WalkerComponent::kRegularHouseEdgeX);
+		break;
+	case ZombieType::ZOMBIE_JACK_IN_THE_BOX:
+		theZombie->AddComponent<WalkerComponent>(0.66f, 0.68f, WalkerComponent::kRegularHouseEdgeX);
+		break;
+	case ZombieType::ZOMBIE_SQUASH_HEAD:
+		theZombie->AddComponent<WalkerComponent>(0.79f, 0.81f, WalkerComponent::kRegularHouseEdgeX);
+		break;
+	case ZombieType::ZOMBIE_YETI:
+		theZombie->AddComponent<WalkerComponent>(0.4f, 0.4f, WalkerComponent::kRegularHouseEdgeX);
+		break;
+	default:
+		break;
+	}
+}
+
 void Archetypes::ApplyZombieDefaults(Zombie *theZombie)
 {
 	// Zombies outside a level (Almanac, Zombatar previews) get components too: Pogo and Bungee previews animate
@@ -347,6 +403,7 @@ void Archetypes::ApplyZombieDefaults(Zombie *theZombie)
 	}
 
 	AddVanillaZombieBehaviours(theZombie);
+	AddVanillaZombieTraits(theZombie);
 }
 
 void Archetypes::ApplyProjectileDefaults(Projectile *theProjectile)

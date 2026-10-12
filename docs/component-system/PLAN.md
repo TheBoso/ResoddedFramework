@@ -196,9 +196,19 @@ hypnosis, team-based projectile collision, generic shooter, plant heads, produce
   Dancer, Imp, the four Zombotany heads, Dr. Zomboss, Bungee, Pogo) moved from Zombie.cpp into their components
   (`VanillaZombieBehaviours.cpp`). The zombie archetype is now applied at the end of `Zombie::ZombieInitialize`, so
   zombies outside a level get their components too. `SAVE_VERSION` 9.
-- Next: the per-type checks *inside* the shared zombie code (walking speed, eating, death, animation, sounds,
-  ~380 `mZombieType` checks) become traits and data, the same way the plant traits did (e.g. a `VehicleComponent`
-  for Zamboni/Catapult, `FlyingComponent` users instead of balloon checks, walk speeds as data). The vanilla
+- Done: zombie traits (`ZombieTraits.h`) replace the recurring zombie-type groups in the shared zombie code:
+  `GiantComponent` (Gargantuars: crush spikes, keep their limbs, heavy death/burn/shadow visuals),
+  `VehicleComponent` (Zamboni, Catapult: drive over plants, spikes destroy them, fire-proof, break down below
+  `mBreakdownHealth`; `mCrushesSpikes` for the Zamboni), `DanceTroupeComponent` (Dancer + Backup Dancers move, slow
+  down and go quiet together), `SwimmerComponent` (Snorkel, Dolphin Rider enter the pool their own way) and
+  `WalkerComponent` (speed range and how far past the lawn the zombie must walk; Football, Yeti, Dancers, Pogo, Flag,
+  Jack-in-the-Box, Squash head, the big zombies). Query them with `Zombie::IsGiant()`, `IsVehicle()`,
+  `IsInDanceTroupe()`, `IsSwimmer()`, `CrushesSpikes()`. The archetype is applied early in `ZombieInitialize` so the
+  first speed pick already sees the walker. Zombie.cpp went from 232 to 184 zombie-type checks. `SAVE_VERSION` 10.
+- Next: the remaining checks are mostly single types tied to that zombie's own animation and state (Zamboni ice
+  trail, Catapult basketball count, Snorkel/Dolphin pool animations, Dr. Zomboss parts). They move into hooks on the
+  zombie's behaviour component (e.g. `OnDeathAnim`, `GetDrawPosition`) so the shared code asks the behaviour instead
+  of the type. The vanilla
   Zombotany heads keep their own behaviours for now: turning them into plant head + generic shooter would change how
   they play (the generic shooter waits for a target; the vanilla Peashooter Zombie fires on a timer).
 
