@@ -6,6 +6,7 @@
 #include "../../SexyAppFramework/ListListener.h"
 
 class LawnApp;
+class LawnScrollbar;
 namespace Sexy
 {
 class ListWidget;
@@ -26,18 +27,22 @@ class SettingsDialog : public LawnDialog, public Sexy::CheckboxListener, public 
 		SETTINGS_VSYNC,
 		SETTINGS_FULLSCREEN,
 		SETTINGS_HIGHQUALITY,
+		SETTINGS_HIGHRESOLUTION,
+		SETTINGS_FILTER_LIST,
 		SETTINGS_OPEN_SAVE_FOLDER,
 		SETTINGS_RENDER_LIST,
 		SETTINGS_WINDOW_SIZES,
 	};
 
   public:
-	LawnApp *mApp;				  //+0x16C
+	LawnApp *mApp;
 	LawnStoneButton *mApplyButton;
 	LawnStoneButton *mSaveFileButton;
 	Sexy::Checkbox *mFullscreenCheckbox;
 	Sexy::Checkbox *mVSyncCheckbox;
 	Sexy::Checkbox *mHighQualityCheckbox;
+	Sexy::Checkbox *mHighResolutionCheckbox;
+	Sexy::ListWidget *mFilterList;
 	Sexy::ListWidget *mRendererList;
 	Sexy::ListWidget *mSizesList;
 	LawnScrollbar *mOptionsSlider;

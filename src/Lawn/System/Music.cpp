@@ -9,7 +9,6 @@
 
 using namespace Sexy;
 
-//0x45A260
 Music::Music()
 {
 	mApp = (LawnApp *)gSexyAppBase;
@@ -32,9 +31,8 @@ Music::Music()
 	mFadeOutDuration = 0;
 }
 
-MusicFileData gMusicFileData[MusicFile::NUM_MUSIC_FILES]; //0x6A9ED0
+MusicFileData gMusicFileData[MusicFile::NUM_MUSIC_FILES];
 
-//0x45A2C0
 bool Music::TodLoadMusic(MusicFile theMusicFile, const std::string &theFileName)
 {
 	HMUSIC aHMusic = NULL;
@@ -90,11 +88,10 @@ bool Music::TodLoadMusic(MusicFile theMusicFile, const std::string &theFileName)
 	aMusicInfo.mHStream = aStream;
 	aMusicInfo.mHMusic = aHMusic;
 	aBass->mMusicMap.insert(
-		BassMusicMap::value_type(theMusicFile, aMusicInfo));
+	    BassMusicMap::value_type(theMusicFile, aMusicInfo));
 	return true;
 }
 
-//0x45A6C0
 void Music::SetupMusicFileForTune(MusicFile theMusicFile, MusicTune theMusicTune)
 {
 	int aTrackCount = 0;
@@ -139,7 +136,7 @@ void Music::SetupMusicFileForTune(MusicFile theMusicFile, MusicTune theMusicTune
 			break;
 		case MusicFile::MUSIC_FILE_DRUMS:
 			aTrackCount = 29;
-			aTrackStart1 = 25;
+			aTrackStart1 = 18;
 			aTrackEnd1 = 28;
 			break;
 		}
@@ -197,7 +194,7 @@ void Music::SetupMusicFileForTune(MusicFile theMusicFile, MusicTune theMusicTune
 	HMUSIC aHMusic = GetBassMusicHandle(theMusicFile);
 	for (int aTrack = 0; aTrack <= 29; aTrack++)
 	{
-		BASS_ChannelSetAttribute(aHMusic, BASS_ATTRIB_MUSIC_VOL_CHAN + aTrack, 1.0f);
+		BASS_ChannelSetAttribute(aHMusic, BASS_ATTRIB_MUSIC_VOL_CHAN + aTrack, 0.0f);
 	}
 
 	for (int aTrack = 0; aTrack <= aTrackCount; aTrack++)
@@ -229,14 +226,12 @@ void Music::LoadSong(MusicFile theMusicFile, const std::string &theFileName)
 	}
 }
 
-//0x45A8A0
 void Music::MusicTitleScreenInit()
 {
 	LoadSong(MusicFile::MUSIC_FILE_MAIN_MUSIC, "sounds/mainmusic.mo3");
 	MakeSureMusicIsPlaying(MusicTune::MUSIC_TUNE_TITLE_CRAZY_DAVE_MAIN_THEME);
 }
 
-//0x45A980
 void Music::MusicInit()
 {
 #ifdef _DEBUG
@@ -244,8 +239,9 @@ void Music::MusicInit()
 #endif
 
 	LoadSong(MusicFile::MUSIC_FILE_DRUMS, "sounds/mainmusic.mo3");
-	mApp->mCompletedLoadingThreadTasks += 3500;;
-	LoadSong(MusicFile::MUSIC_FILE_HIHATS, "sounds/mainmusic.mo3"); // it seems the original mainmusic_hihats.mo3 was missing instruments for Watery Graves
+	mApp->mCompletedLoadingThreadTasks += 3500;
+	;
+	LoadSong(MusicFile::MUSIC_FILE_HIHATS, "sounds/mainmusic_hihats.mo3");
 	mApp->mCompletedLoadingThreadTasks += 3500;
 
 #ifdef _DEBUG
@@ -256,18 +252,16 @@ void Music::MusicInit()
 #endif
 }
 
-//0x45AAC0
 void Music::MusicLoadCreditsSong()
 {
 #ifndef _DEBUG
 	BassMusicInterface *aBass = (BassMusicInterface *)mMusicInterface;
 	if (aBass->mMusicMap.find((int)MusicFile::MUSIC_FILE_CREDITS_ZOMBIES_ON_YOUR_LAWN) ==
-		aBass->mMusicMap.end())
+	    aBass->mMusicMap.end())
 		LoadSong(MusicFile::MUSIC_FILE_CREDITS_ZOMBIES_ON_YOUR_LAWN, "sounds/ZombiesOnYourLawn.ogg");
 #endif
 }
 
-//0x45ABB0
 void Music::StopAllMusic()
 {
 	if (mMusicInterface != nullptr)
@@ -294,7 +288,6 @@ void Music::StopAllMusic()
 	mFadeOutCounter = 0;
 }
 
-//0x45AC20
 HMUSIC Music::GetBassMusicHandle(MusicFile theMusicFile)
 {
 	BassMusicInterface *aBass = (BassMusicInterface *)mMusicInterface;
@@ -303,7 +296,6 @@ HMUSIC Music::GetBassMusicHandle(MusicFile theMusicFile)
 	return anItr->second.mHMusic;
 }
 
-//0x45AC70
 void Music::PlayFromOffset(MusicFile theMusicFile, int theOffset, double theVolume)
 {
 	BassMusicInterface *aBass = (BassMusicInterface *)mMusicInterface;
@@ -327,11 +319,9 @@ void Music::PlayFromOffset(MusicFile theMusicFile, int theOffset, double theVolu
 		BASS_ChannelFlags(aMusicInfo->mHMusic, BASS_MUSIC_POSRESET | BASS_MUSIC_RAMP | BASS_MUSIC_LOOP, -1);
 		BASS_ChannelPlay(aMusicInfo->mHMusic, false);
 		BASS_ChannelSetPosition(aMusicInfo->mHMusic, theOffset, BASS_POS_MUSIC_ORDER);
-
 	}
 }
 
-//0x45ADB0
 void Music::PlayMusic(MusicTune theMusicTune, int theOffset, int theDrumsOffset)
 {
 	if (mMusicDisabled)
@@ -502,7 +492,6 @@ unsigned long Music::GetMusicPosition(MusicFile theMusicFile)
 	return ((BassMusicInterface *)mMusicInterface)->GetMusicPosition((int)theMusicFile);
 }
 
-//0x45B1B0
 void Music::MusicResyncChannel(MusicFile theMusicFileToMatch, MusicFile theMusicFileToSync)
 {
 	unsigned int aPosToMatch = GetMusicOrder(theMusicFileToMatch);
@@ -537,7 +526,6 @@ void Music::MusicResync()
 	}
 }
 
-//0x45B240
 void Music::StartBurst()
 {
 	if (mApp->mGameMode == GameMode::GAMEMODE_INTRO) //Intro doesn't have burst
@@ -558,7 +546,6 @@ void Music::FadeOut(int theFadeOutDuration)
 	}
 }
 
-//0x45B260
 void Music::UpdateMusicBurst()
 {
 	if (mApp->mBoard == nullptr)
@@ -618,7 +605,7 @@ void Music::UpdateBurstTracker()
 			else
 			{
 				aMainTrackVolume =
-					TodAnimateCurveFloat(400, 0, mBurstStateCounter, 1.0f, 0.0f, TodCurves::CURVE_LINEAR);
+				    TodAnimateCurveFloat(400, 0, mBurstStateCounter, 1.0f, 0.0f, TodCurves::CURVE_LINEAR);
 				if (mBurstStateCounter == 0)
 				{
 					mMusicBurstState = MusicBurstState::MUSIC_BURST_ON;
@@ -632,7 +619,7 @@ void Music::UpdateBurstTracker()
 		if (aBurstScheme == MusicBurstType::MUSIC_BURST_REPLACE)
 			aMainTrackVolume = 0.0f;
 		if (mBurstStateCounter == 0 &&
-			((mApp->mBoard->CountZombiesOnScreen() < 4 && mBurstOverride == MusicBurstType::MUSIC_BURST_INVALID) || mBurstOverride == MusicBurstType::MUSIC_BURST_REPLACE))
+		    ((mApp->mBoard->CountZombiesOnScreen() < 4 && mBurstOverride == MusicBurstType::MUSIC_BURST_INVALID) || mBurstOverride == MusicBurstType::MUSIC_BURST_REPLACE))
 		{
 			if (aBurstScheme == MusicBurstType::MUSIC_BURST_ADDON)
 			{
@@ -720,7 +707,7 @@ void Music::UpdateBurstTracker()
 		mMusicInterface->SetSongVolume(mCurMusicFileDrums, aDrumsVolume);
 		if (aDrumsJumpOrder != -1)
 			BASS_ChannelSetPosition(GetBassMusicHandle(mCurMusicFileDrums), LOWORD(aDrumsJumpOrder),
-									BASS_POS_MUSIC_ORDER);
+			                        BASS_POS_MUSIC_ORDER);
 	}
 }
 
@@ -773,7 +760,7 @@ void Music::UpdateBurstAudio()
 			else
 			{
 				aMainTrackVolume =
-					TodAnimateCurveFloat(400, 0, mBurstStateCounter, 1.0f, 0.0f, TodCurves::CURVE_LINEAR);
+				    TodAnimateCurveFloat(400, 0, mBurstStateCounter, 1.0f, 0.0f, TodCurves::CURVE_LINEAR);
 				if (mBurstStateCounter == 0)
 				{
 					mMusicBurstState = MusicBurstState::MUSIC_BURST_ON;
@@ -787,7 +774,7 @@ void Music::UpdateBurstAudio()
 		if (aBurstScheme == MusicBurstType::MUSIC_BURST_REPLACE)
 			aMainTrackVolume = 0.0f;
 		if (mBurstStateCounter == 0 &&
-			((mApp->mBoard->CountZombiesOnScreen() < 4 && mBurstOverride == MusicBurstType::MUSIC_BURST_INVALID) || mBurstOverride == MusicBurstType::MUSIC_BURST_REPLACE))
+		    ((mApp->mBoard->CountZombiesOnScreen() < 4 && mBurstOverride == MusicBurstType::MUSIC_BURST_INVALID) || mBurstOverride == MusicBurstType::MUSIC_BURST_REPLACE))
 		{
 			if (aBurstScheme == MusicBurstType::MUSIC_BURST_ADDON)
 			{
@@ -855,7 +842,6 @@ void Music::UpdateBurstAudio()
 	}
 }
 
-//0x45B670
 void Music::MusicUpdate()
 {
 	if (mFadeOutCounter > 0)
@@ -866,7 +852,7 @@ void Music::MusicUpdate()
 		else
 		{
 			float aFadeLevel =
-				TodAnimateCurveFloat(mFadeOutDuration, 0, mFadeOutCounter, 1.0f, 0.0f, TodCurves::CURVE_LINEAR);
+			    TodAnimateCurveFloat(mFadeOutDuration, 0, mFadeOutCounter, 1.0f, 0.0f, TodCurves::CURVE_LINEAR);
 			mMusicInterface->SetSongVolume(mCurMusicFileMain, aFadeLevel);
 		}
 	}
@@ -878,7 +864,6 @@ void Music::MusicUpdate()
 	}
 }
 
-//0x45B750
 void Music::MakeSureMusicIsPlaying(MusicTune theMusicTune)
 {
 	if (mCurMusicTune != theMusicTune)
@@ -888,22 +873,21 @@ void Music::MakeSureMusicIsPlaying(MusicTune theMusicTune)
 	}
 }
 
-//0x45B770
 void Music::StartGameMusic()
 {
 	TOD_ASSERT(mApp->mBoard);
 
 	if (mApp->mGameMode == GameMode::GAMEMODE_CHALLENGE_ZEN_GARDEN ||
-		mApp->mGameMode == GameMode::GAMEMODE_TREE_OF_WISDOM)
+	    mApp->mGameMode == GameMode::GAMEMODE_TREE_OF_WISDOM)
 		MakeSureMusicIsPlaying(MusicTune::MUSIC_TUNE_ZEN_GARDEN);
 	else if (mApp->IsFinalBossLevel())
 		MakeSureMusicIsPlaying(MusicTune::MUSIC_TUNE_FINAL_BOSS_BRAINIAC_MANIAC);
 	else if (mApp->IsWallnutBowlingLevel() || mApp->IsWhackAZombieLevel() || mApp->IsLittleTroubleLevel() ||
-			 mApp->IsBungeeBlitzLevel() || mApp->mGameMode == GameMode::GAMEMODE_CHALLENGE_SPEED)
+	         mApp->IsBungeeBlitzLevel() || mApp->mGameMode == GameMode::GAMEMODE_CHALLENGE_SPEED)
 		MakeSureMusicIsPlaying(MusicTune::MUSIC_TUNE_MINIGAME_LOONBOON);
 	else if ((mApp->IsAdventureMode() && (mApp->mPlayerInfo->GetLevel() == 10 || mApp->mPlayerInfo->GetLevel() == 20 ||
-										  mApp->mPlayerInfo->GetLevel() == 30)) ||
-			 mApp->mGameMode == GameMode::GAMEMODE_CHALLENGE_COLUMN)
+	                                      mApp->mPlayerInfo->GetLevel() == 30)) ||
+	         mApp->mGameMode == GameMode::GAMEMODE_CHALLENGE_COLUMN)
 		MakeSureMusicIsPlaying(MusicTune::MUSIC_TUNE_CONVEYER);
 	else if (mApp->IsStormyNightLevel())
 		StopAllMusic();
@@ -921,7 +905,6 @@ void Music::StartGameMusic()
 		MakeSureMusicIsPlaying(MusicTune::MUSIC_TUNE_DAY_GRASSWALK);
 }
 
-//0x45B930
 void Music::GameMusicPause(bool thePause)
 {
 	if (thePause)
@@ -953,9 +936,9 @@ void Music::GameMusicPause(bool thePause)
 				mMusicInterface->StopMusic(mCurMusicFileMain);
 
 				if (mCurMusicTune == MusicTune::MUSIC_TUNE_DAY_GRASSWALK ||
-					mCurMusicTune == MusicTune::MUSIC_TUNE_POOL_WATERYGRAVES ||
-					mCurMusicTune == MusicTune::MUSIC_TUNE_FOG_RIGORMORMIST ||
-					mCurMusicTune == MusicTune::MUSIC_TUNE_ROOF_GRAZETHEROOF)
+				    mCurMusicTune == MusicTune::MUSIC_TUNE_POOL_WATERYGRAVES ||
+				    mCurMusicTune == MusicTune::MUSIC_TUNE_FOG_RIGORMORMIST ||
+				    mCurMusicTune == MusicTune::MUSIC_TUNE_ROOF_GRAZETHEROOF)
 				{
 					mMusicInterface->StopMusic(mCurMusicFileDrums);
 					mMusicInterface->StopMusic(mCurMusicFileHihats);

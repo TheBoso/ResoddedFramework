@@ -16,36 +16,59 @@ using namespace Sexy;
 class LawnMower
 {
   public:
-	LawnApp *mApp;				//+0x0
-	Board *mBoard;				//+0x4
-	float mPosX;				//+0x8
-	float mPosY;				//+0xC
-	int mRenderOrder;			//+0x10
-	int mRow;					//+0x14
-	int mAnimTicksPerFrame;		//+0x18
-	ReanimationID mReanimID;	//+0x1C
-	int mChompCounter;			//+0x20
-	int mRollingInCounter;		//+0x24
-	int mSquishedCounter;		//+0x28
-	LawnMowerState mMowerState; //+0x2C
-	bool mDead;					//+0x30
-	bool mVisible;				//+0x31
-	LawnMowerType mMowerType;	//+0x34
-	float mAltitude;			//+0x38
-	MowerHeight mMowerHeight;	//+0x3C
-	int mLastPortalX;			//+0x40
+	LawnApp *mApp;
+	Board *mBoard;
+	float mPosX;
+	float mPosY;
+	int mRenderOrder;
+	int mRow;
+	int mAnimTicksPerFrame;
+	ReanimationID mReanimID;
+	int mChompCounter;
+	int mRollingInCounter;
+	int mSquishedCounter;
+	LawnMowerState mMowerState;
+	bool mDead;
+	bool mVisible;
+	LawnMowerType mMowerType;
+	float mAltitude;
+	MowerHeight mMowerHeight;
+	int mLastPortalX;
 
   public:
+	/// @brief Initialize the LawnMower
+	/// @param theRow The row to spawn the LawnMower on
 	void LawnMowerInitialize(int theRow);
+
+	/// @brief Start the LawnMower
 	void StartMower();
+
+	/// @brief Update the LawnMower
 	void Update();
+
+	/// @brief Draw the LawnMower
+	/// @param g Graphics object
 	void Draw(Graphics *g);
+
+	/// @brief Destroy the LawnMower, you can't use it anymore
 	void Die();
+
+	/// @brief Get the LawnMower's World-Space attack rect
 	Rect GetLawnMowerAttackRect();
+
+	/// @brief Update the LawnMower's Pool State
 	void UpdatePool();
+
+	/// @brief Mow a Zombie
+	/// @param theZombie Zombie to mow down
 	void MowZombie(Zombie *theZombie);
+
+	/// @brief Squish the LawnMower
 	void SquishMower();
-	/*inline*/ void EnableSuperMower(bool theEnable);
+
+	/// @brief Set the SuperMower mode
+	/// @param theEnable The state of the SuperMower
+	void EnableSuperMower(bool theEnable);
 };
 
 #endif

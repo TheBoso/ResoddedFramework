@@ -1,7 +1,8 @@
 #include "OpenALSoundManager.h"
+#include "Common.h"
 #include "OpenALSoundInstance.h"
 #include <SDL3/SDL.h>
-#include "..\PakLib\PakInterface.h"
+#include "../PakLib/PakInterface.h"
 
 #ifdef USE_OGG_LIB
 #include "vorbis/codec.h"
@@ -116,7 +117,7 @@ int Sexy::OpenALSoundManager::VolumeToDB(double theVolume)
 
 SoundInstance *OpenALSoundManager::GetSoundInstance(unsigned int theSfxID)
 {
-	if (theSfxID > MAX_SOURCE_SOUNDS || mAudioDevice == nullptr)
+	if (theSfxID >= MAX_SOURCE_SOUNDS || mAudioDevice == nullptr)
 		return nullptr;
 
 	int aFreeChannel = FindFreeChannel();

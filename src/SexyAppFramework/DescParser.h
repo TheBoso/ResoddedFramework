@@ -1,7 +1,9 @@
 #ifndef __DESCPARSER_H__
 #define __DESCPARSER_H__
 
-#include "Common.h"
+#include <map>
+#include <string>
+#include <vector>
 
 namespace Sexy
 {
@@ -83,7 +85,8 @@ class DescParser
 	bool DataToList(DataElement *theSource, ListDataElement *theValues);
 	bool DataToIntVector(DataElement *theSource, IntVector *theIntVector);
 	bool DataToDoubleVector(DataElement *theSource, DoubleVector *theDoubleVector);
-	bool ParseToList(const std::string &theString, ListDataElement *theList, bool expectListEnd, int *theStringPos);
+	bool ParseToList(std::string::const_iterator &it, const std::string::const_iterator &end, ListDataElement *theList,
+					 bool expectListEnd);
 	bool ParseDescriptorLine(const std::string &theDescriptorLine);
 
 	// You must implement this one

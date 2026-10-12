@@ -1,5 +1,9 @@
 project(LawnProject)
 
+option(LAWN_USE_UNFINISHED_GAMEPAD_SUPPORT "Enable the unfinished gamepad support" OFF)
+option(LAWN_SHOW_TERMINAL_DEBUG "Show terminal output in debug mode when double-clicking to start the game" ON)
+option(LAWN_SHOW_TERMINAL_RELEASE "Show terminal output in release mode when double-clicking to start the game" OFF)
+
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/*.h"
@@ -31,10 +35,38 @@ add_executable(${PROJECT_NAME} ${SOURCES})
 
 target_compile_definitions(${PROJECT_NAME} PUBLIC
     $<$<CONFIG:Debug>:DEBUG>
+    $<$<CONFIG:Debug>:_DEBUG>
     $<$<CONFIG:Release>:NDEBUG>
-
-    LAWN_DEBUG_TOOLS
 )
+if (WIN32)
+    if (MSVC)
+        target_link_options(${PROJECT_NAME} PRIVATE
+            $<$<AND:$<CONFIG:Debug>,$<BOOL:${LAWN_SHOW_TERMINAL_DEBUG}>>:/SUBSYSTEM:CONSOLE>
+            $<$<AND:$<CONFIG:Release>,$<BOOL:${LAWN_SHOW_TERMINAL_RELEASE}>>:/SUBSYSTEM:CONSOLE>
+            $<$<AND:$<CONFIG:Debug>,$<NOT:$<BOOL:${LAWN_SHOW_TERMINAL_DEBUG}>>>:/SUBSYSTEM:WINDOWS>
+            $<$<AND:$<CONFIG:Release>,$<NOT:$<BOOL:${LAWN_SHOW_TERMINAL_RELEASE}>>>:/SUBSYSTEM:WINDOWS>
+        )
+    elseif(MINGW)
+        target_link_options(${PROJECT_NAME} PRIVATE
+            $<$<AND:$<CONFIG:Debug>,$<BOOL:${LAWN_SHOW_TERMINAL_DEBUG}>>:-mconsole>
+            $<$<AND:$<CONFIG:Release>,$<BOOL:${LAWN_SHOW_TERMINAL_RELEASE}>>:-mconsole>
+            $<$<AND:$<CONFIG:Debug>,$<NOT:$<BOOL:${LAWN_SHOW_TERMINAL_DEBUG}>>>:-mwindows>
+            $<$<AND:$<CONFIG:Release>,$<NOT:$<BOOL:${LAWN_SHOW_TERMINAL_RELEASE}>>>:-mwindows>
+        )
+    endif()
+endif()
+
+if(SEXY_USE_IMGUI)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC
+        $<$<CONFIG:Debug>:LAWN_DEBUG_TOOLS>
+    )
+endif()
+
+if(SEXY_USE_CONTROLLER)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC
+        $<$<BOOL:${LAWN_USE_UNFINISHED_GAMEPAD_SUPPORT}>:LAWN_USE_UNFINISHED_GAMEPAD_SUPPORT>
+    )
+endif()
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
     SexyAppFramework
@@ -110,3 +142,8 @@ foreach(DLL ${DLLS_TO_COPY})
             "${EXPORT_DIR}"
     )
 endforeach()
+
+if(MSVC)
+    # set source and execution charset to utf-8
+    target_compile_options(${PROJECT_NAME} PRIVATE /utf-8)
+endif()

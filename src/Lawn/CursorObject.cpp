@@ -7,7 +7,6 @@
 #include "../Sexy.TodLib/Reanimator.h"
 #include "../SexyAppFramework/WidgetManager.h"
 
-//0x438640
 CursorObject::CursorObject()
 {
 	mType = SeedType::SEED_NONE;
@@ -36,7 +35,6 @@ CursorObject::CursorObject()
 	mHeight = 80;
 }
 
-//0x438780
 void CursorObject::Update()
 {
 	if (mApp->mGameScene != GameScenes::SCENE_PLAYING && !mBoard->mCutScene->IsInShovelTutorial())
@@ -45,11 +43,11 @@ void CursorObject::Update()
 		return;
 	}
 
-	if (!mApp->mWidgetManager->mMouseIn 
-#if SEXY_USE_CONTROLLER 
-		&& !mApp->UsingGamepad()
+	if (!mApp->mWidgetManager->mMouseIn
+#if LAWN_USE_UNFINISHED_GAMEPAD_SUPPORT
+	    && !mApp->UsingGamepad()
 #endif
-		)
+	)
 	{
 		mVisible = false;
 		return;
@@ -62,16 +60,6 @@ void CursorObject::Update()
 	}
 
 	mVisible = true;
-#if SEXY_USE_CONTROLLER
-	if (mApp->UsingGamepad())
-	{
-		int aGridX = mBoard->PixelToGridXKeepOnBoard((int)mBoard->mGamepadX, (int)mBoard->mGamepadY);
-		int aGridY = mBoard->PixelToGridYKeepOnBoard((int)mBoard->mGamepadX, (int)mBoard->mGamepadY);
-		mX = mBoard->GridToPixelX(aGridX, aGridY) + 15;
-		mY = mBoard->GridToPixelY(aGridX, aGridY) + 15;
-	}
-	else
-#endif
 	{
 		mX = mApp->mWidgetManager->mLastMouseX - 25;
 		mY = mApp->mWidgetManager->mLastMouseY - 35;
@@ -83,7 +71,6 @@ void CursorObject::Die()
 	mApp->RemoveReanimation(mReanimCursorID);
 }
 
-//0x438820
 void CursorObject::Draw(Graphics *g)
 {
 	switch (mCursorType)
@@ -162,7 +149,7 @@ void CursorObject::Draw(Graphics *g)
 		Plant *aPlant = mBoard->mPlants.DataArrayGet((unsigned int)mGlovePlantID);
 		PottedPlant *aPottedPlant = &mApp->mPlayerInfo->mPottedPlant[aPlant->mPottedPlantIndex];
 		if (mBoard->mBackground == BackgroundType::BACKGROUND_MUSHROOM_GARDEN ||
-			mBoard->mBackground == BackgroundType::BACKGROUND_ZOMBIQUARIUM)
+		    mBoard->mBackground == BackgroundType::BACKGROUND_ZOMBIQUARIUM)
 		{
 			mApp->mZenGarden->DrawPottedPlant(g, -10.0f, -10.0f, aPottedPlant, 1.0f, false);
 		}
@@ -177,7 +164,7 @@ void CursorObject::Draw(Graphics *g)
 	case CursorType::CURSOR_TYPE_PLANT_FROM_WHEEL_BARROW: {
 		PottedPlant *aPottedPlant = mApp->mZenGarden->GetPottedPlantInWheelbarrow();
 		if (mBoard->mBackground == BackgroundType::BACKGROUND_MUSHROOM_GARDEN ||
-			mBoard->mBackground == BackgroundType::BACKGROUND_ZOMBIQUARIUM)
+		    mBoard->mBackground == BackgroundType::BACKGROUND_ZOMBIQUARIUM)
 		{
 			mApp->mZenGarden->DrawPottedPlant(g, -10.0f, -10.0f, aPottedPlant, 1.0f, false);
 		}
@@ -192,7 +179,7 @@ void CursorObject::Draw(Graphics *g)
 	case CursorType::CURSOR_TYPE_PLANT_FROM_BANK:
 	case CursorType::CURSOR_TYPE_PLANT_FROM_USABLE_COIN:
 	case CursorType::CURSOR_TYPE_PLANT_FROM_DUPLICATOR: {
-#if SEXY_USE_CONTROLLER
+#if LAWN_USE_UNFINISHED_GAMEPAD_SUPPORT
 		if (mApp->UsingGamepad())
 		{
 			break; // CursorPreview draws the ghost plant in gamepad mode; skip this to avoid a double draw
@@ -232,7 +219,6 @@ void CursorObject::Draw(Graphics *g)
 	}
 }
 
-//0x438D50
 CursorPreview::CursorPreview()
 {
 	mX = 0;
@@ -244,7 +230,6 @@ CursorPreview::CursorPreview()
 	mHeight = 80;
 }
 
-//0x438DA0
 void CursorPreview::Update()
 {
 	if (mApp->mGameScene != GameScenes::SCENE_PLAYING && !mBoard->mCutScene->IsInShovelTutorial())
@@ -268,7 +253,7 @@ void CursorPreview::Update()
 		else if (mBoard->mCursorObject->mCursorType == CursorType::CURSOR_TYPE_WHEEELBARROW)
 		{
 			if (mApp->mZenGarden->GetPottedPlantInWheelbarrow() &&
-				mBoard->CanPlantAt(mGridX, mGridY, aSeedType) == PlantingReason::PLANTING_OK)
+			    mBoard->CanPlantAt(mGridX, mGridY, aSeedType) == PlantingReason::PLANTING_OK)
 			{
 				aShow = true;
 			}
@@ -286,7 +271,6 @@ void CursorPreview::Update()
 	mVisible = false;
 }
 
-//0x438EB0
 void CursorPreview::Draw(Graphics *g)
 {
 	SeedType aSeedType = mBoard->GetSeedTypeInCursor();
@@ -298,22 +282,22 @@ void CursorPreview::Draw(Graphics *g)
 
 	PottedPlant *aPottedPlant = nullptr;
 	if (mBoard->mCursorObject->mCursorType == CursorType::CURSOR_TYPE_WHEEELBARROW ||
-		mBoard->mCursorObject->mCursorType == CursorType::CURSOR_TYPE_PLANT_FROM_WHEEL_BARROW)
+	    mBoard->mCursorObject->mCursorType == CursorType::CURSOR_TYPE_PLANT_FROM_WHEEL_BARROW)
 	{
 		aPottedPlant = mApp->mZenGarden->GetPottedPlantInWheelbarrow();
 	}
 	else if (mBoard->mCursorObject->mCursorType == CursorType::CURSOR_TYPE_PLANT_FROM_GLOVE)
 	{
 		aPottedPlant =
-			&mApp->mPlayerInfo->mPottedPlant
-				 [mBoard->mPlants.DataArrayGet((unsigned int)mBoard->mCursorObject->mGlovePlantID)->mPottedPlantIndex];
+		    &mApp->mPlayerInfo->mPottedPlant
+		         [mBoard->mPlants.DataArrayGet((unsigned int)mBoard->mCursorObject->mGlovePlantID)->mPottedPlantIndex];
 	}
 
 	if (aPottedPlant)
 	{
 		bool aDrawPot = true;
 		if (mBoard->mBackground == BackgroundType::BACKGROUND_MUSHROOM_GARDEN ||
-			mBoard->mBackground == BackgroundType::BACKGROUND_ZOMBIQUARIUM)
+		    mBoard->mBackground == BackgroundType::BACKGROUND_ZOMBIQUARIUM)
 		{
 			aDrawPot = false;
 		}
@@ -340,11 +324,11 @@ void CursorPreview::Draw(Graphics *g)
 		}
 
 		Plant::DrawSeedType(g,
-							mBoard->mCursorObject->mType,
-							mBoard->mCursorObject->mImitaterType,
-							DrawVariation::VARIATION_NORMAL,
-							aOffsetX,
-							aOffsetY);
+		                    mBoard->mCursorObject->mType,
+		                    mBoard->mCursorObject->mImitaterType,
+		                    DrawVariation::VARIATION_NORMAL,
+		                    aOffsetX,
+		                    aOffsetY);
 	}
 
 	if (mApp->mGameMode == GameMode::GAMEMODE_CHALLENGE_COLUMN)
@@ -355,11 +339,11 @@ void CursorPreview::Draw(Graphics *g)
 			{
 				float aOffsetY = 85.0f * (y - mGridY) + PlantDrawHeightOffset(mBoard, nullptr, aSeedType, mGridX, y);
 				Plant::DrawSeedType(g,
-									mBoard->mCursorObject->mType,
-									mBoard->mCursorObject->mImitaterType,
-									DrawVariation::VARIATION_NORMAL,
-									0.0f,
-									aOffsetY);
+				                    mBoard->mCursorObject->mType,
+				                    mBoard->mCursorObject->mImitaterType,
+				                    DrawVariation::VARIATION_NORMAL,
+				                    0.0f,
+				                    aOffsetY);
 			}
 		}
 	}

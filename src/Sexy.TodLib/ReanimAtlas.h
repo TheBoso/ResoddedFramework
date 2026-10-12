@@ -33,24 +33,24 @@ bool sSortByNonIncreasingHeight(const ReanimAtlasImage &image1, const ReanimAtla
 class ReanimAtlas
 {
   public:
-	ReanimAtlasImage mImageArray[MAX_REANIM_IMAGES]; //+0x0
-	int mImageCount;								 //+0x500
-	MemoryImage *mMemoryImage;						 //+0x504
+	ReanimAtlasImage mImageArray[MAX_REANIM_IMAGES];
+	int mImageCount;
+	MemoryImage *mMemoryImage;
 
   public:
 	ReanimAtlas();
 
 	void ReanimAtlasCreate(ReanimatorDefinition *theReanimDef);
 	void ReanimAtlasDispose();
-	/*inline*/ void AddImage(Image *theImage);
-	/*inline*/ int FindImage(Image *theImage);
+	void AddImage(Image *theImage);
+	int FindImage(Image *theImage);
 	bool ImageFits(int theImageCount, const Rect &rectTest, int theMaxWidth);
 	bool ImageFindPlaceOnSide(ReanimAtlasImage *theAtlasImageToPlace,
 							  int theImageCount,
 							  int theMaxWidth,
 							  bool theToRight);
-	/*inline*/ bool ImageFindPlace(ReanimAtlasImage *theAtlasImageToPlace, int theImageCount, int theMaxWidth);
-	/*inline*/ bool PlaceAtlasImage(ReanimAtlasImage *theAtlasImageToPlace, int theImageCount, int theMaxWidth);
+	bool ImageFindPlace(ReanimAtlasImage *theAtlasImageToPlace, int theImageCount, int theMaxWidth);
+	bool PlaceAtlasImage(ReanimAtlasImage *theAtlasImageToPlace, int theImageCount, int theMaxWidth);
 	int PickAtlasWidth();
 	void ArrangeImages(int &theAtlasWidth, int &theAtlasHeight);
 	ReanimAtlasImage *GetEncodedReanimAtlas(Image *theImage);

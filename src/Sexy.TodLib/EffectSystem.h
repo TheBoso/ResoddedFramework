@@ -1,8 +1,6 @@
 #ifndef __EFFECTSYSTEM_H__
 #define __EFFECTSYSTEM_H__
 
-#include "DataArray.h"
-#include "../ConstEnums.h"
 #include "../SexyAppFramework/SWTri.h"
 #include "../SexyAppFramework/Graphics.h"
 using namespace Sexy;
@@ -38,7 +36,7 @@ class TodTriangleGroup
 					 const Rect &theSrcRect);
 };
 
-extern bool gTodTriangleDrawAdditive; //0x6A9EF5
+extern bool gTodTriangleDrawAdditive;
 
 extern void TodDrawTriangle_8888_TEX1_TALPHA0_MOD0_GLOB0_BLEND0(SWHelper::SWVertex *pVerts,
 																void *pFrameBuffer,
@@ -529,6 +527,6 @@ class EffectSystem
 	void ProcessDeleteQueue();
 	void Update();
 };
-extern EffectSystem *gEffectSystem; //[0x6A9EB8]
+extern EffectSystem *gEffectSystem;
 
 #endif

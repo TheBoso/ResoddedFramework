@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Common.h"
 #include "GPUImage.h"
 #include "SexyMatrix.h"
-#include "CritSect.h"
+#include <set>
+#include <mutex>
 #include <unordered_map>
 
 #define MAX_VERTICES 16384
@@ -58,6 +58,13 @@ namespace Sexy
 	{
 		ERROR_NONE,
 		ERROR_VSYNC,
+	};
+
+	enum OutputFilteringMode
+	{
+		MODE_NEAREST,
+		MODE_LINEAR,
+		NUM_MODES,
 	};
 
 	enum RenderingBackend
@@ -143,7 +150,7 @@ namespace Sexy
 		TransformStack mTransformStack;
 
 		static std::string mErrorString;
-		CritSect mCritSect;
+        std::recursive_mutex mCritSect;
 
 		GPUImage *mScreenImage;
 

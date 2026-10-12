@@ -1,6 +1,5 @@
 #pragma once
-#include <stdlib.h>
-#include "../Lawn/LawnCommon.h"
+#include "../ConstEnums.h"
 #include "../SexyAppFramework/Common.h"
 #include "../SexyAppFramework/ResourceManager.h"
 #include "TodDebug.h"
@@ -69,19 +68,19 @@ class TodResourceManager : public ResourceManager
 	bool TodLoadResources(const std::string &theGroup);
 };
 
-/*inline*/ bool TodLoadResources(const std::string &theGroup);
-/*inline*/ bool TodLoadNextResource();
+bool TodLoadResources(const std::string &theGroup);
+bool TodLoadNextResource();
 void TodAddImageToMap(SharedImageRef *theImage, const std::string &thePath);
 bool TodFindImagePath(Image *theImage, std::string *thePath);
 bool TodFindFontPath(Font *theFont, std::string *thePath);
 
 // #################################################################################################### //
 
-/*inline*/ float TodCurveQuad(float theTime);
-/*inline*/ float TodCurveInvQuad(float theTime);
-/*inline*/ float TodCurveS(float theTime);
-/*inline*/ float TodCurveInvQuadS(float theTime);
-/*inline*/ float TodCurveBounce(float theTime);
+float TodCurveQuad(float theTime);
+float TodCurveInvQuad(float theTime);
+float TodCurveS(float theTime);
+float TodCurveInvQuadS(float theTime);
+float TodCurveBounce(float theTime);
 float TodCurveQuadS(float theTime);
 float TodCurveCubic(float theTime);
 float TodCurveInvCubic(float theTime);
@@ -94,65 +93,64 @@ float TodCurveInvCircle(float theTime);
 float TodCurveEvaluate(float theTime, float thePositionStart, float thePositionEnd, TodCurves theCurve);
 float TodCurveEvaluateClamped(float theTime, float thePositionStart, float thePositionEnd, TodCurves theCurve);
 float TodAnimateCurveFloatTime(float theTimeStart,
-							   float theTimeEnd,
-							   float theTimeAge,
-							   float thePositionStart,
-							   float thePositionEnd,
-							   TodCurves theCurve);
+                               float theTimeEnd,
+                               float theTimeAge,
+                               float thePositionStart,
+                               float thePositionEnd,
+                               TodCurves theCurve);
 float TodAnimateCurveFloat(
-	int theTimeStart, int theTimeEnd, int theTimeAge, float thePositionStart, float thePositionEnd, TodCurves theCurve);
+    int theTimeStart, int theTimeEnd, int theTimeAge, float thePositionStart, float thePositionEnd, TodCurves theCurve);
 int TodAnimateCurve(
-	int theTimeStart, int theTimeEnd, int theTimeAge, int thePositionStart, int thePositionEnd, TodCurves theCurve);
+    int theTimeStart, int theTimeEnd, int theTimeAge, int thePositionStart, int thePositionEnd, TodCurves theCurve);
 
-/*inline*/ void TodScaleTransformMatrix(SexyMatrix3 &m, float x, float y, float theScaleX, float theScaleY);
+void TodScaleTransformMatrix(SexyMatrix3 &m, float x, float y, float theScaleX, float theScaleY);
 void TodScaleRotateTransformMatrix(SexyMatrix3 &m, float x, float y, float rad, float theScaleX, float theScaleY);
 void SexyMatrix3ExtractScale(const SexyMatrix3 &m, float &theScaleX, float &theScaleY);
-/*inline*/ void SexyMatrix3Translation(SexyMatrix3 &m, float x, float y);
-void SexyMatrix3Transpose(const SexyMatrix3 &m, SexyMatrix3 &r);					  // r = m ^ T
-void SexyMatrix3Inverse(const SexyMatrix3 &m, SexyMatrix3 &r);						  // r = m ^ -1
+void SexyMatrix3Translation(SexyMatrix3 &m, float x, float y);
+void SexyMatrix3Transpose(const SexyMatrix3 &m, SexyMatrix3 &r);                      // r = m ^ T
+void SexyMatrix3Inverse(const SexyMatrix3 &m, SexyMatrix3 &r);                        // r = m ^ -1
 void SexyMatrix3Multiply(SexyMatrix3 &m, const SexyMatrix3 &l, const SexyMatrix3 &r); // m = l ¡Á r
 bool TodIsPointInPolygon(const SexyVector2 *thePolygonPoint,
-						 int theNumberPolygonPoints,
-						 const SexyVector2 &theCheckPoint);
+                         int theNumberPolygonPoints,
+                         const SexyVector2 &theCheckPoint);
 
 void TodDrawString(Graphics *g,
-				   const SexyString &theText,
-				   int thePosX,
-				   int thePosY,
-				   Font *theFont,
-				   const Color &theColor,
-				   DrawStringJustification theJustification);
+                   const SexyString &theText,
+                   int thePosX,
+                   int thePosY,
+                   Font *theFont,
+                   const Color &theColor,
+                   DrawStringJustification theJustification);
 void TodDrawStringMatrix(
-	Graphics *g, const Font *theFont, const SexyMatrix3 &theMatrix, const SexyString &theString, const Color &theColor);
+    Graphics *g, Font *theFont, const SexyMatrix3 &theMatrix, const SexyString &theString, const Color &theColor);
 void TodDrawImageScaledF(Graphics *g, Image *theImage, float thePosX, float thePosY, float theScaleX, float theScaleY);
 void TodDrawImageCenterScaledF(
-	Graphics *g, Image *theImage, float thePosX, float thePosY, float theScaleX, float theScaleY);
+    Graphics *g, Image *theImage, float thePosX, float thePosY, float theScaleX, float theScaleY);
 void TodDrawImageCelF(Graphics *g, Image *theImageStrip, float thePosX, float thePosY, int theCelCol, int theCelRow);
 void TodDrawImageCelScaled(Graphics *g,
-						   Image *theImageStrip,
-						   int thePosX,
-						   int thePosY,
-						   int theCelCol,
-						   int theCelRow,
-						   float theScaleX,
-						   float theScaleY);
+                           Image *theImageStrip,
+                           int thePosX,
+                           int thePosY,
+                           int theCelCol,
+                           int theCelRow,
+                           float theScaleX,
+                           float theScaleY);
 void TodDrawImageCelScaledF(Graphics *g,
-							Image *theImageStrip,
-							float thePosX,
-							float thePosY,
-							int theCelCol,
-							int theCelRow,
-							float theScaleX,
-							float theScaleY);
-void TodDrawImageCelCenterScaledF(
-	Graphics *g, Image *theImageStrip, float thePosX, float thePosY, int theCelCol, float theScaleX, float theScaleY);
+                            Image *theImageStrip,
+                            float thePosX,
+                            float thePosY,
+                            int theCelCol,
+                            int theCelRow,
+                            float theScaleX,
+                            float theScaleY);
+void TodDrawImageCelCenterScaledF(Graphics *g, Image *theImageStrip, float thePosX, float thePosY, int theCelCol, int theCelRow, float theScaleX, float theScaleY);
 void TodBltMatrix(Graphics *g,
-				  Image *theImage,
-				  const SexyMatrix3 &theTransform,
-				  const Rect &theClipRect,
-				  const Color &theColor,
-				  int theDrawMode,
-				  const Rect &theSrcRect);
+                  Image *theImage,
+                  const SexyMatrix3 &theTransform,
+                  const Rect &theClipRect,
+                  const Color &theColor,
+                  int theDrawMode,
+                  const Rect &theSrcRect);
 void TodMarkImageForSanding(Image *theImage);
 void TodSandImageIfNeeded(Image *theImage);
 void FixPixelsOnAlphaEdgeForBlending(Image *theImage);
@@ -160,8 +158,8 @@ uint32_t AverageNearByPixels(MemoryImage *theImage, uint32_t *thePixel, int x, i
 void Tod_SWTri_AddAllDrawTriFuncs();
 
 SexyString TodReplaceString(const SexyString &theText,
-							const SexyString &theStringToFind,
-							const SexyString &theStringToSubstitute);
+                            const SexyString &theStringToFind,
+                            const SexyString &theStringToSubstitute);
 SexyString TodReplaceNumberString(const SexyString &theText, const SexyString &theStringToFind, int theNumber);
 int TodSnprintf(char *theBuffer, int theSize, const char *theFormat, ...);
 int TodVsnprintf(char *theBuffer, int theSize, const char *theFormat, va_list theArgList);
@@ -174,19 +172,22 @@ bool TodHasUsedCheatKeys();
 bool TodAppCloseRequest();
 
 //====================================================================================================//
-/*inline*/ int RandRangeInt(int theMin, int theMax);
-/*inline*/ float RandRangeFloat(float theMin, float theMax);
+int RandRangeInt(int theMin, int theMax);
+float RandRangeFloat(float theMin, float theMax);
 inline char ClampByte(char theNum, char theMin, char theMax)
 {
-	return theNum <= theMin ? theMin : theNum >= theMax ? theMax : theNum;
+	return theNum <= theMin ? theMin : theNum >= theMax ? theMax
+	                                                    : theNum;
 }
 inline int ClampInt(int theNum, int theMin, int theMax)
 {
-	return theNum <= theMin ? theMin : theNum >= theMax ? theMax : theNum;
+	return theNum <= theMin ? theMin : theNum >= theMax ? theMax
+	                                                    : theNum;
 }
 inline float ClampFloat(float theNum, float theMin, float theMax)
 {
-	return theNum <= theMin ? theMin : theNum >= theMax ? theMax : theNum;
+	return theNum <= theMin ? theMin : theNum >= theMax ? theMax
+	                                                    : theNum;
 }
 inline float Distance2D(float x1, float y1, float x2, float y2)
 {
@@ -206,7 +207,7 @@ inline bool FloatApproxEqual(float theFloatVal1, float theFloatVal2)
 }
 
 Color GetFlashingColor(int theCounter, int theFlashTime);
-/*inline*/ int ColorComponentMultiply(int theColor1, int theColor2);
+int ColorComponentMultiply(int theColor1, int theColor2);
 Color ColorsMultiply(const Color &theColor1, const Color &theColor2);
 Color ColorAdd(const Color &theColor1, const Color &theColor2);
 

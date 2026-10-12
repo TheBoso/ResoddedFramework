@@ -5,8 +5,6 @@
 #include "Rect.h"
 #include "Graphics.h"
 #include "SexyAppBase.h"
-#include "AutoCrit.h"
-#include "Debug.h"
 #include "PerfTimer.h"
 
 using namespace Sexy;
@@ -103,7 +101,7 @@ bool SDL3Image::GenerateSurface()
 	if (mColorTable != NULL)
 		GetBits();
 
-	AutoCrit aCrit(mRenderer->mCritSect); // prevent mSurface from being released while we're in this code
+	auto aLock = std::scoped_lock(mRenderer->mCritSect); // prevent mSurface from being released while we're in this code
 
 	if (!LockSurface())
 		return false;
@@ -279,6 +277,7 @@ void SDL3Image::ImplBltRotated(Image *theImage, float theX, float theY, const Re
 	SDL_FPoint aRotCenter = {theRotCenterX, theRotCenterY};
 
 	SDL_RenderTextureRotated(mSDL3Renderer->mBackendRenderer, aTexture, &aSrcRect, &aDestRect, theRot, &aRotCenter, SDL_FLIP_NONE);
+	SDL_SetRenderClipRect(mSDL3Renderer->mBackendRenderer, nullptr);
 	SDL_SetRenderTarget(mSDL3Renderer->mBackendRenderer, nullptr);
 }
 

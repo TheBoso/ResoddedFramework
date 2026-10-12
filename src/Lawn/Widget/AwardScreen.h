@@ -31,11 +31,11 @@ class AwardScreen : public Widget
 	};
 
   public:
-	GameButton *mStartButton; //+0x88
-	GameButton *mMenuButton;  //+0x8C
-	LawnApp *mApp;			  //+0x90
-	int mFadeInCounter;		  //+0x94
-	AwardType mAwardType;	  //+0x98
+	GameButton *mStartButton;
+	GameButton *mMenuButton;
+	LawnApp *mApp;
+	int mFadeInCounter;
+	AwardType mAwardType;
 	int mAchievementTime;
 	bool mHasAchievementsToShow;
 	GameButton *mAchievementButton;
@@ -47,7 +47,7 @@ class AwardScreen : public Widget
 	AwardScreen(LawnApp *theApp, AwardType theAwardType);
 	virtual ~AwardScreen();
 
-	/*inline*/ bool IsPaperNote();
+	bool IsPaperNote();
 	virtual void Resize(int theX, int theY, int theWidth, int theHeight)
 	{
 		Widget::Resize(theX, theY, theWidth, theHeight);

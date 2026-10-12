@@ -1,6 +1,7 @@
 #ifndef __SEXYAPPBASE_H__
 #define __SEXYAPPBASE_H__
 
+#include "Platform.h" // for Windows API - do not remove
 #include "Common.h"
 #include "Version.h"
 #include "Rect.h"
@@ -9,12 +10,13 @@
 #include "ButtonListener.h"
 #include "DialogListener.h"
 #include "Buffer.h"
-#include "CritSect.h"
 #include "SharedImage.h"
-#include "Ratio.h"
 #include <ft2build.h>
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_events.h>
+#include <list>
+#include <set>
+#include <mutex>
 #include FT_FREETYPE_H
 
 
@@ -37,6 +39,7 @@ enum JSONRegistryType
 };
 
 enum RenderingBackend;
+enum OutputFilteringMode;
 
 class WidgetManager;
 class DDInterface;
@@ -187,7 +190,6 @@ class SexyAppBase : public ButtonListener, public DialogListener
 	#ifdef _WIN32
 	HANDLE mCopyMutex;
 	#endif
-	CritSect mCritSect;
 	bool mBetaValidate;
 	uint8_t mAdd8BitMaxTable[512];
 	WidgetManager *mWidgetManager;
@@ -299,7 +301,6 @@ class SexyAppBase : public ButtonListener, public DialogListener
 	bool mCustomCursorsEnabled;
 	bool mCustomCursorDirty;
 	bool mLastShutdownWasGraceful;
-	bool mIsWideWindow;
 
 	int mNumLoadingThreadTasks;
 	int mCompletedLoadingThreadTasks;
@@ -339,6 +340,8 @@ class SexyAppBase : public ButtonListener, public DialogListener
 	uint32_t mVSyncBrokenTestStartTick;
 	uint32_t mVSyncBrokenTestUpdates;
 	bool mWaitForVSync;
+	bool mHighResolution;
+	OutputFilteringMode mScreenFiltering;
 	bool mUserChanged3DSetting;
 	bool mAutoEnable3D;
 	bool mIs3D;
@@ -346,8 +349,6 @@ class SexyAppBase : public ButtonListener, public DialogListener
 	uint32_t mRecommendedVidMemory3D;
 
 	Rect mScreenBounds;
-	bool mEnableWindowAspect;
-	Ratio mWindowAspect;
 
 	StringStringMap mStringProperties;
 	StringBoolMap mBoolProperties;

@@ -1,14 +1,15 @@
 #ifndef __NEWUSERDIALOG_H__
 #define __NEWUSERDIALOG_H__
 
+#include "EditWidget.h"
 #include "LawnDialog.h"
 #include "../../SexyAppFramework/EditListener.h"
 
 class NewUserDialog : public LawnDialog, public EditListener
 {
   public:
-	LawnApp *mApp;				 //+0x170
-	EditWidget *mNameEditWidget; //+0x174
+	LawnApp *mApp;
+	EditWidget *mNameEditWidget;
 
   public:
 	NewUserDialog(LawnApp *theApp, bool isRename);

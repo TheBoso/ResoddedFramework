@@ -32,6 +32,8 @@ PakInterface::PakInterface()
 {
 	if (gPakInterface == NULL)
 		gPakInterface = this;
+
+	mDecryptPassword = "\xF7";
 }
 
 PakInterface::~PakInterface()
@@ -131,7 +133,18 @@ bool PakInterface::AddPakFile(const std::string &theFileName)
 
 	if (aMagic != 0xBAC04AC0)
 	{
-		aMagic ^= 0xF7F7F7F7;
+		int aPos = 0;
+		int aPWLength = mDecryptPassword.length();
+		aPos = aPos % aPWLength;
+
+		for (size_t i = 0; i < aPakRecord->mCollection->mData.size(); i++)
+		{
+			aPakRecord->mCollection->mData[i] ^= mDecryptPassword[(aPos++)%aPWLength];
+		}
+		aFileOffset -= sizeof(uint32_t);
+		memcpy(&aMagic, aPakCollection->mData.data() + aFileOffset, sizeof(uint32_t)); // re-read the magic number
+		aFileOffset += sizeof(uint32_t);
+
 		if (aMagic != 0xBAC04AC0) //if the magic is 0xF7 encrypted, it means the whole file is
 		{
 #if DEBUG
@@ -142,8 +155,7 @@ bool PakInterface::AddPakFile(const std::string &theFileName)
 #if DEBUG
 		printf("[PakLib] - Pak File: %s is encrypted, decrypting now...\n", theFileName.c_str());
 #endif
-		for (uint8_t &byte : aPakRecord->mCollection->mData)
-			byte ^= 0xF7;
+
 	}
 
 	uint32_t aVersion = 0;
@@ -184,9 +196,9 @@ bool PakInterface::AddPakFile(const std::string &theFileName)
 		memcpy(&aSrcSize, aPakCollection->mData.data() + aFileOffset, sizeof(int));
 		aFileOffset += sizeof(int);
 
-		int64_t aFileTime;
-		memcpy(&aFileTime, aPakCollection->mData.data() + aFileOffset, sizeof(int64_t));
-		aFileOffset += sizeof(int64_t);
+		uint64_t aFileTime;
+		memcpy(&aFileTime, aPakCollection->mData.data() + aFileOffset, sizeof(uint64_t));
+		aFileOffset += sizeof(uint64_t);
 
 		for (int i = 0; i < aNameWidth; i++) //windows....
 		{
@@ -223,7 +235,6 @@ bool PakInterface::AddPakFile(const std::string &theFileName)
 	return true;
 }
 
-//0x5D85C0
 PFILE *PakInterface::FOpen(const char *theFileName, const char *anAccess)
 {
 	if (std::filesystem::exists(theFileName))
@@ -255,7 +266,6 @@ PFILE *PakInterface::FOpen(const char *theFileName, const char *anAccess)
 	return nullptr;
 }
 
-//0x5D8780
 int PakInterface::FClose(PFILE *theFile)
 {
 	if (theFile->mFP != nullptr)
@@ -264,7 +274,6 @@ int PakInterface::FClose(PFILE *theFile)
 	return 0;
 }
 
-//0x5D87B0
 int PakInterface::FSeek(PFILE *theFile, long theOffset, int theOrigin)
 {
 	if (theFile->mFP != nullptr)
@@ -284,7 +293,6 @@ int PakInterface::FSeek(PFILE *theFile, long theOffset, int theOrigin)
 	return 0;
 }
 
-//0x5D8830
 long PakInterface::FTell(PFILE *theFile)
 {
 	if (theFile->mFP != nullptr)
@@ -294,7 +302,6 @@ long PakInterface::FTell(PFILE *theFile)
 	return 0;
 }
 
-//0x5D8850
 size_t PakInterface::FRead(void *thePtr, int theElemSize, int theCount, PFILE *theFile)
 {
 	if (theFile->mFP != nullptr)
@@ -303,7 +310,7 @@ size_t PakInterface::FRead(void *thePtr, int theElemSize, int theCount, PFILE *t
 	{
 		int aSizeBytes = std::min(1l * theElemSize * theCount, theFile->mRecord->mSize - theFile->mPos);
 
-		// 取得在整个 pak 中开始读取的位置的指针
+        // obtain pointer to start reading relative to the whole pak
 		uint8_t *src = theFile->mRecord->mCollection->mData.data() + theFile->mRecord->mStartPos + theFile->mPos;
 		uint8_t *dest = (uint8_t *)thePtr;
 		memcpy(thePtr, src, aSizeBytes);

@@ -2,7 +2,6 @@
 #define __PROFILEMGR_H__
 
 #include <map>
-#include <string>
 #include "../../SexyAppFramework/Common.h"
 
 class ProfileSyncer;
@@ -13,9 +12,9 @@ typedef std::map<SexyString, PlayerInfo, Sexy::StringLessNoCase> ProfileMap;
 class ProfileMgr
 {
   protected:
-	ProfileMap mProfileMap;			  //+0x4
-	unsigned long mNextProfileId;	  //+0x10
-	unsigned long mNextProfileUseSeq; //+0x14
+	ProfileMap mProfileMap;
+	unsigned long mNextProfileId;
+	unsigned long mNextProfileUseSeq;
 
   protected:
 	void SyncState(ProfileSyncer &theSync);
@@ -30,19 +29,19 @@ class ProfileMgr
 	bool DeleteProfile(const SexyString &theName);
 
   protected:
-	/*inline*/ void DeleteProfile(ProfileMap::iterator theProfile);
+	void DeleteProfile(ProfileMap::iterator theProfile);
 
   public:
 	ProfileMgr()
 	{
 		Clear();
-	} //0x46A6E0
+	}
 	virtual ~ProfileMgr()
 	{
 		;
-	} //0x46A780
+	}
 
-	/*inline*/ void Clear();
+	void Clear();
 	void Load();
 	void Save();
 	inline int GetNumProfiles() const

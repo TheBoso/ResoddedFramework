@@ -1,3 +1,6 @@
+#include <sstream>
+#include <iomanip>
+
 #if SEXY_CRASH_HANDLER
 #include "SEHCatcher.h"
 #include <SDL3/SDL.h>
@@ -13,7 +16,7 @@
 #if SEXY_USE_IMGUI
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_sdlrenderer3.h> //use SDL3 Renderer for the handler.
-#include <imgui/imgui_impl_sdl3.h> //use SDL3 Renderer for the handler.
+#include <imgui/imgui_impl_sdl3.h>         //use SDL3 Renderer for the handler.
 #endif
 
 #include <cpptrace/cpptrace.hpp>
@@ -37,7 +40,7 @@ bool SEHCatcher::mAllowSubmit = true;
 std::string SEHCatcher::mCrashMessage = "An unexpected error has occured!";
 std::string SEHCatcher::mSubmitHost;
 std::string SEHCatcher::mSubmitMessage =
-	"Please help out by providing as much information as you can about this crash.";
+    "Please help out by providing as much information as you can about this crash.";
 std::string SEHCatcher::mSubmitErrorMessage = "Failed to redirect to issue page.";
 
 static bool gUseDefaultFonts = true;
@@ -46,37 +49,39 @@ static bool gUseDefaultFonts = true;
 struct
 {
 	DWORD dwExceptionCode;
-	char *szMessage;
-} gMsgTable[] = {{STATUS_SEGMENT_NOTIFICATION, "Segment Notification"},
-				 {STATUS_BREAKPOINT, "Breakpoint"},
-				 {STATUS_SINGLE_STEP, "Single step"},
-				 {STATUS_WAIT_0, "Wait 0"},
-				 {STATUS_ABANDONED_WAIT_0, "Abandoned Wait 0"},
-				 {STATUS_USER_APC, "User APC"},
-				 {STATUS_TIMEOUT, "Timeout"},
-				 {STATUS_PENDING, "Pending"},
-				 {STATUS_GUARD_PAGE_VIOLATION, "Guard Page Violation"},
-				 {STATUS_DATATYPE_MISALIGNMENT, "Data Type Misalignment"},
-				 {STATUS_ACCESS_VIOLATION, "Access Violation"},
-				 {STATUS_IN_PAGE_ERROR, "In Page Error"},
-				 {STATUS_NO_MEMORY, "No Memory"},
-				 {STATUS_ILLEGAL_INSTRUCTION, "Illegal Instruction"},
-				 {STATUS_NONCONTINUABLE_EXCEPTION, "Noncontinuable Exception"},
-				 {STATUS_INVALID_DISPOSITION, "Invalid Disposition"},
-				 {STATUS_ARRAY_BOUNDS_EXCEEDED, "Array Bounds Exceeded"},
-				 {STATUS_FLOAT_DENORMAL_OPERAND, "Float Denormal Operand"},
-				 {STATUS_FLOAT_DIVIDE_BY_ZERO, "Divide by Zero"},
-				 {STATUS_FLOAT_INEXACT_RESULT, "Float Inexact Result"},
-				 {STATUS_FLOAT_INVALID_OPERATION, "Float Invalid Operation"},
-				 {STATUS_FLOAT_OVERFLOW, "Float Overflow"},
-				 {STATUS_FLOAT_STACK_CHECK, "Float Stack Check"},
-				 {STATUS_FLOAT_UNDERFLOW, "Float Underflow"},
-				 {STATUS_INTEGER_DIVIDE_BY_ZERO, "Integer Divide by Zero"},
-				 {STATUS_INTEGER_OVERFLOW, "Integer Overflow"},
-				 {STATUS_PRIVILEGED_INSTRUCTION, "Privileged Instruction"},
-				 {STATUS_STACK_OVERFLOW, "Stack Overflow"},
-				 {STATUS_CONTROL_C_EXIT, "Ctrl+C Exit"},
-				 {0xFFFFFFFF, ""}};
+	const char *szMessage;
+} gMsgTable[] = {
+	{ STATUS_SEGMENT_NOTIFICATION,     "Segment Notification"     },
+	{ STATUS_BREAKPOINT,               "Breakpoint"               },
+	{ STATUS_SINGLE_STEP,              "Single step"              },
+	{ STATUS_WAIT_0,                   "Wait 0"                   },
+	{ STATUS_ABANDONED_WAIT_0,         "Abandoned Wait 0"         },
+	{ STATUS_USER_APC,                 "User APC"                 },
+	{ STATUS_TIMEOUT,                  "Timeout"                  },
+	{ STATUS_PENDING,                  "Pending"                  },
+	{ STATUS_GUARD_PAGE_VIOLATION,     "Guard Page Violation"     },
+	{ STATUS_DATATYPE_MISALIGNMENT,    "Data Type Misalignment"   },
+	{ STATUS_ACCESS_VIOLATION,         "Access Violation"         },
+	{ STATUS_IN_PAGE_ERROR,            "In Page Error"            },
+	{ STATUS_NO_MEMORY,                "No Memory"                },
+	{ STATUS_ILLEGAL_INSTRUCTION,      "Illegal Instruction"      },
+	{ STATUS_NONCONTINUABLE_EXCEPTION, "Noncontinuable Exception" },
+	{ STATUS_INVALID_DISPOSITION,      "Invalid Disposition"      },
+	{ STATUS_ARRAY_BOUNDS_EXCEEDED,    "Array Bounds Exceeded"    },
+	{ STATUS_FLOAT_DENORMAL_OPERAND,   "Float Denormal Operand"   },
+	{ STATUS_FLOAT_DIVIDE_BY_ZERO,     "Divide by Zero"           },
+	{ STATUS_FLOAT_INEXACT_RESULT,     "Float Inexact Result"     },
+	{ STATUS_FLOAT_INVALID_OPERATION,  "Float Invalid Operation"  },
+	{ STATUS_FLOAT_OVERFLOW,           "Float Overflow"           },
+	{ STATUS_FLOAT_STACK_CHECK,        "Float Stack Check"        },
+	{ STATUS_FLOAT_UNDERFLOW,          "Float Underflow"          },
+	{ STATUS_INTEGER_DIVIDE_BY_ZERO,   "Integer Divide by Zero"   },
+	{ STATUS_INTEGER_OVERFLOW,         "Integer Overflow"         },
+	{ STATUS_PRIVILEGED_INSTRUCTION,   "Privileged Instruction"   },
+	{ STATUS_STACK_OVERFLOW,           "Stack Overflow"           },
+	{ STATUS_CONTROL_C_EXIT,           "Ctrl+C Exit"              },
+	{ 0xFFFFFFFF,	                  ""	                     }
+};
 
 #endif
 
@@ -142,7 +147,7 @@ std::string GetCallStack()
 		if (!f.symbol.empty())
 			aCallStack += f.symbol;
 		else
-			aCallStack += StrFormat("0x%p" , f.raw_address);
+			aCallStack += StrFormat("0x%p", f.raw_address);
 
 		if (!f.filename.empty())
 			aCallStack += StrFormat("  (%s:%zu)", GetFileName(f.filename).c_str(), f.line);
@@ -159,11 +164,9 @@ void SEHCatcher::DoHandleDebugEvent(LPEXCEPTION_POINTERS lpEP)
 	std::string anErrorTitle;
 	std::string aDebugDump;
 
-	char aBuffer[2048];
-
 	///////////////////////////
 	// first name the exception
-	char *szName = NULL;
+	const char *szName = nullptr;
 	for (int i = 0; gMsgTable[i].dwExceptionCode != 0xFFFFFFFF; i++)
 	{
 		if (gMsgTable[i].dwExceptionCode == lpEP->ExceptionRecord->ExceptionCode)
@@ -173,34 +176,36 @@ void SEHCatcher::DoHandleDebugEvent(LPEXCEPTION_POINTERS lpEP)
 		}
 	}
 
-	if (szName != NULL)
+	std::ostringstream aExceptionInfo;
+
+	if (szName)
 	{
-		sprintf(aBuffer,
-				"Exception: %s (code 0x%x) at address %08X in thread %X\r\n",
-				szName,
-				lpEP->ExceptionRecord->ExceptionCode,
-				lpEP->ExceptionRecord->ExceptionAddress,
-				GetCurrentThreadId());
+		aExceptionInfo << "Exception: " << szName;
 	}
 	else
 	{
-		sprintf(aBuffer,
-				"Unknown exception: (code 0x%x) at address %08X in thread %X\r\n",
-				lpEP->ExceptionRecord->ExceptionCode,
-				lpEP->ExceptionRecord->ExceptionAddress,
-				GetCurrentThreadId());
+		aExceptionInfo << "Unknown exception: ";
 	}
+	aExceptionInfo << std::hex;
+	aExceptionInfo << "(code 0x" << lpEP->ExceptionRecord->ExceptionCode << ") ";
+#ifdef SEXY_IS_X64
+	aExceptionInfo << "at address 0x" << std::setw(16) << lpEP->ExceptionRecord->ExceptionAddress;
+#endif
+#ifdef SEXY_IS_X86
+	aExceptionInfo << "at address 0x" << std::setw(8) << lpEP->ExceptionRecord->ExceptionAddress;
+#endif
+	aExceptionInfo << " in thread 0x" << GetCurrentThreadId() << "\r\n";
 
-	aDebugDump += aBuffer;
-
-
+	aDebugDump += aExceptionInfo.str();
 
 	aDebugDump += "\n";
+#ifdef DEBUG
 	aDebugDump += GetCallStack();
 	aDebugDump += "\n";
+#endif
 	aDebugDump += GetSysInfo();
 
-	if (mApp != NULL)
+	if (mApp)
 	{
 		std::string aGameSEHInfo = mApp->GetGameSEHInfo();
 		if (aGameSEHInfo.length() > 0)
@@ -214,7 +219,7 @@ void SEHCatcher::DoHandleDebugEvent(LPEXCEPTION_POINTERS lpEP)
 
 	WriteToFile(aDebugDump);
 
-	if (mApp != NULL)
+	if (mApp)
 	{
 		if (mApp->mRecordingDemoBuffer)
 		{
@@ -312,8 +317,8 @@ void SEHCatcher::ShowErrorDialog(const std::string &theErrorTitle, const std::st
 		ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
 		ImGui::Begin("An unexpected error has occurred!", nullptr,
-					 ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove |
-						 ImGuiWindowFlags_NoSavedSettings);
+		             ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove |
+		                 ImGuiWindowFlags_NoSavedSettings);
 
 		ImGui::TextWrapped("%s", mCrashMessage.c_str());
 		ImGui::Spacing();
@@ -334,11 +339,7 @@ void SEHCatcher::ShowErrorDialog(const std::string &theErrorTitle, const std::st
 		float buttonWidth = 120.0f;
 		float spacing = ImGui::GetStyle().ItemSpacing.x;
 
-		int numButtons = 1;
-#ifdef _DEBUG
-		numButtons += 1;
-#endif
-		numButtons += 1;
+		int numButtons = 2;
 
 		float totalWidth = numButtons * buttonWidth + (numButtons - 1) * spacing;
 		float availWidth = ImGui::GetContentRegionAvail().x;
@@ -354,14 +355,6 @@ void SEHCatcher::ShowErrorDialog(const std::string &theErrorTitle, const std::st
 
 			mExiting = true;
 		}
-#ifdef _DEBUG
-		ImGui::SameLine();
-		if (ImGui::Button("Debug", ImVec2(buttonWidth, 0)))
-		{
-			mDebugError = true;
-			mExiting = true;
-		}
-#endif
 		ImGui::SameLine();
 		if (ImGui::Button("Close Now", ImVec2(buttonWidth, 0)))
 		{
@@ -406,12 +399,12 @@ std::string SEHCatcher::GetSysInfo()
 		aDebugDump += "9x ";
 
 	char aVersionStr[20];
-	sprintf(aVersionStr, "%d.%d", aVersionInfo.dwMajorVersion, aVersionInfo.dwMinorVersion);
+	sprintf(aVersionStr, "%lu.%lu", aVersionInfo.dwMajorVersion, aVersionInfo.dwMinorVersion);
 	aDebugDump += aVersionStr;
 	aDebugDump += " ";
 	aDebugDump += aVersionInfo.szCSDVersion;
 	aDebugDump += " ";
-	sprintf(aVersionStr, "%d", aVersionInfo.dwBuildNumber);
+	sprintf(aVersionStr, "%lu", aVersionInfo.dwBuildNumber);
 	aDebugDump += "Build ";
 	aDebugDump += aVersionStr;
 	aDebugDump += "\n";
@@ -425,7 +418,6 @@ std::string SEHCatcher::GetSysInfo()
 		aDebugDump += StrFormat("OpenGL - %s\r\n", glGetString(GL_VERSION));
 #endif
 		aDebugDump += StrFormat("OpenAL - %s\r\n", alGetString(AL_VERSION));
-
 	}
 
 	return aDebugDump;

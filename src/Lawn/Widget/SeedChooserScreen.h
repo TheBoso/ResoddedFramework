@@ -9,6 +9,7 @@ class Board;
 class LawnApp;
 class GameButton;
 class ToolTipWidget;
+struct TodWeightedArray;
 namespace Sexy
 {
 class MTRand;
@@ -17,21 +18,21 @@ class MTRand;
 class ChosenSeed
 {
   public:
-	int mX;						//+0x0
-	int mY;						//+0x4
-	int mTimeStartMotion;		//+0x8
-	int mTimeEndMotion;			//+0xC
-	int mStartX;				//+0x10
-	int mStartY;				//+0x14
-	int mEndX;					//+0x18
-	int mEndY;					//+0x1C
-	SeedType mSeedType;			//+0x20
-	ChosenSeedState mSeedState; //+0x24
-	int mSeedIndexInBank;		//+0x28
-	bool mRefreshing;			//+0x2C
-	int mRefreshCounter;		//+0x30
-	SeedType mImitaterType;		//+0x34
-	bool mCrazyDavePicked;		//+0x38
+	int mX;
+	int mY;
+	int mTimeStartMotion;
+	int mTimeEndMotion;
+	int mStartX;
+	int mStartY;
+	int mEndX;
+	int mEndY;
+	SeedType mSeedType;
+	ChosenSeedState mSeedState;
+	int mSeedIndexInBank;
+	bool mRefreshing;
+	int mRefreshCounter;
+	SeedType mImitaterType;
+	bool mCrazyDavePicked;
 };
 
 class SeedChooserScreen : public Widget
@@ -49,47 +50,47 @@ class SeedChooserScreen : public Widget
 	};
 
   public:
-	GameButton *mStartButton;				 //+0x88
-	GameButton *mRandomButton;				 //+0x8C
-	GameButton *mViewLawnButton;			 //+0x90
-	GameButton *mStoreButton;				 //+0x94
-	GameButton *mAlmanacButton;				 //+0x98
-	GameButton *mMenuButton;				 //+0x9C
-	GameButton *mImitaterButton;			 //+0xA0
-	ChosenSeed mChosenSeeds[NUM_SEED_TYPES]; //+0xA4
-	LawnApp *mApp;							 //+0xD10
-	Board *mBoard;							 //+0xD14
-	int mNumSeedsToChoose;					 //+0xD18
-	int mSeedChooserAge;					 //+0xD1C
-	int mSeedsInFlight;						 //+0xD20
-	int mSeedsInBank;						 //+0xD24
-	ToolTipWidget *mToolTip;				 //+0xD28
-	int mToolTipSeed;						 //+0xD2C
-	int mLastMouseX;						 //+0xD30
-	int mLastMouseY;						 //+0xD34
-	SeedChooserState mChooseState;			 //+0xD38
-	int mViewLawnTime;						 //+0xD3C
+	GameButton *mStartButton;
+	GameButton *mRandomButton;
+	GameButton *mViewLawnButton;
+	GameButton *mStoreButton;
+	GameButton *mAlmanacButton;
+	GameButton *mMenuButton;
+	GameButton *mImitaterButton;
+	ChosenSeed mChosenSeeds[NUM_SEED_TYPES];
+	LawnApp *mApp;
+	Board *mBoard;
+	int mNumSeedsToChoose;
+	int mSeedChooserAge;
+	int mSeedsInFlight;
+	int mSeedsInBank;
+	ToolTipWidget *mToolTip;
+	int mToolTipSeed;
+	int mLastMouseX;
+	int mLastMouseY;
+	SeedChooserState mChooseState;
+	int mViewLawnTime;
 
   public:
 	SeedChooserScreen();
 	~SeedChooserScreen();
 
-	static /*inline*/ int PickFromWeightedArrayUsingSpecialRandSeed(TodWeightedArray *theArray,
+	static int PickFromWeightedArrayUsingSpecialRandSeed(TodWeightedArray *theArray,
 																	int theCount,
 																	MTRand &theLevelRNG);
 	void CrazyDavePickSeeds();
 	bool Has7Rows();
 	void GetSeedPositionInChooser(int theIndex, int &x, int &y);
-	/*inline*/ void GetSeedPositionInBank(int theIndex, int &x, int &y);
-	/*inline*/ unsigned int SeedNotRecommendedToPick(SeedType theSeedType);
-	/*inline*/ bool SeedNotAllowedToPick(SeedType theSeedType);
-	/*inline*/ bool SeedNotAllowedDuringTrial(SeedType theSeedType);
+	void GetSeedPositionInBank(int theIndex, int &x, int &y);
+	unsigned int SeedNotRecommendedToPick(SeedType theSeedType);
+	bool SeedNotAllowedToPick(SeedType theSeedType);
+	bool SeedNotAllowedDuringTrial(SeedType theSeedType);
 	virtual void Draw(Graphics *g);
 	void UpdateViewLawn();
 	void LandFlyingSeed(ChosenSeed &theChosenSeed);
 	void UpdateCursor();
 	virtual void Update();
-	/*inline*/ bool DisplayRepickWarningDialog(const SexyString &theMessage);
+	bool DisplayRepickWarningDialog(const SexyString &theMessage);
 	bool FlyersAreComming();
 	bool FlyProtectionCurrentlyPlanted();
 	bool CheckSeedUpgrade(SeedType theSeedTypeTo, SeedType theSeedTypeFrom);
@@ -98,16 +99,16 @@ class SeedChooserScreen : public Widget
 	virtual void ButtonDepress(int theId);
 	SeedType SeedHitTest(int x, int y);
 	SeedType FindSeedInBank(int theIndexInBank);
-	/*inline*/ void EnableStartButton(bool theEnabled);
+	void EnableStartButton(bool theEnabled);
 	void ClickedSeedInBank(ChosenSeed &theChosenSeed);
 	void ClickedSeedInChooser(ChosenSeed &theChosenSeed);
 	void ShowToolTip();
-	/*inline*/ void RemoveToolTip();
-	/*inline*/ void CancelLawnView();
+	void RemoveToolTip();
+	void CancelLawnView();
 	virtual void MouseUp(int x, int y, int theClickCount);
 	void UpdateImitaterButton();
 	virtual void MouseDown(int x, int y, int theClickCount);
-	/*inline*/ bool PickedPlantType(SeedType theSeedType);
+	bool PickedPlantType(SeedType theSeedType);
 	void CloseSeedChooser();
 	virtual void KeyDown(KeyCode theKey);
 	virtual void KeyChar(SexyChar theChar);

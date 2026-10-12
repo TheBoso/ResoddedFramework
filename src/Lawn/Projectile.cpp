@@ -12,21 +12,22 @@
 #include "System/Achievements.h"
 #include "../Sexy.TodLib/Attachment.h"
 
-ProjectileDefinition gProjectileDefinition[] = { //0x69F1C0
-	{ProjectileType::PROJECTILE_PEA, 0, 20},
-	{ProjectileType::PROJECTILE_SNOWPEA, 0, 20},
-	{ProjectileType::PROJECTILE_CABBAGE, 0, 40},
-	{ProjectileType::PROJECTILE_MELON, 0, 80},
-	{ProjectileType::PROJECTILE_PUFF, 0, 20},
-	{ProjectileType::PROJECTILE_WINTERMELON, 0, 80},
-	{ProjectileType::PROJECTILE_FIREBALL, 0, 40},
-	{ProjectileType::PROJECTILE_STAR, 0, 20},
-	{ProjectileType::PROJECTILE_SPIKE, 0, 20},
-	{ProjectileType::PROJECTILE_BASKETBALL, 0, 75},
-	{ProjectileType::PROJECTILE_KERNEL, 0, 20},
-	{ProjectileType::PROJECTILE_COBBIG, 0, 300},
-	{ProjectileType::PROJECTILE_BUTTER, 0, 40},
-	{ProjectileType::PROJECTILE_ZOMBIE_PEA, 0, 20}};
+ProjectileDefinition gProjectileDefinition[] = {
+	{ ProjectileType::PROJECTILE_PEA,         0, 20  },
+    { ProjectileType::PROJECTILE_SNOWPEA,     0, 20  },
+    { ProjectileType::PROJECTILE_CABBAGE,     0, 40  },
+    { ProjectileType::PROJECTILE_MELON,       0, 80  },
+    { ProjectileType::PROJECTILE_PUFF,        0, 20  },
+    { ProjectileType::PROJECTILE_WINTERMELON, 0, 80  },
+    { ProjectileType::PROJECTILE_FIREBALL,    0, 40  },
+    { ProjectileType::PROJECTILE_STAR,        0, 20  },
+    { ProjectileType::PROJECTILE_SPIKE,       0, 20  },
+    { ProjectileType::PROJECTILE_BASKETBALL,  0, 75  },
+    { ProjectileType::PROJECTILE_KERNEL,      0, 20  },
+    { ProjectileType::PROJECTILE_COBBIG,      0, 300 },
+    { ProjectileType::PROJECTILE_BUTTER,      0, 40  },
+    { ProjectileType::PROJECTILE_ZOMBIE_PEA,  0, 20  }
+};
 
 Projectile::Projectile()
 {
@@ -37,9 +38,8 @@ Projectile::~Projectile()
 	AttachmentDie(mAttachmentID);
 }
 
-//0x46C730
-void Projectile::ProjectileInitialize(
-	int theX, int theY, int theRenderOrder, int theRow, ProjectileType theProjectileType)
+void Projectile::ProjectileInitialize(int theX, int theY, int theRenderOrder, int theRow,
+                                      ProjectileType theProjectileType)
 {
 	int aGridX = mBoard->PixelToGridXKeepOnBoard(theX, theY);
 	mProjectileType = theProjectileType;
@@ -82,7 +82,7 @@ void Projectile::ProjectileInitialize(
 		mRotationSpeed = RandRangeFloat(-0.08f, -0.02f);
 	}
 	else if (mProjectileType == ProjectileType::PROJECTILE_MELON ||
-			 mProjectileType == ProjectileType::PROJECTILE_WINTERMELON)
+	         mProjectileType == ProjectileType::PROJECTILE_WINTERMELON)
 	{
 		mRotation = DEG_TO_RAD(-72.0f);
 		mRotationSpeed = RandRangeFloat(-0.08f, -0.02f);
@@ -95,12 +95,12 @@ void Projectile::ProjectileInitialize(
 	else if (mProjectileType == ProjectileType::PROJECTILE_SNOWPEA)
 	{
 		TodParticleSystem *aParticle =
-			mApp->AddTodParticle(mPosX + 8.0f, mPosY + 13.0f, 400000, ParticleEffect::PARTICLE_SNOWPEA_TRAIL);
+		    mApp->AddTodParticle(mPosX + 8.0f, mPosY + 13.0f, 400000, ParticleEffect::PARTICLE_SNOWPEA_TRAIL);
 		AttachParticle(mAttachmentID, aParticle, 8.0f, 13.0f);
 	}
 	else if (mProjectileType == ProjectileType::PROJECTILE_FIREBALL)
 	{
-		TOD_ASSERT();
+		TOD_ASSERT(false);
 	}
 	else if (mProjectileType == ProjectileType::PROJECTILE_COBBIG)
 	{
@@ -111,7 +111,7 @@ void Projectile::ProjectileInitialize(
 	else if (mProjectileType == ProjectileType::PROJECTILE_PUFF)
 	{
 		TodParticleSystem *aParticle =
-			mApp->AddTodParticle(mPosX + 13.0f, mPosY + 13.0f, 400000, ParticleEffect::PARTICLE_PUFFSHROOM_TRAIL);
+		    mApp->AddTodParticle(mPosX + 13.0f, mPosY + 13.0f, 400000, ParticleEffect::PARTICLE_PUFFSHROOM_TRAIL);
 		AttachParticle(mAttachmentID, aParticle, 13.0f, 13.0f);
 	}
 	else if (mProjectileType == ProjectileType::PROJECTILE_BASKETBALL)
@@ -134,7 +134,6 @@ void Projectile::ProjectileInitialize(
 	mY = (int)mPosY;
 }
 
-//0x46CAA0
 Plant *Projectile::FindCollisionTargetPlant()
 {
 	Rect aProjectileRect = GetProjectileRect();
@@ -148,9 +147,8 @@ Plant *Projectile::FindCollisionTargetPlant()
 		if (mProjectileType == ProjectileType::PROJECTILE_ZOMBIE_PEA)
 		{
 			if (aPlant->mSeedType == SeedType::SEED_PUFFSHROOM || aPlant->mSeedType == SeedType::SEED_SUNSHROOM ||
-				aPlant->mSeedType == SeedType::SEED_POTATOMINE || aPlant->mSeedType == SeedType::SEED_SPIKEWEED ||
-				aPlant->mSeedType == SeedType::SEED_SPIKEROCK ||
-				aPlant->mSeedType == SeedType::SEED_LILYPAD)
+			    aPlant->mSeedType == SeedType::SEED_POTATOMINE || aPlant->mSeedType == SeedType::SEED_SPIKEWEED ||
+			    aPlant->mSeedType == SeedType::SEED_SPIKEROCK || aPlant->mSeedType == SeedType::SEED_LILYPAD)
 				continue;
 		}
 
@@ -171,7 +169,6 @@ Plant *Projectile::FindCollisionTargetPlant()
 	return nullptr;
 }
 
-//0x46CC30
 bool Projectile::PeaAboutToHitTorchwood()
 {
 	if (mMotionType != ProjectileMotion::MOTION_STRAIGHT)
@@ -184,7 +181,7 @@ bool Projectile::PeaAboutToHitTorchwood()
 	while (mBoard->IteratePlants(aPlant))
 	{
 		if (aPlant->mSeedType == SeedType::SEED_TORCHWOOD && aPlant->mRow == mRow && !aPlant->NotOnGround() &&
-			mHitTorchwoodGridX != aPlant->mPlantCol)
+		    mHitTorchwoodGridX != aPlant->mPlantCol)
 		{
 			Rect aPlantAttackRect = aPlant->GetPlantAttackRect(PlantWeapon::WEAPON_PRIMARY);
 			Rect aProjectileRect = GetProjectileRect();
@@ -200,7 +197,6 @@ bool Projectile::PeaAboutToHitTorchwood()
 	return false;
 }
 
-//0x46CD40
 Zombie *Projectile::FindCollisionTarget()
 {
 	if (PeaAboutToHitTorchwood())
@@ -223,7 +219,7 @@ Zombie *Projectile::FindCollisionTarget()
 			}
 
 			if (mProjectileType == ProjectileType::PROJECTILE_STAR && mProjectileAge < 25 && mVelX >= 0.0f &&
-				aZombie->mZombieType == ZombieType::ZOMBIE_DIGGER)
+			    aZombie->mZombieType == ZombieType::ZOMBIE_DIGGER)
 			{
 				continue;
 			}
@@ -243,7 +239,6 @@ Zombie *Projectile::FindCollisionTarget()
 	return aBestZombie;
 }
 
-//0x46CE80
 void Projectile::CheckForCollision()
 {
 	if (mMotionType == ProjectileMotion::MOTION_PUFF && mProjectileAge >= 75)
@@ -266,7 +261,7 @@ void Projectile::CheckForCollision()
 			Rect aProjectileRect = GetProjectileRect();
 			Rect aZombieRect = aZombie->GetZombieRect();
 			if (GetRectOverlap(aProjectileRect, aZombieRect) >= 0 && mPosY > aZombieRect.mY &&
-				mPosY < aZombieRect.mY + aZombieRect.mHeight)
+			    mPosY < aZombieRect.mY + aZombieRect.mHeight)
 			{
 				DoImpact(aZombie);
 			}
@@ -281,7 +276,7 @@ void Projectile::CheckForCollision()
 	}
 
 	if ((mProjectileType == ProjectileType::PROJECTILE_PEA || mProjectileType == ProjectileType::PROJECTILE_STAR) &&
-		mShadowY - mPosY > 90.0f)
+	    mShadowY - mPosY > 90.0f)
 	{
 		return;
 	}
@@ -311,7 +306,7 @@ void Projectile::CheckForCollision()
 	if (aZombie)
 	{
 		if ((aZombie->mOnHighGround && CantHitHighGround()) ||
-			(mProjectileType == ProjectileType::PROJECTILE_ZOMBIE_PEA && !aZombie->mMindControlled))
+		    (mProjectileType == ProjectileType::PROJECTILE_ZOMBIE_PEA && !aZombie->mMindControlled))
 		{
 			return;
 		}
@@ -320,27 +315,25 @@ void Projectile::CheckForCollision()
 	}
 }
 
-//0x46D090
 bool Projectile::CantHitHighGround()
 {
 	if (mMotionType == ProjectileMotion::MOTION_BACKWARDS || mMotionType == ProjectileMotion::MOTION_HOMING)
 		return false;
 
 	return (mProjectileType == ProjectileType::PROJECTILE_PEA ||
-			mProjectileType == ProjectileType::PROJECTILE_SNOWPEA ||
-			mProjectileType == ProjectileType::PROJECTILE_STAR || mProjectileType == ProjectileType::PROJECTILE_PUFF ||
-			mProjectileType == ProjectileType::PROJECTILE_FIREBALL) &&
-		   !mOnHighGround;
+	        mProjectileType == ProjectileType::PROJECTILE_SNOWPEA ||
+	        mProjectileType == ProjectileType::PROJECTILE_STAR || mProjectileType == ProjectileType::PROJECTILE_PUFF ||
+	        mProjectileType == ProjectileType::PROJECTILE_FIREBALL) &&
+	       !mOnHighGround;
 }
 
-//0x46D0D0
 void Projectile::CheckForHighGround()
 {
 	float aShadowDelta = mShadowY - mPosY;
 
 	if (mProjectileType == ProjectileType::PROJECTILE_PEA || mProjectileType == ProjectileType::PROJECTILE_SNOWPEA ||
-		mProjectileType == ProjectileType::PROJECTILE_FIREBALL || mProjectileType == ProjectileType::PROJECTILE_SPIKE ||
-		mProjectileType == ProjectileType::PROJECTILE_COBBIG)
+	    mProjectileType == ProjectileType::PROJECTILE_FIREBALL || mProjectileType == ProjectileType::PROJECTILE_SPIKE ||
+	    mProjectileType == ProjectileType::PROJECTILE_COBBIG)
 	{
 		if (aShadowDelta < 28.0f)
 		{
@@ -371,18 +364,16 @@ void Projectile::CheckForHighGround()
 	}
 }
 
-//0x46D1F0
 bool Projectile::IsSplashDamage(Zombie *theZombie)
 {
-	if (mProjectileType && theZombie && theZombie->IsFireResistant())
+	if (mProjectileType == PROJECTILE_FIREBALL && theZombie && theZombie->IsFireResistant())
 		return false;
 
 	return mProjectileType == ProjectileType::PROJECTILE_MELON ||
-		   mProjectileType == ProjectileType::PROJECTILE_WINTERMELON ||
-		   mProjectileType == ProjectileType::PROJECTILE_FIREBALL;
+	       mProjectileType == ProjectileType::PROJECTILE_WINTERMELON ||
+	       mProjectileType == ProjectileType::PROJECTILE_FIREBALL;
 }
 
-//0x46D230
 unsigned int Projectile::GetDamageFlags(Zombie *theZombie)
 {
 	unsigned int aDamageFlags = 0U;
@@ -401,7 +392,7 @@ unsigned int Projectile::GetDamageFlags(Zombie *theZombie)
 	}
 
 	if (mProjectileType == ProjectileType::PROJECTILE_SNOWPEA ||
-		mProjectileType == ProjectileType::PROJECTILE_WINTERMELON)
+	    mProjectileType == ProjectileType::PROJECTILE_WINTERMELON)
 	{
 		SetBit(aDamageFlags, (int)DamageFlags::DAMAGE_FREEZE, true);
 	}
@@ -409,7 +400,6 @@ unsigned int Projectile::GetDamageFlags(Zombie *theZombie)
 	return aDamageFlags;
 }
 
-//0x46D2B0
 bool Projectile::IsZombieHitBySplash(Zombie *theZombie)
 {
 	Rect aProjectileRect = GetProjectileRect();
@@ -442,10 +432,9 @@ bool Projectile::IsZombieHitBySplash(Zombie *theZombie)
 	}
 
 	return theZombie->EffectedByDamage((unsigned int)mDamageRangeFlags) &&
-		   GetRectOverlap(aProjectileRect, aZombieRect) >= 0;
+	       GetRectOverlap(aProjectileRect, aZombieRect) >= 0;
 }
 
-//0x46D390
 void Projectile::DoSplashDamage(Zombie *theZombie)
 {
 	const ProjectileDefinition &aProjectileDef = GetProjectileDef();
@@ -493,7 +482,6 @@ void Projectile::DoSplashDamage(Zombie *theZombie)
 	}
 }
 
-//0x46D490
 void Projectile::UpdateLobMotion()
 {
 	if (mProjectileType == ProjectileType::PROJECTILE_COBBIG && mPosZ < -700.0f)
@@ -518,7 +506,7 @@ void Projectile::UpdateLobMotion()
 
 	bool isRising = mVelZ < 0.0f;
 	if (isRising && (mProjectileType == ProjectileType::PROJECTILE_BASKETBALL ||
-					 mProjectileType == ProjectileType::PROJECTILE_COBBIG))
+	                 mProjectileType == ProjectileType::PROJECTILE_COBBIG))
 	{
 		return;
 	}
@@ -539,12 +527,12 @@ void Projectile::UpdateLobMotion()
 			aMinCollisionZ = 60.0f;
 		}
 		else if (mProjectileType == ProjectileType::PROJECTILE_MELON ||
-				 mProjectileType == ProjectileType::PROJECTILE_WINTERMELON)
+		         mProjectileType == ProjectileType::PROJECTILE_WINTERMELON)
 		{
 			aMinCollisionZ = -35.0f;
 		}
 		else if (mProjectileType == ProjectileType::PROJECTILE_CABBAGE ||
-				 mProjectileType == ProjectileType::PROJECTILE_KERNEL)
+		         mProjectileType == ProjectileType::PROJECTILE_KERNEL)
 		{
 			aMinCollisionZ = -30.0f;
 		}
@@ -566,7 +554,7 @@ void Projectile::UpdateLobMotion()
 	Plant *aPlant = nullptr;
 	Zombie *aZombie = nullptr;
 	if (mProjectileType == ProjectileType::PROJECTILE_BASKETBALL ||
-		mProjectileType == ProjectileType::PROJECTILE_ZOMBIE_PEA)
+	    mProjectileType == ProjectileType::PROJECTILE_ZOMBIE_PEA)
 	{
 		aPlant = FindCollisionTargetPlant();
 	}
@@ -595,8 +583,8 @@ void Projectile::UpdateLobMotion()
 			{
 				mApp->PlayFoley(FoleyType::FOLEY_SPLAT);
 				int aRenderPosition = Board::MakeRenderOrder(RenderLayer::RENDER_LAYER_TOP, 0, 1);
-				mApp->AddTodParticle(
-					mPosX + 20.0f, mPosY + 20.0f, aRenderPosition, ParticleEffect::PARTICLE_UMBRELLA_REFLECT);
+				mApp->AddTodParticle(mPosX + 20.0f, mPosY + 20.0f, aRenderPosition,
+				                     ParticleEffect::PARTICLE_UMBRELLA_REFLECT);
 				Die();
 			}
 			else if (aUmbrellaPlant->mState != PlantState::STATE_UMBRELLA_TRIGGERED)
@@ -632,7 +620,6 @@ void Projectile::UpdateLobMotion()
 	}
 }
 
-//0x46D890
 void Projectile::UpdateNormalMotion()
 {
 	if (mMotionType == ProjectileMotion::MOTION_BACKWARDS)
@@ -732,7 +719,6 @@ void Projectile::UpdateNormalMotion()
 	CheckForHighGround();
 }
 
-//0x46DC70
 void Projectile::UpdateMotion()
 {
 	if (mAnimTicksPerFrame > 0)
@@ -773,7 +759,6 @@ void Projectile::UpdateMotion()
 	mY = (int)(mPosY + mPosZ);
 }
 
-//0x46DD30
 void Projectile::PlayImpactSound(Zombie *theZombie)
 {
 	bool aPlayHelmSound = true;
@@ -796,7 +781,7 @@ void Projectile::PlayImpactSound(Zombie *theZombie)
 		aPlaySplatSound = false;
 	}
 	else if (mProjectileType == ProjectileType::PROJECTILE_MELON ||
-			 mProjectileType == ProjectileType::PROJECTILE_WINTERMELON)
+	         mProjectileType == ProjectileType::PROJECTILE_WINTERMELON)
 	{
 		mApp->PlayFoley(FoleyType::FOLEY_MELONIMPACT);
 		aPlaySplatSound = false;
@@ -810,7 +795,7 @@ void Projectile::PlayImpactSound(Zombie *theZombie)
 			aPlaySplatSound = false;
 		}
 		else if (theZombie->mHelmType == HELMTYPE_TRAFFIC_CONE || theZombie->mHelmType == HELMTYPE_DIGGER ||
-				 theZombie->mHelmType == HELMTYPE_FOOTBALL)
+		         theZombie->mHelmType == HELMTYPE_FOOTBALL)
 		{
 			mApp->PlayFoley(FoleyType::FOLEY_PLASTIC_HIT);
 		}
@@ -822,7 +807,6 @@ void Projectile::PlayImpactSound(Zombie *theZombie)
 	}
 }
 
-//0x46E000
 void Projectile::DoImpact(Zombie *theZombie)
 {
 	PlayImpactSound(theZombie);
@@ -849,13 +833,13 @@ void Projectile::DoImpact(Zombie *theZombie)
 	float aSplatPosY = mPosY + 12.0f;
 	if (mProjectileType == ProjectileType::PROJECTILE_MELON)
 	{
-		mApp->AddTodParticle(
-			aLastPosX + 30.0f, aLastPosY + 30.0f, mRenderOrder + 1, ParticleEffect::PARTICLE_MELONSPLASH);
+		mApp->AddTodParticle(aLastPosX + 30.0f, aLastPosY + 30.0f, mRenderOrder + 1,
+		                     ParticleEffect::PARTICLE_MELONSPLASH);
 	}
 	else if (mProjectileType == ProjectileType::PROJECTILE_WINTERMELON)
 	{
-		mApp->AddTodParticle(
-			aLastPosX + 30.0f, aLastPosY + 30.0f, mRenderOrder + 1, ParticleEffect::PARTICLE_WINTERMELON);
+		mApp->AddTodParticle(aLastPosX + 30.0f, aLastPosY + 30.0f, mRenderOrder + 1,
+		                     ParticleEffect::PARTICLE_WINTERMELON);
 	}
 	else if (mProjectileType == ProjectileType::PROJECTILE_COBBIG)
 	{
@@ -879,8 +863,8 @@ void Projectile::DoImpact(Zombie *theZombie)
 	{
 		if (IsSplashDamage(theZombie))
 		{
-			Reanimation *aFireReanim = mApp->AddReanimation(
-				mPosX + 38.0f, mPosY - 20.0f, mRenderOrder + 1, ReanimationType::REANIM_JALAPENO_FIRE);
+			Reanimation *aFireReanim = mApp->AddReanimation(mPosX + 38.0f, mPosY - 20.0f, mRenderOrder + 1,
+			                                                ReanimationType::REANIM_JALAPENO_FIRE);
 			aFireReanim->mAnimTime = 0.25f;
 			aFireReanim->mAnimRate = 24.0f;
 			aFireReanim->OverrideScale(0.7f, 0.4f);
@@ -920,7 +904,7 @@ void Projectile::DoImpact(Zombie *theZombie)
 			float aPosX = aSplatPosX + 52.0f - theZombie->mX;
 			float aPosY = aSplatPosY - theZombie->mY;
 			if (theZombie->mZombiePhase == ZombiePhase::PHASE_SNORKEL_WALKING_IN_POOL ||
-				theZombie->mZombiePhase == ZombiePhase::PHASE_DOLPHIN_WALKING_IN_POOL)
+			    theZombie->mZombiePhase == ZombiePhase::PHASE_DOLPHIN_WALKING_IN_POOL)
 			{
 				aPosY += 60.0f;
 			}
@@ -945,7 +929,6 @@ void Projectile::DoImpact(Zombie *theZombie)
 	Die();
 }
 
-//0x46E460
 void Projectile::Update()
 {
 	mProjectileAge++;
@@ -953,10 +936,8 @@ void Projectile::Update()
 		return;
 
 	int aTime = 20;
-	if (mProjectileType != ProjectileType::PROJECTILE_PUFF &&
-		mProjectileType != ProjectileType::PROJECTILE_FIREBALL &&
-		mProjectileType != ProjectileType::PROJECTILE_STAR &&
-		mProjectileType != ProjectileType::PROJECTILE_BASKETBALL)
+	if (mProjectileType != ProjectileType::PROJECTILE_PUFF && mProjectileType != ProjectileType::PROJECTILE_FIREBALL &&
+	    mProjectileType != ProjectileType::PROJECTILE_STAR && mProjectileType != ProjectileType::PROJECTILE_BASKETBALL)
 	{
 		aTime = 0;
 	}
@@ -975,7 +956,6 @@ void Projectile::Update()
 	AttachmentUpdateAndMove(mAttachmentID, mPosX, mPosY + mPosZ);
 }
 
-//0x46E540
 void Projectile::Draw(Graphics *g)
 {
 	const ProjectileDefinition &aProjectileDef = GetProjectileDef();
@@ -988,7 +968,7 @@ void Projectile::Draw(Graphics *g)
 		aScale = 0.9f;
 	}
 	else if (mProjectileType == ProjectileType::PROJECTILE_PEA ||
-			 mProjectileType == ProjectileType::PROJECTILE_ZOMBIE_PEA)
+	         mProjectileType == ProjectileType::PROJECTILE_ZOMBIE_PEA)
 	{
 		aImage = IMAGE_PROJECTILEPEA;
 	}
@@ -1045,7 +1025,7 @@ void Projectile::Draw(Graphics *g)
 	}
 	else
 	{
-		TOD_ASSERT();
+		TOD_ASSERT(false);
 	}
 
 	bool aMirror = false;
@@ -1072,8 +1052,8 @@ void Projectile::Draw(Graphics *g)
 			float aOffsetX = mPosX + aCelWidth * 0.5f;
 			float aOffsetY = mPosZ + mPosY + aCelHeight * 0.5f;
 			SexyTransform2D aTransform;
-			TodScaleRotateTransformMatrix(
-				aTransform, aOffsetX + mBoard->mX, aOffsetY + mBoard->mY, mRotation, aScale, aScale);
+			TodScaleRotateTransformMatrix(aTransform, aOffsetX + mBoard->mX, aOffsetY + mBoard->mY, mRotation, aScale,
+			                              aScale);
 			TodBltMatrix(g, aImage, aTransform, g->mClipRect, Color::White, g->mDrawMode, aSrcRect);
 		}
 	}
@@ -1086,7 +1066,6 @@ void Projectile::Draw(Graphics *g)
 	}
 }
 
-//0x46E8C0
 void Projectile::DrawShadow(Graphics *g)
 {
 	int aCelCol = 0;
@@ -1161,11 +1140,10 @@ void Projectile::DrawShadow(Graphics *g)
 		aScale *= 200.0f / (aHeight + 200.0f);
 	}
 
-	TodDrawImageCelScaledF(
-		g, IMAGE_PEA_SHADOWS, aOffsetX, (mShadowY - mPosY + aOffsetY), aCelCol, 0, aScale * aStretch, aScale);
+	TodDrawImageCelScaledF(g, IMAGE_PEA_SHADOWS, aOffsetX, (mShadowY - mPosY + aOffsetY), aCelCol, 0, aScale * aStretch,
+	                       aScale);
 }
 
-//0x46EB20
 void Projectile::Die()
 {
 	mDead = true;
@@ -1181,11 +1159,10 @@ void Projectile::Die()
 	}
 }
 
-//0x46EBC0
 Rect Projectile::GetProjectileRect()
 {
 	if (mProjectileType == ProjectileType::PROJECTILE_PEA || mProjectileType == ProjectileType::PROJECTILE_SNOWPEA ||
-		mProjectileType == ProjectileType::PROJECTILE_ZOMBIE_PEA)
+	    mProjectileType == ProjectileType::PROJECTILE_ZOMBIE_PEA)
 	{
 		return Rect(mX - 15, mY, mWidth + 15, mHeight);
 	}
@@ -1194,7 +1171,7 @@ Rect Projectile::GetProjectileRect()
 		return Rect(mX + mWidth / 2 - 115, mY + mHeight / 2 - 115, 230, 230);
 	}
 	else if (mProjectileType == ProjectileType::PROJECTILE_MELON ||
-			 mProjectileType == ProjectileType::PROJECTILE_WINTERMELON)
+	         mProjectileType == ProjectileType::PROJECTILE_WINTERMELON)
 	{
 		return Rect(mX + 20, mY, 60, mHeight);
 	}
@@ -1212,7 +1189,6 @@ Rect Projectile::GetProjectileRect()
 	}
 }
 
-//0x46ECB0
 void Projectile::ConvertToFireball(int theGridX)
 {
 	if (mHitTorchwoodGridX == theGridX)
@@ -1237,7 +1213,6 @@ void Projectile::ConvertToFireball(int theGridX)
 	AttachReanim(mAttachmentID, aFirePeaReanim, aOffsetX, aOffsetY);
 }
 
-//0x46EE00
 void Projectile::ConvertToPea(int theGridX)
 {
 	if (mHitTorchwoodGridX == theGridX)

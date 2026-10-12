@@ -9,7 +9,6 @@ DataReader::DataReader()
 	mOwnData = false;
 }
 
-//0x441B20、0x441B80
 DataReader::~DataReader()
 {
 	if (mFile)
@@ -61,7 +60,6 @@ void DataReader::Close()
 	}
 }
 
-//0x441BE0
 void DataReader::ReadBytes(void *theMem, unsigned long theNumBytes)
 {
 	if (mData)
@@ -139,26 +137,22 @@ void DataReader::ReadString(SexyString &theStr)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//0x441E70
 DataSync::DataSync(DataReader &theReader)
 {
 	Reset();
 	mReader = &theReader;
 }
 
-//0x441F10
 DataSync::DataSync(DataWriter &theWriter)
 {
 	Reset();
 	mWriter = &theWriter;
 }
 
-//0x441FB0
 DataSync::~DataSync()
 {
 }
 
-//0x442020
 void DataSync::ResetPointerTable()
 {
 	mIntToPointerMap.clear();
@@ -498,7 +492,6 @@ DataWriter::DataWriter()
 	mCapacity = 0;
 }
 
-//0x4436A0、0x4436F0
 DataWriter::~DataWriter()
 {
 	if (mFile)
@@ -528,7 +521,6 @@ void DataWriter::Close()
 	}
 }
 
-//0x443730
 void DataWriter::EnsureCapacity(unsigned long theNumBytes)
 {
 	if (mCapacity < theNumBytes)
@@ -577,7 +569,6 @@ void DataWriter::WriteBytes(const void *theData, unsigned long theDataLen)
 	}
 }
 
-//0x443770
 void DataWriter::WriteLong(unsigned long theLong)
 {
 	//if (mData)
@@ -593,7 +584,6 @@ void DataWriter::WriteLong(unsigned long theLong)
 	WriteBytes(&theLong, sizeof(unsigned long));
 }
 
-//0x4437C0
 void DataWriter::WriteShort(unsigned short theShort)
 {
 	//if (mData)
@@ -629,7 +619,6 @@ void DataWriter::WriteDouble(double theDouble)
 	WriteBytes(&theDouble, sizeof(double));
 }
 
-//0x443810
 void DataWriter::WriteString(const SexyString &theStr)
 {
 	unsigned short aStrLen = (unsigned short)theStr.length();

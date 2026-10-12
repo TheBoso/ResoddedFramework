@@ -1,9 +1,16 @@
 #ifndef __BASSMUSICINTERFACE_H__
 #define __BASSMUSICINTERFACE_H__
 
+// Include windows ourselves to prevent bass.h from including windows and leak macros
+// IWYU pragma: begin_exports <- this suppresses clangd warning
+#include "Platform.h"
+// IWYU pragma: end_exports
+// this comment exists to prevent formatter from reordering this include
+
 #include "MusicInterface.h"
 #include "Window.h"
 #include <bass.h>
+#include <map>
 
 namespace Sexy
 {
@@ -39,7 +46,7 @@ class BassMusicInterface : public MusicInterface
 	int mMusicLoadFlags;
 
   public:
-	BassMusicInterface(Window* theWindow);
+	BassMusicInterface(Window *theWindow);
 	virtual ~BassMusicInterface();
 
 	virtual bool LoadMusic(int theSongId, const std::string &theFileName);

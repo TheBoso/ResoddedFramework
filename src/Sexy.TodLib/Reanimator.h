@@ -37,9 +37,12 @@ enum ReanimFlags
 class ReanimatorTrack
 {
   public:
-	const char *mName;				  //+0x0：轨道名称
-	ReanimatorTransform *mTransforms; //+0x4：每一帧的动画变换的数组
-	int mTransformCount;			  //+0x8：动画变换数量，即帧数量
+	// name of the track
+	const char *mName;
+	// array of transform for each frame
+	ReanimatorTransform *mTransforms;
+	// num of transforms i.e. frames
+	int mTransformCount;
 
   public:
 	ReanimatorTrack() : mName(""), mTransforms(nullptr), mTransformCount(0)
@@ -60,28 +63,28 @@ class ReanimatorDefinition
 	{
 	}
 };
-extern int gReanimatorDefCount;					  //[0x6A9EE4]
-extern ReanimatorDefinition *gReanimatorDefArray; //[0x6A9EE8]
+extern int gReanimatorDefCount;
+extern ReanimatorDefinition *gReanimatorDefArray;
 
 class ReanimationParams
 {
   public:
 	ReanimationType mReanimationType;
 	const char *mReanimFileName;
-	int mReanimParamFlags;
+	unsigned int mReanimParamFlags;
 };
-extern int gReanimationParamArraySize;			  //[0x6A9EEC]
-extern ReanimationParams *gReanimationParamArray; //[0x6A9EF0]
+extern int gReanimationParamArraySize;
+extern ReanimationParams *gReanimationParamArray;
 
-/*inline*/ void ReanimationFillInMissingData(float &thePrev, float &theValue);
-/*inline*/ void ReanimationFillInMissingData(void *&thePrev, void *&theValue);
-bool ReanimationLoadDefinition(const SexyString &theFileName, ReanimatorDefinition *theDefinition);
+void ReanimationFillInMissingData(float &thePrev, float &theValue);
+void ReanimationFillInMissingData(void *&thePrev, void *&theValue);
+bool ReanimationLoadDefinition(const SexyString &theFileName, ReanimatorDefinition *theDefinition, bool recompile);
 void ReanimationFreeDefinition(ReanimatorDefinition *theDefinition);
-void _cdecl ReanimatorEnsureDefinitionLoaded(ReanimationType theReanimType, bool theIsPreloading);
-void ReanimatorLoadDefinitions(ReanimationParams *theReanimationParamArray, int theReanimationParamArraySize);
+void _cdecl ReanimatorEnsureDefinitionLoaded(ReanimationType theReanimType, bool theIsPreloading, bool recompile = false);
+void ReanimatorLoadDefinitions(ReanimationParams *theReanimationParamArray, int theReanimationParamArraySize, bool recompile);
 void ReanimatorFreeDefinitions();
 
-extern ReanimationParams gLawnReanimationArray[(int)ReanimationType::NUM_REANIMS]; //0x6A1340
+extern ReanimationParams gLawnReanimationArray[(int)ReanimationType::NUM_REANIMS];
 
 enum
 {
@@ -111,9 +114,12 @@ class ReanimationHolder
 class ReanimatorFrameTime
 {
   public:
-	float mFraction;		 //+0x0：两帧之间已经过的比例
-	int mAnimFrameBeforeInt; //+0x4：前一个整数帧
-	int mAnimFrameAfterInt;	 //+0x8：后一个整数帧
+	// faction of what is already played between 2 frames
+	float mFraction;
+	// previous integer frame
+	int mAnimFrameBeforeInt;
+	// next integer frame
+	int mAnimFrameAfterInt;
 };
 
 class ReanimatorTransform
@@ -138,20 +144,20 @@ class ReanimatorTransform
 class ReanimatorTrackInstance
 {
   public:
-	int mBlendCounter;					 //+0x0
-	int mBlendTime;						 //+0x4
-	ReanimatorTransform mBlendTransform; //+0x8
-	float mShakeOverride;				 //+0x34
-	float mShakeX;						 //+0x38
-	float mShakeY;						 //+0x3C
-	AttachmentID mAttachmentID;			 //+0x40
-	Image *mImageOverride;				 //+0x44
-	int mRenderGroup;					 //+0x48
-	Color mTrackColor;					 //+0x4C
-	bool mIgnoreClipRect;				 //+0x5C
-	bool mTruncateDisappearingFrames;	 //+0x5D
-	bool mIgnoreColorOverride;			 //+0x5E
-	bool mIgnoreExtraAdditiveColor;		 //+0x5F
+	int mBlendCounter;
+	int mBlendTime;
+	ReanimatorTransform mBlendTransform;
+	float mShakeOverride;
+	float mShakeX;
+	float mShakeY;
+	AttachmentID mAttachmentID;
+	Image *mImageOverride;
+	int mRenderGroup;
+	Color mTrackColor;
+	bool mIgnoreClipRect;
+	bool mTruncateDisappearingFrames;
+	bool mIgnoreColorOverride;
+	bool mIgnoreExtraAdditiveColor;
 
   public:
 	ReanimatorTrackInstance();
@@ -188,10 +194,10 @@ class Reanimation
 	~Reanimation();
 
 	void ReanimationInitialize(float theX, float theY, ReanimatorDefinition *theDefinition);
-	/*inline*/ void ReanimationInitializeType(float theX, float theY, ReanimationType theReanimType);
+	void ReanimationInitializeType(float theX, float theY, ReanimationType theReanimType);
 	void ReanimationDie();
 	void Update();
-	/*inline*/ void Draw(Graphics *g);
+	void Draw(Graphics *g);
 	void DrawRenderGroup(Graphics *g, int theRenderGroup);
 	bool DrawTrack(Graphics *g, int theTrackIndex, int theRenderGroup, TodTriangleGroup *theTriangleGroup);
 	void GetCurrentTransform(int theTrackIndex, ReanimatorTransform *theTransformCurrent);
@@ -200,16 +206,16 @@ class Reanimation
 	int FindTrackIndex(const char *theTrackName);
 	void AttachToAnotherReanimation(Reanimation *theAttachReanim, const char *theTrackName);
 	void GetAttachmentOverlayMatrix(int theTrackIndex, SexyTransform2D &theOverlayMatrix);
-	/*inline*/ void SetFramesForLayer(const char *theTrackName);
+	void SetFramesForLayer(const char *theTrackName);
 	static void MatrixFromTransform(const ReanimatorTransform &theTransform, SexyMatrix3 &theMatrix);
 	bool TrackExists(const char *theTrackName);
 	void StartBlend(int theBlendTime);
-	/*inline*/ void SetShakeOverride(const char *theTrackName, float theShakeAmount);
-	/*inline*/ void SetPosition(float theX, float theY);
-	/*inline*/ void OverrideScale(float theScaleX, float theScaleY);
+	void SetShakeOverride(const char *theTrackName, float theShakeAmount);
+	void SetPosition(float theX, float theY);
+	void OverrideScale(float theScaleX, float theScaleY);
 	float GetTrackVelocity(const char *theTrackName);
-	/*inline*/ void SetImageOverride(const char *theTrackName, Image *theImage);
-	/*inline*/ Image *GetImageOverride(const char *theTrackName);
+	void SetImageOverride(const char *theTrackName, Image *theImage);
+	Image *GetImageOverride(const char *theTrackName);
 	void ShowOnlyTrack(const char *theTrackName);
 	void GetTrackMatrix(int theTrackIndex, SexyTransform2D &theMatrix);
 	void AssignRenderGroupToTrack(const char *theTrackName, int theRenderGroup);
@@ -221,41 +227,28 @@ class Reanimation
 		;
 	}
 	Image *GetCurrentTrackImage(const char *theTrackName);
-	AttachEffect *AttachParticleToTrack(const char *theTrackName,
-										TodParticleSystem *theParticleSystem,
-										float thePosX,
-										float thePosY);
+	AttachEffect *AttachParticleToTrack(const char *theTrackName, TodParticleSystem *theParticleSystem, float thePosX,
+	                                    float thePosY);
 	void GetTrackBasePoseMatrix(int theTrackIndex, SexyTransform2D &theBasePosMatrix);
 	bool IsTrackShowing(const char *theTrackName);
-	/*inline*/ void SetTruncateDisappearingFrames(const char *theTrackName = nullptr,
-												  bool theTruncateDisappearingFrames = false);
-	/*inline*/ void PlayReanim(const char *theTrackName,
-							   ReanimLoopType theLoopType,
-							   int theBlendTime,
-							   float theAnimRate);
+	void SetTruncateDisappearingFrames(const char *theTrackName = nullptr, bool theTruncateDisappearingFrames = false);
+	void PlayReanim(const char *theTrackName, ReanimLoopType theLoopType, int theBlendTime, float theAnimRate);
 	void ReanimationDelete();
 	ReanimatorTrackInstance *GetTrackInstanceByName(const char *theTrackName);
 	void GetFramesForLayer(const char *theTrackName, int &theFrameStart, int &theFrameCount);
 	void UpdateAttacherTrack(int theTrackIndex);
 	static void ParseAttacherTrack(const ReanimatorTransform &theTransform, AttacherInfo &theAttacherInfo);
 	void AttacherSynchWalkSpeed(int theTrackIndex, Reanimation *theAttachReanim, AttacherInfo &theAttacherInfo);
-	/*inline*/ bool IsAnimPlaying(const char *theTrackName);
+	bool IsAnimPlaying(const char *theTrackName);
 	void SetBasePoseFromAnim(const char *theTrackName);
-	void ReanimBltMatrix(Graphics *g,
-						 Image *theImage,
-						 SexyMatrix3 &theTransform,
-						 const Rect &theClipRect,
-						 const Color &theColor,
-						 int theDrawMode,
-						 const Rect &theSrcRect);
+	void ReanimBltMatrix(Graphics *g, Image *theImage, SexyMatrix3 &theTransform, const Rect &theClipRect,
+	                     const Color &theColor, int theDrawMode, const Rect &theSrcRect);
 	Reanimation *FindSubReanim(ReanimationType theReanimType);
 };
 
 void ReanimationCreateAtlas(ReanimatorDefinition *theDefinition, ReanimationType theReanimationType);
 void ReanimationPreload(ReanimationType theReanimationType);
-void BlendTransform(ReanimatorTransform *theResult,
-					const ReanimatorTransform &theTransform1,
-					const ReanimatorTransform &theTransform2,
-					float theBlendFactor);
+void BlendTransform(ReanimatorTransform *theResult, const ReanimatorTransform &theTransform1,
+                    const ReanimatorTransform &theTransform2, float theBlendFactor);
 
 #endif

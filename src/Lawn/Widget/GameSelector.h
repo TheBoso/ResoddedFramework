@@ -46,41 +46,41 @@ class GameSelector : public Widget, public ButtonListener
 	};
 
   public:
-	LawnApp *mApp;						//+0x8C
-	NewLawnButton *mAdventureButton;	//+0x90
-	NewLawnButton *mMinigameButton;		//+0x94
-	NewLawnButton *mPuzzleButton;		//+0x98
-	NewLawnButton *mOptionsButton;		//+0x9C
-	NewLawnButton *mQuitButton;			//+0xA0
-	NewLawnButton *mHelpButton;			//+0xA4
-	NewLawnButton *mStoreButton;		//+0xA8
-	NewLawnButton *mAlmanacButton;		//+0xAC
-	NewLawnButton *mZenGardenButton;	//+0xB0
-	NewLawnButton *mSurvivalButton;		//+0xB4
-	NewLawnButton *mChangeUserButton;	//+0xB8
+	LawnApp *mApp;
+	NewLawnButton *mAdventureButton;
+	NewLawnButton *mMinigameButton;
+	NewLawnButton *mPuzzleButton;
+	NewLawnButton *mOptionsButton;
+	NewLawnButton *mQuitButton;
+	NewLawnButton *mHelpButton;
+	NewLawnButton *mStoreButton;
+	NewLawnButton *mAlmanacButton;
+	NewLawnButton *mZenGardenButton;
+	NewLawnButton *mSurvivalButton;
+	NewLawnButton *mChangeUserButton;
 	NewLawnButton *mAchievementsButton;
 	NewLawnButton *mZombatarButton;
-	Widget *mOverlayWidget;				//+0xBC
-	bool mStartingGame;					//+0xC0
-	int mStartingGameCounter;			//+0xC4
-	bool mMinigamesLocked;				//+0xC8
-	bool mPuzzleLocked;					//+0xC9
-	bool mSurvivalLocked;				//+0xCA
-	bool mShowStartButton;				//+0xCB
-	ParticleSystemID mTrophyParticleID; //+0xCC
-	ReanimationID mSelectorReanimID;	//+0xD0
-	ReanimationID mCloudReanimID[6];	//+0xD4
-	int mCloudCounter[6];				//+0xEC
-	ReanimationID mFlowerReanimID[3];	//+0x104
-	ReanimationID mLeafReanimID;		//+0x110
-	ReanimationID mHandReanimID;		//+0x114
-	int mLeafCounter;					//+0x118
-	SelectorAnimState mSelectorState;	//+0x11C
-	int mLevel;							//+0x120
-	bool mLoading;						//+0x124
-	ToolTipWidget *mToolTip;			//+0x128
-	bool mHasTrophy;					//+0x12C
-	bool mUnlockSelectorCheat;			//+0x12D
+	Widget *mOverlayWidget;
+	bool mStartingGame;
+	int mStartingGameCounter;
+	bool mMinigamesLocked;
+	bool mPuzzleLocked;
+	bool mSurvivalLocked;
+	bool mShowStartButton;
+	ParticleSystemID mTrophyParticleID;
+	ReanimationID mSelectorReanimID;
+	ReanimationID mCloudReanimID[6];
+	int mCloudCounter[6];
+	ReanimationID mFlowerReanimID[3];
+	ReanimationID mLeafReanimID;
+	ReanimationID mHandReanimID;
+	int mLeafCounter;
+	SelectorAnimState mSelectorState;
+	int mLevel;
+	bool mLoading;
+	ToolTipWidget *mToolTip;
+	bool mHasTrophy;
+	bool mUnlockSelectorCheat;
 	int mSlideCounter;
 	int mStartX;
 	int mStartY;
@@ -111,7 +111,7 @@ class GameSelector : public Widget, public ButtonListener
 	void AddTrophySparkle();
 	void ClickedAdventure();
 	void UpdateTooltip();
-	/*inline*/ bool ShouldDoZenTuturialBeforeAdventure();
+	bool ShouldDoZenTuturialBeforeAdventure();
 	void AddPreviewProfiles();
 	void SlideTo(int theX, int theY);
 };
@@ -119,7 +119,7 @@ class GameSelector : public Widget, public ButtonListener
 class GameSelectorOverlay : public Widget
 {
   public:
-	GameSelector *mParent; //+0x88
+	GameSelector *mParent;
 
   public:
 	GameSelectorOverlay(GameSelector *theGameSelector);

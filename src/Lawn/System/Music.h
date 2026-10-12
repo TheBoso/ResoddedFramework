@@ -2,6 +2,13 @@
 #define __MUSIC_H__
 
 #include <string>
+
+// Include windows ourselves to prevent bass.h from including windows and leak macros
+// IWYU pragma: begin_exports <- this suppresses clangd warning
+#include "../../SexyAppFramework/Platform.h"
+// IWYU pragma: end_exports
+// this comment exists to prevent formatter from reordering this include
+
 #include <bass.h>
 
 class LawnApp;
@@ -70,31 +77,31 @@ class MusicFileData
   public:
 	unsigned int *mFileData;
 };
-extern MusicFileData gMusicFileData[MusicFile::NUM_MUSIC_FILES]; //0x6A9ED0
+extern MusicFileData gMusicFileData[MusicFile::NUM_MUSIC_FILES];
 
 class Music
 {
   public:
-	LawnApp *mApp;						   //+0x0
-	Sexy::MusicInterface *mMusicInterface; //+0x4
-	MusicTune mCurMusicTune;			   //+0x8
-	MusicFile mCurMusicFileMain;		   //+0xC
-	MusicFile mCurMusicFileDrums;		   //+0x10
-	MusicFile mCurMusicFileHihats;		   //+0x14
-	MusicBurstType mBurstOverride;		   //+0x18
-	float mBaseBPM;						   //+0x1C
-	float mBaseModSpeed;				   //+0x20
-	MusicBurstState mMusicBurstState;	   //+0x24
-	int mBurstStateCounter;				   //+0x28
-	MusicDrumsState mMusicDrumsState;	   //+0x2C
-	int mQueuedDrumTrackPackedOrder;	   //+0x30
-	int mDrumsStateCounter;				   //+0x34
-	int mPauseOffset;					   //+0x38
-	int mPauseOffsetDrums;				   //+0x3C
-	bool mPaused;						   //+0x40
-	bool mMusicDisabled;				   //+0x41
-	int mFadeOutCounter;				   //+0x44
-	int mFadeOutDuration;				   //+0x48
+	LawnApp *mApp;
+	Sexy::MusicInterface *mMusicInterface;
+	MusicTune mCurMusicTune;
+	MusicFile mCurMusicFileMain;
+	MusicFile mCurMusicFileDrums;
+	MusicFile mCurMusicFileHihats;
+	MusicBurstType mBurstOverride;
+	float mBaseBPM;
+	float mBaseModSpeed;
+	MusicBurstState mMusicBurstState;
+	int mBurstStateCounter;
+	MusicDrumsState mMusicDrumsState;
+	int mQueuedDrumTrackPackedOrder;
+	int mDrumsStateCounter;
+	int mPauseOffset;
+	int mPauseOffsetDrums;
+	bool mPaused;
+	bool mMusicDisabled;
+	int mFadeOutCounter;
+	int mFadeOutDuration;
 	int mQueuedDrumTrackPosition;
 
   public:
@@ -103,26 +110,25 @@ class Music
 	void MusicInit();
 	void MusicDispose()
 	{
-		;
 	}
 	void MusicUpdate();
 	void StopAllMusic();
-	/*inline*/ void PlayMusic(MusicTune theMusicTune, int theOffset = -1, int theDrumsOffset = -1);
-	/*inline*/ HMUSIC GetBassMusicHandle(MusicFile theMusicFile);
+	void PlayMusic(MusicTune theMusicTune, int theOffset = -1, int theDrumsOffset = -1);
+	HMUSIC GetBassMusicHandle(MusicFile theMusicFile);
 	void StartGameMusic();
-	/*inline*/ void LoadSong(MusicFile theMusicFile, const std::string &theFileName);
+	void LoadSong(MusicFile theMusicFile, const std::string &theFileName);
 	void MusicResync();
 	void UpdateMusicBurst();
 	void UpdateBurstTracker();
 	void UpdateBurstAudio();
-	/*inline*/ void StartBurst();
+	void StartBurst();
 	void GameMusicPause(bool thePause);
 	void PlayFromOffset(MusicFile theMusicFile, int theOffset, double theVolume);
 	void MusicResyncChannel(MusicFile theMusicFileToMatch, MusicFile theMusicFileToSync);
 	bool TodLoadMusic(MusicFile theMusicFile, const std::string &theFileName);
 	void MusicTitleScreenInit();
-	/*inline*/ void MakeSureMusicIsPlaying(MusicTune theMusicTune);
-	/*inline*/ void FadeOut(int theFadeOutDuration);
+	void MakeSureMusicIsPlaying(MusicTune theMusicTune);
+	void FadeOut(int theFadeOutDuration);
 	void SetupMusicFileForTune(MusicFile theMusicFile, MusicTune theMusicTune);
 	unsigned long GetMusicOrder(MusicFile theMusicFile);
 	unsigned long GetMusicPosition(MusicFile theMusicFile);

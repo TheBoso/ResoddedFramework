@@ -34,18 +34,18 @@ class TrailParams
 	const char *mTrailFileName;
 };
 
-extern int gTrailParamArraySize;	  //[0x6A9F28]
-extern TrailParams *gTrailParamArray; //[0x6A9F2C]
+extern int gTrailParamArraySize;
+extern TrailParams *gTrailParamArray;
 
-extern TrailParams gLawnTrailArray[(int)TrailType::NUM_TRAILS]; //0x6A19F4
+extern TrailParams gLawnTrailArray[(int)TrailType::NUM_TRAILS];
 
 class TrailDefinition
 {
   public:
-	Image *mImage;
-	int mMaxPoints;
-	float mMinPointDistance;
-	int mTrailFlags;
+	Image *mImage{};
+	int mMaxPoints = 2;
+	float mMinPointDistance = 1.0f;
+	int mTrailFlags = 0;
 	FloatParameterTrack mTrailDuration;
 	FloatParameterTrack mWidthOverLength;
 	FloatParameterTrack mWidthOverTime;
@@ -56,12 +56,12 @@ class TrailDefinition
 	TrailDefinition();
 	~TrailDefinition();
 };
-bool TrailLoadADef(TrailDefinition *theTrailDef, const char *theTrailFileName);
-void TrailLoadDefinitions(TrailParams *theTrailParamArray, int theTrailParamArraySize);
+bool TrailLoadADef(TrailDefinition *theTrailDef, const char *theTrailFileName, bool recompile);
+void TrailLoadDefinitions(TrailParams *theTrailParamArray, int theTrailParamArraySize, bool recompile);
 void TrailFreeDefinitions();
 
-extern int gTrailDefCount;				//[0x6A9F20]
-extern TrailDefinition *gTrailDefArray; //[0x6A9F24]
+extern int gTrailDefCount;
+extern TrailDefinition *gTrailDefArray;
 
 // #################################################################################################### //
 
@@ -79,18 +79,18 @@ class TrailHolder;
 class Trail
 {
   public:
-	TrailPoint mTrailPoints[20];  //+0x0
-	int mNumTrailPoints;		  //+0xA0
-	bool mDead;					  //+0xA4
-	int mRenderOrder;			  //+0xA8
-	int mTrailAge;				  //+0xAC
-	int mTrailDuration;			  //+0xB0
-	TrailDefinition *mDefinition; //+0xB4
-	TrailHolder *mTrailHolder;	  //+0xB8
-	float mTrailInterp[4];		  //+0xBC
-	SexyVector2 mTrailCenter;	  //+0xCC
-	bool mIsAttachment;			  //+0xD4
-	Color mColorOverride;		  //+0xD8
+	TrailPoint mTrailPoints[20];
+	int mNumTrailPoints;
+	bool mDead;
+	int mRenderOrder;
+	int mTrailAge;
+	int mTrailDuration;
+	TrailDefinition *mDefinition;
+	TrailHolder *mTrailHolder;
+	float mTrailInterp[4];
+	SexyVector2 mTrailCenter;
+	bool mIsAttachment;
+	Color mColorOverride;
 
   public:
 	Trail();

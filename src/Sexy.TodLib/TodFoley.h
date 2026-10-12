@@ -1,7 +1,6 @@
 #ifndef __TODFOLEY_H__
 #define __TODFOLEY_H__
 
-#include "../Resources.h"
 #include "../SexyAppFramework/OpenALSoundInstance.h"
 using namespace Sexy;
 
@@ -135,14 +134,14 @@ class FoleyParams
 	unsigned int mFoleyFlags;
 };
 
-/*inline*/ void TodFoleyInitialize(FoleyParams *theFoleyParamArray, int theFoleyParamArraySize);
-/*inline*/ void TodFoleyDispose();
+void TodFoleyInitialize(FoleyParams *theFoleyParamArray, int theFoleyParamArraySize);
+void TodFoleyDispose();
 FoleyParams *LookupFoley(FoleyType theFoleyType);
 
-extern int gFoleyParamArraySize;	  //[0x6A9F04]
-extern FoleyParams *gFoleyParamArray; //[0x6A9F00]
+extern int gFoleyParamArraySize;
+extern FoleyParams *gFoleyParamArray;
 
-extern FoleyParams gLawnFoleyParamArray[(int)FoleyType::NUM_FOLEY]; //0x69FAD0
+extern FoleyParams gLawnFoleyParamArray[(int)FoleyType::NUM_FOLEY];
 
 class TodSoundInstance : public OpenALSoundInstance
 {
@@ -154,8 +153,8 @@ class TodSoundInstance : public OpenALSoundInstance
 	{
 	}
 
-	/*inline*/ int GetSoundPosition();
-	/*inline*/ void SetSoundPosition(int thePosition);
+	int GetSoundPosition();
+	void SetSoundPosition(int thePosition);
 };
 
 class FoleyInstance
@@ -193,7 +192,7 @@ class TodFoley
 	void GamePause(bool theEnteringPause);
 	void PlayFoleyPitch(FoleyType theFoleyType, float thePitch);
 	void CancelPausedFoley();
-	/*inline*/ void ApplyMusicVolume(FoleyInstance *theFoleyInstance);
+	void ApplyMusicVolume(FoleyInstance *theFoleyInstance);
 	void RehookupSoundWithMusicVolume();
 };
 

@@ -1,9 +1,7 @@
 #ifndef __TODDEBUG_H__
 #define __TODDEBUG_H__
 
-#ifdef _WIN32
-#include <Windows.h>
-#endif
+#include "../SexyAppFramework/Platform.h" // for Windows - do not remove
 
 class TodHesitationBracket
 {
@@ -34,25 +32,23 @@ void TodTraceMemory();
 void TodTraceAndLog(const char *theFormat, ...);
 void TodTraceWithoutSpamming(const char *theFormat, ...);
 void TodHesitationTrace(...);
-#ifdef _WIN32
+#if defined(_WIN32) && defined(SEXY_CRASH_HANDLER)
 void TodReportError(LPEXCEPTION_POINTERS exceptioninfo, const char *theMessage);
-#endif
-void TodAssertFailed(const char *theCondition, const char *theFile, int theLine, const char *theMsg = "", ...);
-/*inline*/ void TodErrorMessageBox(const char *theMessage, const char *theTitle);
-#ifdef _WIN32
 long __stdcall TodUnhandledExceptionFilter(LPEXCEPTION_POINTERS exceptioninfo);
 #endif
+void TodAssertFailed(const char *theCondition, const char *theFile, int theLine, const char *theMsg = "", ...);
+void TodErrorMessageBox(const char *theMessage, const char *theTitle);
 
-/*inline*/ void *TodMalloc(int theSize);
-/*inline*/ void TodFree(void *theBlock);
+void *TodMalloc(int theSize);
+void TodFree(void *theBlock);
 void TodAssertInitForApp();
 
 extern void (*gBetaSubmitFunc)();
 
-#ifndef WIN32
-#define SexyDebuggerCheck() false //The best i can do till i see linux support
-#else
+#ifdef WIN32
 #define SexyDebuggerCheck() IsDebuggerPresent()
+#else
+#define SexyDebuggerCheck() false //The best i can do till i see linux support
 #endif
 
 #ifdef _DEBUG

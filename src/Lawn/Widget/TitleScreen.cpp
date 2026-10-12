@@ -12,7 +12,6 @@
 #include "../../GameConstants.h"
 #include "../System/Music.h"
 
-//0x48D4B0
 TitleScreen::TitleScreen(LawnApp *theApp)
 {
 	mCurBarWidth = 0.0f;
@@ -43,7 +42,6 @@ TitleScreen::TitleScreen(LawnApp *theApp)
 	mStartButton->mVisible = false;
 }
 
-//0x48D6B0��0x48D6D0
 TitleScreen::~TitleScreen()
 {
 	if (mStartButton)
@@ -57,7 +55,6 @@ void TitleScreen::DrawToPreload(Graphics *g)
 	g->DrawImageF(IMAGE_PLANTSHADOW, 1000.0f, 0.0f);
 }
 
-//0x48D730
 void TitleScreen::Draw(Graphics *g)
 {
 	g->SetLinearBlend(true);
@@ -93,12 +90,12 @@ void TitleScreen::Draw(Graphics *g)
 		else
 		{
 			anAlpha = TodAnimateCurve(
-				mTitleStateDuration, mTitleStateDuration - 50, mTitleStateCounter, 0, 255, TodCurves::CURVE_LINEAR);
+			    mTitleStateDuration, mTitleStateDuration - 50, mTitleStateCounter, 0, 255, TodCurves::CURVE_LINEAR);
 		}
 		g->SetColorizeImages(true);
 		g->SetColor(Color(255, 255, 255, anAlpha));
 		g->DrawImage(
-			IMAGE_POPCAP_LOGO, (mWidth - IMAGE_POPCAP_LOGO->mWidth) / 2, (mHeight - IMAGE_POPCAP_LOGO->mHeight) / 2);
+		    IMAGE_POPCAP_LOGO, (mWidth - IMAGE_POPCAP_LOGO->mWidth) / 2, (mHeight - IMAGE_POPCAP_LOGO->mHeight) / 2);
 		g->SetColorizeImages(false);
 
 		return;
@@ -114,11 +111,11 @@ void TitleScreen::Draw(Graphics *g)
 		if (mTitleStateCounter >= mTitleStateDuration - 35)
 		{
 			anAlpha = TodAnimateCurve(
-				mTitleStateDuration, mTitleStateDuration - 35, mTitleStateCounter, 0, 255, TodCurves::CURVE_LINEAR);
+			    mTitleStateDuration, mTitleStateDuration - 35, mTitleStateCounter, 0, 255, TodCurves::CURVE_LINEAR);
 			g->SetColor(Color(255, 255, 255, 255 - anAlpha));
 			g->DrawImage(IMAGE_POPCAP_LOGO,
-						 (mWidth - IMAGE_POPCAP_LOGO->mWidth) / 2,
-						 (mHeight - IMAGE_POPCAP_LOGO->mHeight) / 2);
+			             (mWidth - IMAGE_POPCAP_LOGO->mWidth) / 2,
+			             (mHeight - IMAGE_POPCAP_LOGO->mHeight) / 2);
 		}
 		else
 		{
@@ -126,7 +123,7 @@ void TitleScreen::Draw(Graphics *g)
 		}
 		g->SetColor(Color(255, 255, 255, anAlpha));
 		g->DrawImage(
-			IMAGE_PARTNER_LOGO, (mWidth - IMAGE_PARTNER_LOGO->mWidth) / 2, (mHeight - IMAGE_PARTNER_LOGO->mHeight) / 2);
+		    IMAGE_PARTNER_LOGO, (mWidth - IMAGE_PARTNER_LOGO->mWidth) / 2, (mHeight - IMAGE_PARTNER_LOGO->mHeight) / 2);
 		g->SetColorizeImages(false);
 
 		return;
@@ -180,7 +177,7 @@ void TitleScreen::Draw(Graphics *g)
 		float aScale = TodAnimateCurveFloatTime(0, mTotalBarWidth, mCurBarWidth, 1, 0.5f, TodCurves::CURVE_LINEAR);
 		SexyTransform2D aTransform;
 		TodScaleRotateTransformMatrix(
-			aTransform, aGrassX + 11.0f + aRollLen, aGrassY - 3.0f - 35.0f * aScale + 35.0f, aRotation, aScale, aScale);
+		    aTransform, aGrassX + 11.0f + aRollLen, aGrassY - 3.0f - 35.0f * aScale + 35.0f, aRotation, aScale, aScale);
 		Rect aSrcRect(0, 0, IMAGE_REANIM_SODROLLCAP->mWidth, IMAGE_REANIM_SODROLLCAP->mHeight);
 		TodBltMatrix(g, IMAGE_REANIM_SODROLLCAP, aTransform, g->mClipRect, Color::White, g->mDrawMode, aSrcRect);
 	}
@@ -192,7 +189,6 @@ void TitleScreen::Draw(Graphics *g)
 	}
 }
 
-//0x48DCB0
 void TitleScreen::Update()
 {
 	Widget::Update();
@@ -342,7 +338,7 @@ void TitleScreen::Update()
 		float aBarWidth = TodAnimateCurveFloatTime(0, 1, aLoadingPercent, 0, mTotalBarWidth, TodCurves::CURVE_EASE_IN);
 		float aDiff = aBarWidth - mCurBarWidth;
 		float aAcceleration =
-			TodAnimateCurveFloatTime(0, 1, aLoadingPercent, 0.0001f, 0.00001f, TodCurves::CURVE_LINEAR);
+		    TodAnimateCurveFloatTime(0, 1, aLoadingPercent, 0.0001f, 0.00001f, TodCurves::CURVE_LINEAR);
 		if (mLoadingThreadComplete)
 		{
 			aAcceleration = 0.0001f;
@@ -428,11 +424,11 @@ void TitleScreen::Update()
 		}
 	}
 
-	float aTriggerPoint[] = {mTotalBarWidth * 0.11f,
-							 mTotalBarWidth * 0.32f,
-							 mTotalBarWidth * 0.54f,
-							 mTotalBarWidth * 0.72f,
-							 mTotalBarWidth * 0.91f};
+	float aTriggerPoint[] = { mTotalBarWidth * 0.11f,
+		                      mTotalBarWidth * 0.32f,
+		                      mTotalBarWidth * 0.54f,
+		                      mTotalBarWidth * 0.72f,
+		                      mTotalBarWidth * 0.91f };
 
 	for (int i = 0; i < LENGTH(aTriggerPoint); i++)
 	{
@@ -481,27 +477,23 @@ void TitleScreen::Resize(int theX, int theY, int theWidth, int theHeight)
 	Widget::Resize(theX, theY, theWidth, theHeight);
 }
 
-//0x48E5A0
 void TitleScreen::AddedToManager(Sexy::WidgetManager *theWidgetManager)
 {
 	Widget::AddedToManager(theWidgetManager);
 	theWidgetManager->AddWidget(mStartButton);
 }
 
-//0x48E5D0
 void TitleScreen::RemovedFromManager(Sexy::WidgetManager *theWidgetManager)
 {
 	Widget::RemovedFromManager(theWidgetManager);
 	theWidgetManager->RemoveWidget(mStartButton);
 }
 
-//0x48E600
 void TitleScreen::ButtonPress(int theId)
 {
 	mApp->PlaySample(Sexy::SOUND_BUTTONCLICK);
 }
 
-//0x48E620
 void TitleScreen::ButtonDepress(int theId)
 {
 	switch (theId)
@@ -516,7 +508,6 @@ void TitleScreen::ButtonDepress(int theId)
 	}
 }
 
-//0x48E650
 void TitleScreen::MouseDown(int x, int y, int theClickCount)
 {
 	if (mLoadingThreadComplete)
@@ -526,7 +517,6 @@ void TitleScreen::MouseDown(int x, int y, int theClickCount)
 	}
 }
 
-//0x48E690
 void TitleScreen::KeyDown(KeyCode theKey)
 {
 	if (mLoadingThreadComplete)

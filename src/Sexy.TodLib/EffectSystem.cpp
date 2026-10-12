@@ -10,9 +10,8 @@
 #include "../SexyAppFramework/GPUImage.h"
 #include "../SexyAppFramework/Renderer.h"
 
-EffectSystem *gEffectSystem = nullptr; //[0x6A9EB8]
+EffectSystem *gEffectSystem = nullptr;
 
-//0x445330
 void EffectSystem::EffectSystemInitialize()
 {
 	TOD_ASSERT(!gEffectSystem);
@@ -30,7 +29,6 @@ void EffectSystem::EffectSystemInitialize()
 	mAttachmentHolder->InitializeHolder();
 }
 
-//0x445490
 void EffectSystem::EffectSystemDispose()
 {
 	if (mParticleHolder)
@@ -61,7 +59,6 @@ void EffectSystem::EffectSystemDispose()
 	gEffectSystem = nullptr;
 }
 
-//0x4455E0
 void EffectSystem::EffectSystemFreeAll()
 {
 	mParticleHolder->mParticleSystems.DataArrayFreeAll();
@@ -75,7 +72,6 @@ void EffectSystem::EffectSystemFreeAll()
 	mAttachmentHolder->mAttachments.DataArrayFreeAll();
 }
 
-//0x445680
 void EffectSystem::ProcessDeleteQueue()
 {
 	TodParticleSystem *aParticle = nullptr;
@@ -99,7 +95,6 @@ void EffectSystem::ProcessDeleteQueue()
 			mAttachmentHolder->mAttachments.DataArrayFree(aAttachment);
 }
 
-//0x445890
 void EffectSystem::Update()
 {
 	TodParticleSystem *aParticle = nullptr;
@@ -135,7 +130,6 @@ static int FixedFloor(int x)
 	return r;
 }
 
-//0x4459B0
 static inline void Tod_Tod_lClip(TriVertex &dst, const TriVertex &on, const TriVertex &off, const float edge)
 {
 	float delta = (edge - off.x) / (on.x - off.x);
@@ -161,7 +155,6 @@ static inline void rClip(TriVertex &dst, const TriVertex &on, const TriVertex &o
 				((int)((off.color & 0xff) + ((on.color & 0xff) - (off.color & 0xff)) * delta));
 }
 
-//0x445B50
 static inline void Tod_tClip(TriVertex &dst, const TriVertex &on, const TriVertex &off, const float edge)
 {
 	float delta = (edge - off.y) / (on.y - off.y);
@@ -187,7 +180,6 @@ static inline void Tod_bClip(TriVertex &dst, const TriVertex &on, const TriVerte
 				((int)((off.color & 0xff) + ((on.color & 0xff) - (off.color & 0xff)) * delta));
 }
 
-//0x445D00
 static inline unsigned int Tod_leClip(TriVertex **src, TriVertex **dst, const float edge)
 {
 	TriVertex **_dst = dst;
@@ -225,7 +217,6 @@ static inline unsigned int Tod_leClip(TriVertex **src, TriVertex **dst, const fl
 	return static_cast<int>(dst - _dst);
 }
 
-//0x445E00
 static inline unsigned int Tod_reClip(TriVertex **src, TriVertex **dst, const float edge)
 {
 	TriVertex **_dst = dst;
@@ -263,7 +254,6 @@ static inline unsigned int Tod_reClip(TriVertex **src, TriVertex **dst, const fl
 	return static_cast<int>(dst - _dst);
 }
 
-//0x445F00
 static inline unsigned int Tod_teClip(TriVertex **src, TriVertex **dst, const float edge)
 {
 	TriVertex **_dst = dst;
@@ -301,7 +291,6 @@ static inline unsigned int Tod_teClip(TriVertex **src, TriVertex **dst, const fl
 	return static_cast<int>(dst - _dst);
 }
 
-//0x446000
 static inline unsigned int Tod_beClip(TriVertex **src, TriVertex **dst, const float edge)
 {
 	TriVertex **_dst = dst;
@@ -339,7 +328,6 @@ static inline unsigned int Tod_beClip(TriVertex **src, TriVertex **dst, const fl
 	return static_cast<int>(dst - _dst);
 }
 
-//0x446100
 static inline int Tod_clipShape(
 	TriVertex **dst, TriVertex *src, const float left, const float right, const float top, const float bottom)
 {
@@ -365,7 +353,6 @@ bool gTodTriangleDrawAdditive = false;
 
 #include "TodDrawTriangleInc.cpp"
 
-//0x4461B0
 TodTriangleGroup::TodTriangleGroup()
 {
 	for (int i = 0; i < 256; i++)
@@ -377,7 +364,6 @@ TodTriangleGroup::TodTriangleGroup()
 	mDrawMode = Graphics::DRAWMODE_NORMAL;
 }
 
-//0x4461F0
 void TodTriangleGroup::DrawGroup(Graphics *g)
 {
 	if (mImage && mTriangleCount)
@@ -411,7 +397,6 @@ void TodTriangleGroup::DrawGroup(Graphics *g)
 	}
 }
 
-//0x446300
 void TodTriangleGroup::AddTriangle(Graphics *g,
 								   Image *theImage,
 								   const SexyMatrix3 &theMatrix,

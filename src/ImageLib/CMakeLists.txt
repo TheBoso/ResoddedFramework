@@ -44,3 +44,8 @@ foreach(FILE_PATH IN LISTS SOURCES)
 
     source_group("${GROUP_NAME}" FILES "${FILE_PATH}")
 endforeach()
+
+if(MSVC)
+    # set source and execution charset to utf-8
+    target_compile_options(${PROJECT_NAME} PRIVATE /utf-8)
+endif()

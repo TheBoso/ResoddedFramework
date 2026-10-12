@@ -12,11 +12,11 @@
 #include "../SexyAppFramework/Checkbox.h"
 
 int gLawnEditWidgetColors[][4] = {
-	{0, 0, 0, 0},
-	{0, 0, 0, 0},
-	{240, 240, 255, 255},
-	{255, 255, 255, 255},
-	{0, 0, 0, 255},
+	{ 0,   0,   0,   0   },
+	{ 0,   0,   0,   0   },
+	{ 240, 240, 255, 255 },
+	{ 255, 255, 255, 255 },
+	{ 0,   0,   0,   255 },
 };
 
 bool ModInRange(int theNumber, int theMod, int theRange)
@@ -61,12 +61,10 @@ LawnEditWidget::LawnEditWidget(int theId, EditListener *theListener, Dialog *the
 	mAutoCapFirstLetter = true;
 }
 
-//0x456700
 LawnEditWidget::~LawnEditWidget()
 {
 }
 
-//0x456720
 void LawnEditWidget::KeyDown(KeyCode theKey)
 {
 	EditWidget::KeyDown(theKey);
@@ -74,7 +72,6 @@ void LawnEditWidget::KeyDown(KeyCode theKey)
 		mDialog->KeyDown(KeyCode::KEYCODE_ESCAPE);
 }
 
-//0x456760
 void LawnEditWidget::KeyChar(SexyChar theChar)
 {
 	if (mAutoCapFirstLetter && isalpha(theChar))
@@ -86,7 +83,6 @@ void LawnEditWidget::KeyChar(SexyChar theChar)
 	EditWidget::KeyChar(theChar);
 }
 
-//0x4567B0
 LawnEditWidget *CreateEditWidget(int theId, EditListener *theListener, Dialog *theDialog)
 {
 	LawnEditWidget *aEditWidget = new LawnEditWidget(theId, theListener, theDialog);
@@ -103,11 +99,10 @@ void DrawEditBox(Graphics *g, EditWidget *theWidget)
 	g->DrawImageBox(aDest, IMAGE_EDITBOX);
 }
 
-//0x456860
 Checkbox *MakeNewCheckbox(int theId, CheckboxListener *theListener, bool theDefault)
 {
 	Checkbox *aCheckbox =
-		new Checkbox(Sexy::IMAGE_OPTIONS_CHECKBOX0, Sexy::IMAGE_OPTIONS_CHECKBOX1, theId, theListener);
+	    new Checkbox(Sexy::IMAGE_OPTIONS_CHECKBOX0, Sexy::IMAGE_OPTIONS_CHECKBOX1, theId, theListener);
 	aCheckbox->mChecked = theDefault;
 	aCheckbox->mHasAlpha = true;
 	aCheckbox->mHasTransparencies = true;
@@ -115,13 +110,11 @@ Checkbox *MakeNewCheckbox(int theId, CheckboxListener *theListener, bool theDefa
 	return aCheckbox;
 }
 
-//0x4568D0
 std::string GetSavedGameName(GameMode theGameMode, int theProfileId)
 {
 	return GetAppDataFolder() + StrFormat("savefiles/%d/game%d", theProfileId, (int)theGameMode);
 }
 
-//0x456980
 int GetCurrentDaysSince2000()
 {
 	time_t aNow = std::time(0);
@@ -131,55 +124,94 @@ int GetCurrentDaysSince2000()
 	return dy * 365 + (dy - 1) / 400 - (dy - 1) / 100 + (dy - 1) / 4 + aNowTM.tm_yday + 1;
 }
 
-
 LawnScrollbar::LawnScrollbar(LawnApp *theApp)
 {
 	mApp = theApp;
-	mRawValue = 0.0f;
-	mStepMultiplier = 1.0f;
-	mSliderHeightPercent = 0.5f;
-	mScrollMultiplier = 0.09f;
+	mValue = 0.0f;
+	mMaxValue = 0.0f;
+	mSliderHeightPercent = 1.0f;
 	mAllowedMouseZone = Rect(0, 0, mApp->mWidth, mApp->mHeight);
-	mStartedDrag = false;
-	mUseGlobalCoordinates = false;
+	mIsDown = false;
+	mIsOver = false;
+	mInitiallyOver = false;
 	mBaseColor = Color(152, 149, 188);
 	mThumbColor = Color(63, 64, 86);
+	mIsHorizontal = false;
+	mThumbRect = Rect(0, 0, 0, 0);
 }
 
 LawnScrollbar::~LawnScrollbar()
 {
-
 }
 void LawnScrollbar::Update()
 {
-	Widget::Update();
-	if (!mStartedDrag || mDisabled)
+	if (mDisabled)
 		return;
 
-	int aLocalY = mApp->mWidgetManager->mLastMouseY - mY;
+	int aMouseX = mApp->mWidgetManager->mLastMouseX, aMouseY = mApp->mWidgetManager->mLastMouseY;
+	if (mParent)
+	{
+		Point anAbsPos = mParent->GetAbsPos();
+		aMouseX -= anAbsPos.mX;
+		aMouseY -= anAbsPos.mY;
+	}
+	aMouseX -= mX;
+	aMouseY -= mY;
+	mIsOver = mThumbRect.Contains(aMouseX, aMouseY);
+	mIsDown = mApp->mWidgetManager->mDownButtons & 5;
 
-	int aHeightSlider = mHeight * mSliderHeightPercent;
-	int aRange = mHeight - aHeightSlider;
+	if (IsThumbDown())
+	{
+		bool aIsOver = mInitiallyOver;
+		float aNormalized = (mMaxValue > 0.0f) ? mValue / mMaxValue : 0.0f;
+		if (mIsHorizontal)
+		{
+			if (aIsOver)
+				mValue = std::max(
+				    0.0f, std::min((aMouseX - mGrabOffsetX) / (mWidth - mThumbRect.mWidth) * mMaxValue, mMaxValue));
+			mThumbRect = Rect(aNormalized * (mWidth - mThumbRect.mWidth), 0, mSliderHeightPercent * mWidth, mHeight);
+		}
+		else
+		{
 
-	float aNewValue = (float)(aLocalY - aHeightSlider * 0.5f) / aRange;
+			if (aIsOver)
+				mValue = std::max(
+				    0.0f, std::min((aMouseY - mGrabOffsetY) / (mHeight - mThumbRect.mHeight) * mMaxValue, mMaxValue));
+			mThumbRect = Rect(0, aNormalized * (mHeight - mThumbRect.mHeight), mWidth, mSliderHeightPercent * mHeight);
+		}
+	}
+}
 
-	mRawValue = std::clamp(aNewValue, 0.0f, 1.0f);
+bool LawnScrollbar::IsThumbOver()
+{
+	return !mDisabled && mIsOver;
+}
+bool LawnScrollbar::IsThumbDown()
+{
+	return !mDisabled && mIsDown;
 }
 
 void LawnScrollbar::MouseDown(int x, int y, int theClickCount)
 {
 	Widget::MouseDown(x, y, theClickCount);
-
-
-	if (!Rect(mX, mY, mWidth, mHeight).Contains(x + mX, y + mY)) //MouseDown is called with relative coordinates
-		return;
-	mStartedDrag = true;
+	if (mThumbRect.Contains(x, y))
+	{
+		mInitiallyOver = true;
+		mGrabOffsetX = x - mThumbRect.mX;
+		mGrabOffsetY = y - mThumbRect.mY;
+	}
+	else if (Rect(0, 0, mWidth, mHeight).Contains(x, y))
+	{
+		mInitiallyOver = true;
+		mGrabOffsetX = mThumbRect.mWidth / 2.0f;
+		mGrabOffsetY = mThumbRect.mHeight / 2.0f;
+	}
 }
 
 void LawnScrollbar::MouseUp(int x, int y, int theClickCount)
 {
 	Widget::MouseUp(x, y, theClickCount);
-	mStartedDrag = false;
+	mInitiallyOver = false;
 }
 
 void LawnScrollbar::MouseWheel(int theDelta)
@@ -188,62 +220,113 @@ void LawnScrollbar::MouseWheel(int theDelta)
 
 	if (!mAllowedMouseZone.Contains(mApp->mWidgetManager->mLastMouseX, mApp->mWidgetManager->mLastMouseY) || mDisabled)
 		return;
-	mRawValue -= theDelta * mScrollMultiplier;
-	mRawValue = std::clamp(mRawValue, 0.0f, 1.0f);
+
+	float aStep = mMaxValue * 0.1f;
+	mValue = std::max(0.0f, std::min(mValue - theDelta * aStep, mMaxValue));
+	float aNormalized = (mMaxValue > 0.0f) ? mValue / mMaxValue : 0.0f;
+	if (mIsHorizontal)
+	{
+		mThumbRect = Rect(aNormalized * (mWidth - mThumbRect.mWidth), 0, mSliderHeightPercent * mWidth, mHeight);
+	}
+	else
+	{
+		mThumbRect = Rect(0, aNormalized * (mHeight - mThumbRect.mHeight), mWidth, mSliderHeightPercent * mHeight);
+	}
+}
+
+void LawnScrollbar::SetValue(float theValue)
+{
+	mValue = theValue;
+	float aNormalized = (mMaxValue > 0.0f) ? mValue / mMaxValue : 0.0f;
+	if (mIsHorizontal)
+	{
+		mThumbRect = Rect(aNormalized * (mWidth - mThumbRect.mWidth), 0, mSliderHeightPercent * mWidth, mHeight);
+	}
+	else
+	{
+		mThumbRect = Rect(0, aNormalized * (mHeight - mThumbRect.mHeight), mWidth, mSliderHeightPercent * mHeight);
+	}
 }
 
 float LawnScrollbar::GetValue()
 {
-	return mRawValue * mStepMultiplier;
+	return mValue;
 }
 
 Color DeriveLawnSliderColor(Color aColor, int r, int g, int b)
 {
-	return Color(std::clamp(aColor.mRed + r, 0, 255), std::clamp(aColor.mGreen + g, 0, 255), std::clamp(aColor.mBlue + b, 0, 255));
+	return Color(std::clamp(aColor.mRed + r, 0, 255), std::clamp(aColor.mGreen + g, 0, 255),
+	             std::clamp(aColor.mBlue + b, 0, 255));
 }
 
-void LawnScrollbar::Draw(Graphics* g)
+void LawnScrollbar::Resize(int theX, int theY, int theWidth, int theHeight)
 {
-	if (!mVisible)
-		return;
+	Widget::Resize(theX, theY, theWidth, theHeight);
+	float aNormalized = (mMaxValue > 0.0f) ? mValue / mMaxValue : 0.0f;
+	if (mIsHorizontal)
+	{
+		mThumbRect = Rect(aNormalized * (mWidth - mThumbRect.mWidth), 0, mSliderHeightPercent * mWidth, mHeight);
+	}
+	else
+	{
+		mThumbRect = Rect(0, aNormalized * (mHeight - mThumbRect.mHeight), mWidth, mSliderHeightPercent * mHeight);
+	}
+}
 
-	int aHeightSlider = mHeight * mSliderHeightPercent;
-	int anOffsetSlider = (mHeight - aHeightSlider) * mRawValue;
-
+void LawnScrollbar::DrawScrollThumb(Graphics *g)
+{
 	g->PushState();
 
-	// Draw the background
-	
-	g->SetColor(mBaseColor);
-	g->FillRect(0, 0, mWidth, mHeight);
+	g->Translate(mIsHorizontal ? mThumbRect.mX : 0, !mIsHorizontal ? mThumbRect.mY : 0);
 
-	g->Translate(0, anOffsetSlider);
+	const int aWidth = mIsHorizontal ? mThumbRect.mWidth : mWidth;
 
-	// Draw the base
+	const int aHeight = !mIsHorizontal ? mThumbRect.mHeight : mHeight;
+
+	// Base
 	g->SetColor(mThumbColor);
-	g->FillRect(0, 0, mWidth, aHeightSlider);
+	g->FillRect(0, 0, aWidth, aHeight);
 
-	// Highlight
 	g->SetColor(DeriveLawnSliderColor(mThumbColor, 17, 17, 22));
-	g->FillRect(1, 1, 6, 1);
-	g->FillRect(1, 1, 1, aHeightSlider - 2);
+	if (mIsHorizontal)
+	{
+		g->FillRect(1, 1, 1, aHeight - 2);
+		g->FillRect(1, 1, aWidth - 2, 1);
+	}
+	else
+	{
+		g->FillRect(1, 1, 6, 1);
+		g->FillRect(1, 1, 1, aHeight - 2);
+	}
+
 	g->SetColor(DeriveLawnSliderColor(mThumbColor, 21, 22, 27));
 	g->FillRect(1, 1, 1, 1);
 
-	// Border 1
+	// Outer border
 	g->SetColor(DeriveLawnSliderColor(mThumbColor, -33, -36, -52));
-	g->FillRect(mWidth, 0, 1, aHeightSlider);
-	g->FillRect(0, aHeightSlider, mWidth, 1);
-	g->SetColor(DeriveLawnSliderColor(mThumbColor, -41, -45, -65));
-	g->FillRect(mWidth, aHeightSlider, 1, 1);
+	g->FillRect(aWidth - 1, 0, 1, aHeight);
+	g->FillRect(0, aHeight - 1, aWidth, 1);
 
-	// Border 2
-	g->SetColor(DeriveLawnSliderColor(mThumbColor, -33, -36, -52));
-	g->FillRect(mWidth - 1, 1, 1, aHeightSlider);
-	g->FillRect(0, aHeightSlider, mWidth, 1);
+	// Inner border
+	g->FillRect(aWidth - 2, 1, 1, aHeight - 2);
+	g->FillRect(2, aHeight - 2, aWidth - 2, 1);
+
 	g->SetColor(DeriveLawnSliderColor(mThumbColor, -41, -45, -65));
-	g->FillRect(mWidth, aHeightSlider - 1, 1, 1);
-	g->FillRect(2, aHeightSlider - 1, mWidth - 1, 1);
+	g->FillRect(aWidth - 1, aHeight - 1, 1, 1);
+
+	g->PopState();
+}
+
+void LawnScrollbar::Draw(Graphics *g)
+{
+	if (!mVisible)
+		return;
+	g->PushState();
+
+	g->SetColor(mBaseColor);
+	g->FillRect(0, 0, mWidth, mHeight);
+
+	DrawScrollThumb(g);
 
 	g->PopState();
 }

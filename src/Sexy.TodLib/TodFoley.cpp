@@ -1,12 +1,13 @@
+#include "../Resources.h"
 #include "TodFoley.h"
 #include "TodDebug.h"
 #include "TodCommon.h"
 #include "../SexyAppFramework/SoundManager.h"
 
-int gFoleyParamArraySize;	   //[0x6A9F04]
-FoleyParams *gFoleyParamArray; //[0x6A9F00]
+int gFoleyParamArraySize;
+FoleyParams *gFoleyParamArray;
 
-FoleyParams gLawnFoleyParamArray[(int)FoleyType::NUM_FOLEY] = { //0x69FAD0
+FoleyParams gLawnFoleyParamArray[(int)FoleyType::NUM_FOLEY] = {
 	{FoleyType::FOLEY_SUN, 10.0f, {&Sexy::SOUND_POINTS}, 0U},
 	{FoleyType::FOLEY_SPLAT, 10.0f, {&Sexy::SOUND_SPLAT, &Sexy::SOUND_SPLAT2, &Sexy::SOUND_SPLAT3}, 0U},
 	{FoleyType::FOLEY_LAWNMOWER, 10.0f, {&Sexy::SOUND_LAWNMOWER}, 0U},
@@ -54,7 +55,7 @@ FoleyParams gLawnFoleyParamArray[(int)FoleyType::NUM_FOLEY] = { //0x69FAD0
 	  &Sexy::SOUND_SUKHBIR2,
 	  &Sexy::SOUND_SUKHBIR3},
 	 0U},
-	{FoleyType::FOLEY_JACKINTHEBOX, 0.0f, {&Sexy::SOUND_JACKINTHEBOX}, 7U},
+	{FoleyType::FOLEY_JACKINTHEBOX, 0.0f, {&Sexy::SOUND_JACKINTHEBOX}, GetBit(FOLEYFLAGS_LOOP) | GetBit(FOLEYFLAGS_ONE_AT_A_TIME) | GetBit(FOLEYFLAGS_MUTE_ON_PAUSE) },
 	{FoleyType::FOLEY_ART_CHALLENGE, 0.0f, {&Sexy::SOUND_DIAMOND}, 0U},
 	{FoleyType::FOLEY_ZAMBONI, 5.0f, {&Sexy::SOUND_ZAMBONI}, 0U},
 	{FoleyType::FOLEY_THUNDER, 10.0f, {&Sexy::SOUND_THUNDER}, 0U},
@@ -73,7 +74,7 @@ FoleyParams gLawnFoleyParamArray[(int)FoleyType::NUM_FOLEY] = { //0x69FAD0
 	{FoleyType::FOLEY_FUME, 10.0f, {&Sexy::SOUND_FUME}, 0U},
 	{FoleyType::FOLEY_COIN, 10.0f, {&Sexy::SOUND_COIN}, 0U},
 	{FoleyType::FOLEY_KERNEL_SPLAT, 10.0f, {&Sexy::SOUND_KERNELPULT, &Sexy::SOUND_KERNELPULT2}, 0U},
-	{FoleyType::FOLEY_DIGGER, 0.0f, {&Sexy::SOUND_DIGGER_ZOMBIE}, 7U},
+	{FoleyType::FOLEY_DIGGER, 0.0f, {&Sexy::SOUND_DIGGER_ZOMBIE}, GetBit(FOLEYFLAGS_LOOP) | GetBit(FOLEYFLAGS_ONE_AT_A_TIME) | GetBit(FOLEYFLAGS_MUTE_ON_PAUSE)},
 	{FoleyType::FOLEY_JACK_SURPRISE,
 	 1.0f,
 	 {&Sexy::SOUND_JACK_SURPRISE, &Sexy::SOUND_JACK_SURPRISE, &Sexy::SOUND_JACK_SURPRISE2},
@@ -101,17 +102,17 @@ FoleyParams gLawnFoleyParamArray[(int)FoleyType::NUM_FOLEY] = { //0x69FAD0
 	{FoleyType::FOLEY_SHIELD_HIT, 10.0f, {&Sexy::SOUND_SHIELDHIT, &Sexy::SOUND_SHIELDHIT2}, 0U},
 	{FoleyType::FOLEY_SWING, 2.0f, {&Sexy::SOUND_SWING}, 0U},
 	{FoleyType::FOLEY_BONK, 2.0f, {&Sexy::SOUND_BONK}, 0U},
-	{FoleyType::FOLEY_RAIN, 0.0f, {&Sexy::SOUND_RAIN}, 5U},
+	{FoleyType::FOLEY_RAIN, 0.0f, {&Sexy::SOUND_RAIN}, GetBit(FOLEYFLAGS_LOOP) | GetBit(FOLEYFLAGS_MUTE_ON_PAUSE) },
 	{FoleyType::FOLEY_DOLPHIN_BEFORE_JUMPING, 0.0f, {&Sexy::SOUND_DOLPHIN_BEFORE_JUMPING}, 0U},
 	{FoleyType::FOLEY_DOLPHIN_APPEARS, 0.0f, {&Sexy::SOUND_DOLPHIN_APPEARS}, 0U},
 	{FoleyType::FOLEY_PLANT_WATER, 0.0f, {&Sexy::SOUND_PLANT_WATER}, 0U},
 	{FoleyType::FOLEY_ZOMBIE_ENTERING_WATER, 0.0f, {&Sexy::SOUND_ZOMBIE_ENTERING_WATER}, 0U},
-	{FoleyType::FOLEY_GRAVEBUSTERCHOMP, 0.0f, {&Sexy::SOUND_GRAVEBUSTERCHOMP}, 4U},
+	{FoleyType::FOLEY_GRAVEBUSTERCHOMP, 0.0f, {&Sexy::SOUND_GRAVEBUSTERCHOMP}, GetBit(FOLEYFLAGS_MUTE_ON_PAUSE)},
 	{FoleyType::FOLEY_CHERRYBOMB, 0.0f, {&Sexy::SOUND_CHERRYBOMB}, 0U},
 	{FoleyType::FOLEY_JALAPENO_IGNITE, 0.0f, {&Sexy::SOUND_JALAPENO}, 0U},
 	{FoleyType::FOLEY_REVERSE_EXPLOSION, 0.0f, {&Sexy::SOUND_REVERSE_EXPLOSION}, 0U},
 	{FoleyType::FOLEY_PLASTIC_HIT, 5.0f, {&Sexy::SOUND_PLASTICHIT, &Sexy::SOUND_PLASTICHIT2}, 0U},
-	{FoleyType::FOLEY_WINMUSIC, 0.0f, {&Sexy::SOUND_WINMUSIC}, 8U},
+	{FoleyType::FOLEY_WINMUSIC, 0.0f, {&Sexy::SOUND_WINMUSIC}, GetBit(FOLEYFLAGS_USES_MUSIC_VOLUME)},
 	{FoleyType::FOLEY_BALLOONINFLATE, 10.0f, {&Sexy::SOUND_BALLOONINFLATE}, 0U},
 	{FoleyType::FOLEY_BIGCHOMP, -2.0f, {&Sexy::SOUND_BIGCHOMP}, 0U},
 	{FoleyType::FOLEY_MELONIMPACT, -5.0f, {&Sexy::SOUND_MELONIMPACT, &Sexy::SOUND_MELONIMPACT2}, 0U},
@@ -153,18 +154,18 @@ FoleyParams gLawnFoleyParamArray[(int)FoleyType::NUM_FOLEY] = { //0x69FAD0
 	{FoleyType::FOLEY_CRAZY_DAVE_SHORT,
 	 0.0f,
 	 {&Sexy::SOUND_CRAZYDAVESHORT1, &Sexy::SOUND_CRAZYDAVESHORT2, &Sexy::SOUND_CRAZYDAVESHORT3},
-	 16U},
+	 GetBit(FOLEYFLAGS_DONT_REPEAT)},
 	{FoleyType::FOLEY_CRAZY_DAVE_LONG,
 	 0.0f,
 	 {&Sexy::SOUND_CRAZYDAVELONG1, &Sexy::SOUND_CRAZYDAVELONG2, &Sexy::SOUND_CRAZYDAVELONG3},
-	 16U},
+	 GetBit(FOLEYFLAGS_DONT_REPEAT)},
 	{FoleyType::FOLEY_CRAZY_DAVE_EXTRA_LONG,
 	 0.0f,
 	 {&Sexy::SOUND_CRAZYDAVEEXTRALONG1, &Sexy::SOUND_CRAZYDAVEEXTRALONG2, &Sexy::SOUND_CRAZYDAVEEXTRALONG3},
-	 16U},
+	 GetBit(FOLEYFLAGS_DONT_REPEAT)},
 	{FoleyType::FOLEY_CRAZY_DAVE_CRAZY, 0.0f, {&Sexy::SOUND_CRAZYDAVECRAZY}, 0U},
 	{FoleyType::FOLEY_PHONOGRAPH, 0.0f, {&Sexy::SOUND_PHONOGRAPH}, 0U},
-	{FoleyType::FOLEY_DANCER, 0.0f, {&Sexy::SOUND_DANCER}, 6U},
+	{FoleyType::FOLEY_DANCER, 0.0f, {&Sexy::SOUND_DANCER}, GetBit(FOLEYFLAGS_ONE_AT_A_TIME) | GetBit(FOLEYFLAGS_MUTE_ON_PAUSE)},
 	{FoleyType::FOLEY_FINAL_FANFARE, 0.0f, {&Sexy::SOUND_FINALFANFARE}, 0U},
 	{FoleyType::FOLEY_CRAZY_DAVE_SCREAM, 0.0f, {&Sexy::SOUND_CRAZYDAVESCREAM}, 0U},
 	{FoleyType::FOLEY_CRAZY_DAVE_SCREAM_2, 0.0f, {&Sexy::SOUND_CRAZYDAVESCREAM2}, 0U}};
@@ -178,7 +179,6 @@ FoleyInstance::FoleyInstance()
 	mPauseOffset = 0;
 }
 
-//0x514ED0
 FoleyTypeData::FoleyTypeData()
 {
 	mLastVariationPlayed = -1;
@@ -210,7 +210,6 @@ void TodFoleyDispose()
 	gFoleyParamArraySize = 0;
 }
 
-//0x514F70
 void SoundSystemReleaseFinishedInstances(TodFoley *theSoundSystem)
 {
 	for (int aFoleyType = 0; aFoleyType < gFoleyParamArraySize; aFoleyType++)
@@ -234,7 +233,6 @@ void SoundSystemReleaseFinishedInstances(TodFoley *theSoundSystem)
 		}
 }
 
-//0x514FE0
 bool SoundSystemHasFoleyPlayedTooRecently(TodFoley *theSoundSystem, FoleyType theFoleyType)
 {
 	FoleyTypeData *aFoleyData = &theSoundSystem->mFoleyTypeData[(int)theFoleyType];
@@ -287,7 +285,6 @@ FoleyInstance *SoundSystemGetFreeInstanceIndex(TodFoley *theSoundSystem, FoleyTy
 	return nullptr;
 }
 
-//0x515020
 void TodFoley::PlayFoleyPitch(FoleyType theFoleyType, float thePitch)
 {
 	FoleyParams *aFoleyParams = LookupFoley(theFoleyType);
@@ -342,7 +339,6 @@ void TodFoley::PlayFoleyPitch(FoleyType theFoleyType, float thePitch)
 	aSoundInstance->Play(aIsLooping, false);
 }
 
-//0x515240
 void TodFoley::PlayFoley(FoleyType theFoleyType)
 {
 	FoleyParams *aFoleyParams = LookupFoley(theFoleyType);
@@ -352,7 +348,6 @@ void TodFoley::PlayFoley(FoleyType theFoleyType)
 	PlayFoleyPitch(theFoleyType, aPitch);
 }
 
-//0x515290
 void TodFoley::StopFoley(FoleyType theFoleyType)
 {
 	SoundSystemReleaseFinishedInstances(this);
@@ -370,7 +365,6 @@ void TodFoley::StopFoley(FoleyType theFoleyType)
 	}
 }
 
-//0x5152D0
 void TodFoley::GamePause(bool theEnteringPause)
 {
 	SoundSystemReleaseFinishedInstances(this);
@@ -414,7 +408,6 @@ void TodFoley::GamePause(bool theEnteringPause)
 	}
 }
 
-//0x5153F0
 void TodFoley::CancelPausedFoley()
 {
 	SoundSystemReleaseFinishedInstances(this);
@@ -434,7 +427,6 @@ void TodFoley::CancelPausedFoley()
 	}
 }
 
-//0x515460
 void TodFoley::ApplyMusicVolume(FoleyInstance *theFoleyInstance)
 {
 	if (gSexyAppBase->mSfxVolume < 1e-6)
@@ -444,7 +436,6 @@ void TodFoley::ApplyMusicVolume(FoleyInstance *theFoleyInstance)
 			gSexyAppBase->mMusicVolume / gSexyAppBase->mSfxVolume);
 }
 
-//0x5154A0
 void TodFoley::RehookupSoundWithMusicVolume()
 {
 	SoundSystemReleaseFinishedInstances(this);
@@ -464,7 +455,6 @@ void TodFoley::RehookupSoundWithMusicVolume()
 	}
 }
 
-//0x515560
 bool TodFoley::IsFoleyPlaying(FoleyType theFoleyType)
 {
 	SoundSystemReleaseFinishedInstances(this);

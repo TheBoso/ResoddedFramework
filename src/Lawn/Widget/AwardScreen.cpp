@@ -16,7 +16,6 @@
 #include "../../Sexy.TodLib/TodCommon.h"
 #include "../../Sexy.TodLib/TodStringFile.h"
 
-//0x405780
 AwardScreen::AwardScreen(LawnApp *theApp, AwardType theAwardType)
 {
 	mApp = theApp;
@@ -68,19 +67,17 @@ AwardScreen::AwardScreen(LawnApp *theApp, AwardType theAwardType)
 			if (anIsScrolling)
 			{
 				mScrollBar = new LawnScrollbar(mApp);
-				mScrollBar->Resize(770, 90, 8, 480);
 				mScrollBar->mAllowedMouseZone = Rect(20, 90, 780, 420);
 				mScrollBar->mThumbColor = Color(131, 69, 32);
 				mScrollBar->mBaseColor = Color(233, 149, 88);
 				int aScrollableRange = aTotalHeight - aVisibleWindow;
 				mScrollBar->mSliderHeightPercent = (float)aVisibleWindow / (float)aTotalHeight;
-				mScrollBar->mScrollMultiplier = 0.03f;
-				mScrollBar->mStepMultiplier = aScrollableRange;
+				mScrollBar->mMaxValue = aScrollableRange;
+				mScrollBar->Resize(770, 90, 8, 480);
 			}
-
 		}
 	}
-		
+
 	int aLevel = mApp->mPlayerInfo->GetLevel();
 	if (mAwardType == AWARD_CREDITS_ZOMBIENOTE)
 	{
@@ -224,7 +221,7 @@ AwardScreen::AwardScreen(LawnApp *theApp, AwardType theAwardType)
 		mStartButton->SetLabel("[NEXT_LEVEL_BUTTON]");
 
 	if (mApp->IsFirstTimeAdventureMode() && aLevel == 25 && mApp->IsTrialStageLocked() &&
-		!mApp->mPlayerInfo->mHasSeenUpsell)
+	    !mApp->mPlayerInfo->mHasSeenUpsell)
 	{
 		mMenuButton->mBtnNoDraw = true;
 		mMenuButton->mDisabled = true;
@@ -242,7 +239,7 @@ AwardScreen::AwardScreen(LawnApp *theApp, AwardType theAwardType)
 	if (mApp->EarnedGoldTrophy())
 		mApp->mAchievements->GiveAchievement(AchievementID::ACHIEVEMENT_NOBEL_PEAS_PRIZE);
 
-#if SEXY_USE_CONTROLLER
+#if LAWN_USE_UNFINISHED_GAMEPAD_SUPPORT
 	if (mApp->UsingGamepad() && mApp->mGamepads[0] && !IsPaperNote())
 	{
 		mApp->mGamepads[0]->AddRumbleEffect(0.4f, 0.4f, 1000);
@@ -250,7 +247,6 @@ AwardScreen::AwardScreen(LawnApp *theApp, AwardType theAwardType)
 #endif
 }
 
-//0x406420 & 0x406440
 AwardScreen::~AwardScreen()
 {
 	if (mStartButton)
@@ -272,24 +268,22 @@ bool AwardScreen::IsPaperNote()
 	return mApp->IsAdventureMode() && (aLevel == 10 || aLevel == 20 || aLevel == 30 || aLevel == 40 || aLevel == 50);
 }
 
-//0x4064D0
 void AwardScreen::DrawBottom(Graphics *g,
-							 const SexyString &theTitle,
-							 const SexyString &theAward,
-							 const SexyString &theMessage)
+                             const SexyString &theTitle,
+                             const SexyString &theAward,
+                             const SexyString &theMessage)
 {
 	g->DrawImage(Sexy::IMAGE_AWARDSCREEN_BACK, 0, 0);
 	TodDrawString(g, theTitle, BOARD_WIDTH / 2, 58, Sexy::FONT_DWARVENTODCRAFT24, Color(213, 159, 43), DS_ALIGN_CENTER);
 	TodDrawString(g, theAward, BOARD_WIDTH / 2, 326, Sexy::FONT_DWARVENTODCRAFT18YELLOW, Color::White, DS_ALIGN_CENTER);
 	TodDrawStringWrapped(g,
-						 theMessage,
-						 Rect(285, 360, 230, 90),
-						 Sexy::FONT_BRIANNETOD16,
-						 Color(40, 50, 90),
-						 DS_ALIGN_CENTER_VERTICAL_MIDDLE);
+	                     theMessage,
+	                     Rect(285, 360, 230, 90),
+	                     Sexy::FONT_BRIANNETOD16,
+	                     Color(40, 50, 90),
+	                     DS_ALIGN_CENTER_VERTICAL_MIDDLE);
 }
 
-//0x4066A0
 void AwardScreen::DrawAwardSeed(Graphics *g)
 {
 	SeedType aSeedType = mApp->GetAwardSeedForLevel(mApp->mPlayerInfo->GetLevel() - 1);
@@ -306,7 +300,6 @@ void AwardScreen::DrawAwardSeed(Graphics *g)
 	g->SetScale(1, 1, 0, 0);
 }
 
-//0x4068D0
 void AwardScreen::Draw(Graphics *g)
 {
 	g->SetLinearBlend(true);
@@ -324,9 +317,8 @@ void AwardScreen::Draw(Graphics *g)
 		{
 			AchievementDefinition aDefinition = Achievements::GetAchievementDefinition(mAchievementItems[i].mAchievement);
 
-
 			SexyString aAchievementText = TodReplaceString("[ACHIEVEMENT_EARNED]", "{ACHIEVEMENT}", TodStringTranslate(aDefinition.mName));
-			
+
 			Rect aSrcRect = Rect(70 * (mAchievementItems[i].mAchievement % 7), 70 * (mAchievementItems[i].mAchievement / 7), 70, 70);
 			Rect aTextRect = Rect(300, mAchievementItems[i].mY + 15, 300, 60);
 
@@ -343,7 +335,6 @@ void AwardScreen::Draw(Graphics *g)
 			g->Translate(mScrollBar->mX, mScrollBar->mY);
 			mScrollBar->Draw(g);
 			g->Translate(-mScrollBar->mX, -mScrollBar->mY);
-
 		}
 
 		mAchievementButton->Draw(g);
@@ -375,7 +366,7 @@ void AwardScreen::Draw(Graphics *g)
 				if (mApp->EarnedGoldTrophy())
 				{
 					DrawBottom(g, "[BEAT_GAME_MESSAGE1]", "[GOLD_SUNFLOWER_TROPHY]", "[BEAT_GAME_MESSAGE2]");
-					TodDrawImageCelCenterScaledF(g, Sexy::IMAGE_SUNFLOWER_TROPHY, 330, 80, 1, 0.7f, 0.7f);
+					TodDrawImageCelCenterScaledF(g, Sexy::IMAGE_SUNFLOWER_TROPHY, 325, 65, 1, 0, 0.7f, 0.7f);
 				}
 				else
 				{
@@ -383,9 +374,9 @@ void AwardScreen::Draw(Graphics *g)
 					if (mApp->IsSurvivalMode())
 					{
 						int aNumTrophies = mApp->GetNumTrophies(CHALLENGE_PAGE_SURVIVAL);
-						aMsgChar = aNumTrophies <= 7	? "[YOU_UNLOCKED_A_SURVIVAL]"
-								   : aNumTrophies == 10 ? "[YOU_UNLOCKED_ENDLESS_SURVIVAL]"
-														: "[EARN_MORE_TROPHIES_FOR_ENDLESS_SURVIVAL]";
+						aMsgChar = aNumTrophies <= 7    ? "[YOU_UNLOCKED_A_SURVIVAL]"
+						           : aNumTrophies == 10 ? "[YOU_UNLOCKED_ENDLESS_SURVIVAL]"
+						                                : "[EARN_MORE_TROPHIES_FOR_ENDLESS_SURVIVAL]";
 					}
 					else if (mApp->IsScaryPotterLevel())
 						aMsgChar = "[UNLOCKED_VASEBREAKER_LEVEL]";
@@ -393,11 +384,11 @@ void AwardScreen::Draw(Graphics *g)
 						aMsgChar = "[UNLOCKED_I_ZOMBIE_LEVEL]";
 					else
 						aMsgChar = mApp->GetNumTrophies(CHALLENGE_PAGE_CHALLENGE) <= 17 ? "[CHALLENGE_UNLOCKED]"
-																						: "[GET_MORE_TROPHIES]";
+						                                                                : "[GET_MORE_TROPHIES]";
 
 					DrawBottom(g, "[GOT_TROPHY]", "[TROPHY]", aMsgChar);
 					g->DrawImage(Sexy::IMAGE_TROPHY_HI_RES, BOARD_WIDTH / 2 - Sexy::IMAGE_TROPHY_HI_RES->mWidth / 2,
-								 137);
+					             137);
 				}
 			}
 			else if (aLevel == 5)
@@ -411,7 +402,7 @@ void AwardScreen::Draw(Graphics *g)
 				g->DrawImage(Sexy::IMAGE_ZOMBIE_NOTE, 80, 80);
 				g->DrawImage(Sexy::IMAGE_ZOMBIE_NOTE1, 131, 132);
 				TodDrawString(g, "[FOUND_NOTE]", BOARD_WIDTH / 2, 70, Sexy::FONT_DWARVENTODCRAFT24,
-							  Color(255, 200, 0, 255), DS_ALIGN_CENTER);
+				              Color(255, 200, 0, 255), DS_ALIGN_CENTER);
 			}
 			else if (aLevel == 15)
 			{
@@ -424,7 +415,7 @@ void AwardScreen::Draw(Graphics *g)
 				g->DrawImage(Sexy::IMAGE_ZOMBIE_NOTE, 80, 80);
 				g->DrawImage(Sexy::IMAGE_ZOMBIE_NOTE2, 133, 127);
 				TodDrawString(g, "[FOUND_NOTE]", BOARD_WIDTH / 2, 70, Sexy::FONT_DWARVENTODCRAFT24,
-							  Color(255, 200, 0, 255), DS_ALIGN_CENTER);
+				              Color(255, 200, 0, 255), DS_ALIGN_CENTER);
 			}
 			else if (aLevel == 25)
 			{
@@ -437,7 +428,7 @@ void AwardScreen::Draw(Graphics *g)
 				g->DrawImage(Sexy::IMAGE_ZOMBIE_NOTE, 80, 80);
 				g->DrawImage(Sexy::IMAGE_ZOMBIE_NOTE3, 120, 117);
 				TodDrawString(g, "[FOUND_NOTE]", BOARD_WIDTH / 2, 70, Sexy::FONT_DWARVENTODCRAFT24,
-							  Color(255, 200, 0, 255), DS_ALIGN_CENTER);
+				              Color(255, 200, 0, 255), DS_ALIGN_CENTER);
 			}
 			else if (aLevel == 35)
 			{
@@ -450,7 +441,7 @@ void AwardScreen::Draw(Graphics *g)
 				g->DrawImage(Sexy::IMAGE_ZOMBIE_NOTE, 80, 80);
 				g->DrawImage(Sexy::IMAGE_ZOMBIE_NOTE4, 102, 117);
 				TodDrawString(g, "[FOUND_NOTE]", BOARD_WIDTH / 2, 70, Sexy::FONT_DWARVENTODCRAFT24,
-							  Color(255, 200, 0, 255), DS_ALIGN_CENTER);
+				              Color(255, 200, 0, 255), DS_ALIGN_CENTER);
 			}
 			else if (aLevel == 45)
 			{
@@ -463,12 +454,12 @@ void AwardScreen::Draw(Graphics *g)
 				g->DrawImage(Sexy::IMAGE_ZOMBIE_NOTE, 80, 80);
 				g->DrawImage(Sexy::IMAGE_ZOMBIE_FINAL_NOTE, 114, 138);
 				TodDrawString(g, "[FOUND_NOTE]", BOARD_WIDTH / 2, 70, Sexy::FONT_DWARVENTODCRAFT24,
-							  Color(255, 200, 0, 255), DS_ALIGN_CENTER);
+				              Color(255, 200, 0, 255), DS_ALIGN_CENTER);
 			}
 			else if (aLevel == 1 && mApp->HasFinishedAdventure())
 			{
 				DrawBottom(g, "[WIN_MESSAGE1]", "[SILVER_SUNFLOWER_TROPHY]", "[WIN_MESSAGE2]");
-				TodDrawImageCelCenterScaledF(g, Sexy::IMAGE_SUNFLOWER_TROPHY, 325, 65, 0, 0.7f, 0.7f);
+				TodDrawImageCelCenterScaledF(g, Sexy::IMAGE_SUNFLOWER_TROPHY, 325, 65, 0, 0, 0.7f, 0.7f);
 			}
 			else
 			{
@@ -478,7 +469,6 @@ void AwardScreen::Draw(Graphics *g)
 
 		mStartButton->Draw(g);
 		mMenuButton->Draw(g);
-
 	}
 
 	int aFadeInAlpha = TodAnimateCurve(180, 0, mFadeInCounter, 255, 0, CURVE_LINEAR);
@@ -486,7 +476,6 @@ void AwardScreen::Draw(Graphics *g)
 	g->FillRect(0, 0, BOARD_WIDTH, BOARD_HEIGHT);
 }
 
-//0x4076A0
 void AwardScreen::Update()
 {
 	Widget::Update();
@@ -506,8 +495,8 @@ void AwardScreen::Update()
 			if (mAchievementTime >= mAchievementItems[i].mStartAnimTime)
 			{
 				mAchievementItems[i].mY = TodAnimateCurve(
-					mAchievementItems[i].mStartAnimTime, mAchievementItems[i].mEndAnimTime, mAchievementTime,
-					mAchievementItems[i].mStartY, mAchievementItems[i].mDestY, CURVE_EASE_IN_OUT);
+				    mAchievementItems[i].mStartAnimTime, mAchievementItems[i].mEndAnimTime, mAchievementTime,
+				    mAchievementItems[i].mStartY, mAchievementItems[i].mDestY, CURVE_EASE_IN_OUT);
 			}
 
 			if (mAchievementItems[mAchievementItems.size() - 1].mY == mAchievementItems[mAchievementItems.size() - 1].mDestY)
@@ -523,14 +512,12 @@ void AwardScreen::Update()
 		mFadeInCounter--;
 }
 
-//0x407760
 void AwardScreen::KeyChar(SexyChar theChar)
 {
 	if (theChar == ' ' || theChar == '\r' || theChar == '\u001B')
 		StartButtonPressed();
 }
 
-//0x407780
 void AwardScreen::StartButtonPressed()
 {
 	if (mApp->GetDialog(DIALOG_STORE))
@@ -637,7 +624,6 @@ void AwardScreen::MouseWheel(int theDelta)
 		mScrollBar->MouseWheel(theDelta);
 }
 
-//0x4079F0
 void AwardScreen::MouseDown(int x, int y, int theClickCount)
 {
 	if (mScrollBar)
@@ -646,7 +632,6 @@ void AwardScreen::MouseDown(int x, int y, int theClickCount)
 		mApp->PlaySample(Sexy::SOUND_TAP);
 }
 
-//0x407A70
 void AwardScreen::MouseUp(int x, int y, int theClickCount)
 {
 	if (mScrollBar)
@@ -700,7 +685,7 @@ void AwardScreen::MouseUp(int x, int y, int theClickCount)
 				mStartButton->SetLabel("[NEXT_LEVEL_BUTTON]");
 
 			if (mApp->IsFirstTimeAdventureMode() && aLevel == 25 && mApp->IsTrialStageLocked() &&
-				!mApp->mPlayerInfo->mHasSeenUpsell)
+			    !mApp->mPlayerInfo->mHasSeenUpsell)
 			{
 				mMenuButton->mBtnNoDraw = true;
 				mMenuButton->mDisabled = true;

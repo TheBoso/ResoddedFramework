@@ -4,7 +4,6 @@
 #include "TriVertex.h"
 #include "SexyMatrix.h"
 #include "Window.h"
-#include "AutoCrit.h"
 #include "SysFont.h"
 #include <SDL3/SDL.h>
 #include <glm/gtc/matrix_transform.hpp>
@@ -62,6 +61,9 @@ void main() {
 }
 )glsl";
 
+
+static const int gGLVersions[][2] = {{4, 6}, {4, 5}, {4, 4}, {4, 3}, {4, 2}, {4, 1}, {4, 0}, {3, 3}, {3, 2}, {3, 1}, {3, 0}};
+
 int OpenGLRenderer::gGLTextureCount = 0;
 uint64_t OpenGLRenderer::gGLUsedMemoryCount = 0;
 
@@ -117,25 +119,39 @@ RendererError OpenGLRenderer::UpdateVSync()
 
 uint32_t *OpenGLRenderer::CaptureFrameBuffer()
 {
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, mFBO);
-	uint32_t *thePixels = new uint32_t[mWidth * mHeight];
-	glReadPixels(0,
-				 0,
-				 mWidth,
-				 mHeight,
-				 GL_BGRA,
-				 GL_UNSIGNED_BYTE,
-				 thePixels);
-	for (int y = 0; y < mHeight / 2; ++y)
+	if (mApp->mHighResolution)
 	{
-		uint32_t *row = thePixels + y * mWidth;
-		uint32_t *opp = thePixels + (mHeight - 1 - y) * mWidth;
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, mFBO);
+		uint32_t *thePixels = new uint32_t[mPresentationRect.mWidth * mPresentationRect.mHeight];
+		glReadPixels(0, 0, mPresentationRect.mWidth, mPresentationRect.mHeight, GL_BGRA, GL_UNSIGNED_BYTE, thePixels);
+		for (int y = 0; y < mPresentationRect.mHeight / 2; ++y)
+		{
+			uint32_t *row = thePixels + y * mPresentationRect.mWidth;
+			uint32_t *opp = thePixels + (mPresentationRect.mHeight - 1 - y) * mPresentationRect.mWidth;
 
-		for (int x = 0; x < mWidth; ++x)
-			std::swap(row[x], opp[x]);
+			for (int x = 0; x < mPresentationRect.mWidth; ++x)
+				std::swap(row[x], opp[x]);
+		}
+
+		return thePixels;
+	}
+	else
+	{
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, mFBO);
+		uint32_t *thePixels = new uint32_t[mWidth * mHeight];
+		glReadPixels(0, 0, mWidth, mHeight, GL_BGRA, GL_UNSIGNED_BYTE, thePixels);
+		for (int y = 0; y < mHeight / 2; ++y)
+		{
+			uint32_t *row = thePixels + y * mWidth;
+			uint32_t *opp = thePixels + (mHeight - 1 - y) * mWidth;
+
+			for (int x = 0; x < mWidth; ++x)
+				std::swap(row[x], opp[x]);
+		}
+
+		return thePixels;
 	}
 
-	return thePixels;
 }
 
 void OpenGLRenderer::Cleanup()
@@ -226,7 +242,7 @@ void OpenGLRenderer::Remove3DData(MemoryImage *theImage)
 		delete (OpenGLTextureData *)theImage->mGPUData;
 		theImage->mGPUData = nullptr;
 
-		AutoCrit aCrit(mCritSect); // Make images thread safe
+		auto aLock = std::scoped_lock(mCritSect); // Make images thread safe
 		mImageSet.erase(theImage);
 	}
 }
@@ -236,10 +252,45 @@ bool OpenGLRenderer::PreDraw()
 	return true;
 }
 
+bool TryVersion(SDL_Window *window, int major, int minor)
+{
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, major);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, minor);
+
+	SDL_GLContext aContext = SDL_GL_CreateContext(window);
+
+	if (aContext)
+	{
+		SDL_GL_DestroyContext(aContext);
+		return true;
+	}
+
+	return false;
+}
+
+
 bool OpenGLRenderer::InitGLContext()
 {
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+	int aWorkingMajor = 4;
+	int aWorkingMinor = 4;
+	bool aFoundAWorkingVersion = false;
+	for (auto &aVersion : gGLVersions)
+	{
+		if (TryVersion(mApp->mWindow->mInternalWindow, aVersion[0], aVersion[1]))
+		{
+			aWorkingMajor = aVersion[0];
+			aWorkingMinor = aVersion[1];
+			printf("[SexyAppFramework] - OpenGL Maximum Supported Version: %d.%d\n", aWorkingMajor, aWorkingMinor);
+
+			aFoundAWorkingVersion = true;
+			break;
+		}
+	}
+	if (!aFoundAWorkingVersion)
+		return false;
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, aWorkingMajor);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, aWorkingMinor);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
@@ -297,7 +348,7 @@ bool OpenGLRenderer::InitBuffers()
 	glGenTextures(1, &mFBOTexture);
 
 	glBindTexture(GL_TEXTURE_2D, mFBOTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, mWidth, mHeight, 0, GL_BGRA, GL_UNSIGNED_BYTE, nullptr);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, mApp->mHighResolution ? mPresentationRect.mWidth : mWidth, mApp->mHighResolution ? mPresentationRect.mHeight : mHeight, 0, GL_BGRA, GL_UNSIGNED_BYTE, nullptr);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -346,8 +397,8 @@ bool OpenGLRenderer::Redraw(Rect *theClipRect)
 		
 	// Draw to FBO Here:
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glViewport(0, 0, mWidth, mHeight);
-	glScissor(0, 0, mWidth, mHeight);
+	glViewport(0, 0, mApp->mHighResolution ? mPresentationRect.mWidth : mWidth, mApp->mHighResolution ? mPresentationRect.mHeight : mHeight);
+	glScissor(0, 0, mApp->mHighResolution ? mPresentationRect.mWidth : mWidth, mApp->mHighResolution ? mPresentationRect.mHeight: mHeight);
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f); 
 
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -370,8 +421,19 @@ bool OpenGLRenderer::Redraw(Rect *theClipRect)
 		if (cmd.mHasClipRect)
 		{
 			glEnable(GL_SCISSOR_TEST);
+			if (mApp->mHighResolution)
+			{
+				float scaleX = (float)mPresentationRect.mWidth / mWidth;
+				float scaleY = (float)mPresentationRect.mHeight / mHeight;
 
-			doScissorFromTL(cmd.mClipRect.mX, cmd.mClipRect.mY, cmd.mClipRect.mWidth, cmd.mClipRect.mHeight, mHeight);
+				int sX = (int)(cmd.mClipRect.mX * scaleX);
+				int sY = (int)(cmd.mClipRect.mY * scaleY);
+				int sW = (int)(cmd.mClipRect.mWidth * scaleX);
+				int sH = (int)(cmd.mClipRect.mHeight * scaleY);
+				doScissorFromTL(sX, sY, sW, sH, mPresentationRect.mHeight);
+			}
+			else
+				doScissorFromTL(cmd.mClipRect.mX, cmd.mClipRect.mY, cmd.mClipRect.mWidth, cmd.mClipRect.mHeight, mHeight);
 		}
 		else
 			glDisable(GL_SCISSOR_TEST);
@@ -390,12 +452,21 @@ bool OpenGLRenderer::Redraw(Rect *theClipRect)
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
 	// Draw to screen here:
-	glBlitFramebuffer(0, 0, mWidth, mHeight,
-					  mPresentationRect.mX, mPresentationRect.mY,
-					  mPresentationRect.mX + mPresentationRect.mWidth,
-					  mPresentationRect.mY + mPresentationRect.mHeight,
-					  GL_COLOR_BUFFER_BIT,
-					  GL_LINEAR);
+	if (mApp->mHighResolution)
+	{
+		glBlitFramebuffer(0, 0, mPresentationRect.mWidth, mPresentationRect.mHeight,
+						  mPresentationRect.mX, mPresentationRect.mY,
+						  mPresentationRect.mX + mPresentationRect.mWidth,
+						  mPresentationRect.mY + mPresentationRect.mHeight,
+						  GL_COLOR_BUFFER_BIT,
+						  mApp->mScreenFiltering == MODE_LINEAR ? GL_LINEAR : GL_NEAREST);
+	}
+	else
+	{
+		glBlitFramebuffer(0, 0, mWidth, mHeight, mPresentationRect.mX, mPresentationRect.mY,
+						  mPresentationRect.mX + mPresentationRect.mWidth,
+						  mPresentationRect.mY + mPresentationRect.mHeight, GL_COLOR_BUFFER_BIT, mApp->mScreenFiltering == MODE_LINEAR ? GL_LINEAR : GL_NEAREST);
+	}
 
 #if SEXY_USE_IMGUI
 	mApp->mImGuiManager->Flush();
@@ -466,6 +537,23 @@ void OpenGLRenderer::UpdateViewport()
 	}
 
 	mPresentationRect = Rect(vpX, vpY, vpW, vpH);
+	
+	glDeleteTextures(1, &mFBOTexture);
+	glDeleteFramebuffers(1, &mFBO);
+
+	glGenFramebuffers(1, &mFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, mFBO);
+	glGenTextures(1, &mFBOTexture);
+
+	glBindTexture(GL_TEXTURE_2D, mFBOTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, mApp->mHighResolution ? mPresentationRect.mWidth : mWidth, mApp->mHighResolution ? mPresentationRect.mHeight : mHeight, 0, GL_BGRA, GL_UNSIGNED_BYTE, nullptr);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mFBOTexture, 0);
 
 	mProjection = glm::ortho(0.0f, (float)mWidth, (float)mHeight, 0.0f, -1.0f, 1.0f) * glm::mat4(1.0f);
 }
@@ -481,7 +569,7 @@ bool OpenGLRenderer::CreateImageTexture(MemoryImage *theImage)
 		// The actual purging was deferred
 		wantPurge = theImage->mPurgeBits;
 
-		AutoCrit aCrit(mCritSect); // Make images thread safe
+		auto aLock = std::scoped_lock(mCritSect); // Make images thread safe
 		mImageSet.insert(theImage);
 	}
 
@@ -538,10 +626,17 @@ void *OpenGLRenderer::CreateTexture(void *thePixels, int theWidth, int theHeight
 	glBindTexture(GL_TEXTURE_2D, aTexID);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, theAlignment);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, theWidth, theHeight, 0, thePixelFormat == RAW_FORMAT_R ? GL_RED : GL_BGRA, GL_UNSIGNED_BYTE, thePixels);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
 	gGLTextureCount++;
 	GLuint *aTexPtr = new GLuint(aTexID);
 	return aTexPtr;
 }
+
 
 // OpenGLTextureData
 
@@ -1278,6 +1373,25 @@ void OpenGLRenderer::BltRawTexture(void *theTexture,
 
 bool OpenGLRenderer::TestOpenGL(SDL_Window *theWindow)
 {
+	printf("[SexyAppFramework] - Testing OpenGL compatibility\n");
+
+	int aWorkingMajor = 4;
+	int aWorkingMinor = 4;
+	bool aFoundAWorkingVersion = false;
+	for (auto &aVersion : gGLVersions)
+	{
+		if (TryVersion(theWindow, aVersion[0], aVersion[1]))
+		{
+			aWorkingMajor = aVersion[0];
+			aWorkingMinor = aVersion[1];
+			aFoundAWorkingVersion = true;
+			break;
+		}
+	}
+	if (!aFoundAWorkingVersion)
+		return false;
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, aWorkingMajor);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, aWorkingMinor);
 	SDL_GLContext theContext = SDL_GL_CreateContext(theWindow);
 	if (!theContext)
 	{

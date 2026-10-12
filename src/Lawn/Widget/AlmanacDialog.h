@@ -22,6 +22,7 @@ class Zombie;
 class LawnApp;
 class GameButton;
 class Reanimation;
+class LawnScrollbar;
 class AlmanacDialog : public LawnDialog
 {
   private:
@@ -34,18 +35,18 @@ class AlmanacDialog : public LawnDialog
 	};
 
   public:
-	LawnApp *mApp;				  //+0x16C
-	GameButton *mCloseButton;	  //+0x170
-	GameButton *mIndexButton;	  //+0x174
-	GameButton *mPlantButton;	  //+0x178
-	GameButton *mZombieButton;	  //+0x17C
-	AlmanacPage mOpenPage;		  //+0x180
-	Reanimation *mReanim[4];	  //+0x184
-	SeedType mSelectedSeed;		  //+0x194
-	ZombieType mSelectedZombie;	  //+0x198
-	Plant *mPlant;				  //+0x19C
-	Zombie *mZombie;			  //+0x1A0
-	Zombie *mZombiePerfTest[400]; //+0x1A4
+	LawnApp *mApp;
+	GameButton *mCloseButton;
+	GameButton *mIndexButton;
+	GameButton *mPlantButton;
+	GameButton *mZombieButton;
+	AlmanacPage mOpenPage;
+	Reanimation *mReanim[4];
+	SeedType mSelectedSeed;
+	ZombieType mSelectedZombie;
+	Plant *mPlant;
+	Zombie *mZombie;
+	Zombie *mZombiePerfTest[400];
 
 	LawnScrollbar *mDescriptionScrollbar;
 
@@ -65,7 +66,7 @@ class AlmanacDialog : public LawnDialog
 	virtual void Draw(Graphics *g);
 	void GetSeedPosition(SeedType theSeedType, int &x, int &y);
 	SeedType SeedHitTest(int x, int y);
-	/*inline*/ bool ZombieHasSilhouette(ZombieType theZombieType);
+	bool ZombieHasSilhouette(ZombieType theZombieType);
 	bool ZombieIsShown(ZombieType theZombieType);
 	bool ZombieHasDescription(ZombieType theZombieType);
 	void GetZombiePosition(ZombieType theZombieType, int &x, int &y);
@@ -78,12 +79,12 @@ class AlmanacDialog : public LawnDialog
 
 	virtual void MouseWheel(int theDelta);
 	static ZombieType GetZombieType(int theIndex);
-	/*inline*/ void ShowPlant(SeedType theSeedType);
-	/*inline*/ void ShowZombie(ZombieType theZombieType);
+	void ShowPlant(SeedType theSeedType);
+	void ShowZombie(ZombieType theZombieType);
 };
 extern bool gZombieDefeated[NUM_ZOMBIE_TYPES];
 
-/*inline*/ void AlmanacInitForPlayer();
-/*inline*/ void AlmanacPlayerDefeatedZombie(ZombieType theZombieType);
+void AlmanacInitForPlayer();
+void AlmanacPlayerDefeatedZombie(ZombieType theZombieType);
 
 #endif

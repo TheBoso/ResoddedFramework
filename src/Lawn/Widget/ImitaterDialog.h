@@ -17,10 +17,10 @@ class ImitaterDialog : public LawnDialog
 	SeedType SeedHitTest(int x, int y);
 	void UpdateCursor();
 	virtual void Update();
-	/*inline*/ void GetSeedPosition(int theIndex, int &x, int &y);
+	void GetSeedPosition(int theIndex, int &x, int &y);
 	virtual void Draw(Graphics *g);
 	void ShowToolTip();
-	/*inline*/ void RemoveToolTip();
+	void RemoveToolTip();
 	virtual void MouseDown(int x, int y, int theClickCount);
 	virtual void MouseUp(int x, int y, int theClickCount)
 	{

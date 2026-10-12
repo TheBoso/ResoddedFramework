@@ -1,13 +1,10 @@
 #include "SexyApp.h"
 #include "BuildInfo.h"
 
-//#include "..\Crypt\RegKey.h"
 #include "SEHCatcher.h"
-//#include "InternetManager.h"
 
 #include <fstream>
 #include <direct.h>
-//#include "BetaSupport.h"
 
 using namespace Sexy;
 
@@ -484,7 +481,7 @@ void SexyApp::HandleCmdLineParam(const std::string &theParamName, const std::str
 		std::string aVersionString = "Product: " + mProdName + "\r\n" + "Version: " + mProductVersion + "\r\n" +
 									 "Build Num: " + StrFormat("%d", mBuildNum) + "\r\n" + "Build Date: " + mBuildDate;
 
-		MsgBox("Version Info", aVersionString.c_str(),  MESSAGEBOX_INFORMATION | MESSAGEBOX_BTN_OK);
+		MsgBox("Version Info", aVersionString.c_str(), MESSAGEBOX_INFORMATION | MESSAGEBOX_BTN_OK);
 		DoExit(0);
 	}
 	else
@@ -496,8 +493,9 @@ std::string SexyApp::GetGameSEHInfo()
 	char aGamesPlayedStr[16];
 	sprintf(aGamesPlayedStr, "%d", mTimesPlayed);
 
-	std::string anInfoString = SexyAppBase::GetGameSEHInfo() + "Times Played: " + std::string(aGamesPlayedStr) + "\r\n";
-	"Build Num: " + StrFormat("%d", mBuildNum) + "\r\n" + "Build Date: " + mBuildDate + "\r\n";
+	std::string anInfoString = SexyAppBase::GetGameSEHInfo() + "Times Played: " + std::string(aGamesPlayedStr) +
+							   "\r\n" + "Build Num: " + StrFormat("%d", mBuildNum) + "\r\n" +
+							   "Build Date: " + mBuildDate + "\r\n";
 
 	if (mReferId.length() != 0)
 	{
