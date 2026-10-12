@@ -246,10 +246,91 @@ void Archetypes::ApplyPlantDefaults(Plant *thePlant, bool theFromOldSave)
 	}
 }
 
+/// @brief The behaviour components of the vanilla zombies (what used to be the zombie-type dispatch in
+/// Zombie::UpdateActions, UpdatePlaying and Update)
+static void AddVanillaZombieBehaviours(Zombie *theZombie)
+{
+	switch (theZombie->mZombieType)
+	{
+	case ZombieType::ZOMBIE_POLEVAULTER:
+		theZombie->AddComponent<PolevaulterBehaviour>();
+		break;
+	case ZombieType::ZOMBIE_CATAPULT:
+		theZombie->AddComponent<CatapultBehaviour>();
+		break;
+	case ZombieType::ZOMBIE_DOLPHIN_RIDER:
+		theZombie->AddComponent<DolphinRiderBehaviour>();
+		break;
+	case ZombieType::ZOMBIE_SNORKEL:
+		theZombie->AddComponent<SnorkelBehaviour>();
+		break;
+	case ZombieType::ZOMBIE_BALLOON:
+		theZombie->AddComponent<BalloonBehaviour>();
+		break;
+	case ZombieType::ZOMBIE_NEWSPAPER:
+		theZombie->AddComponent<NewspaperBehaviour>();
+		break;
+	case ZombieType::ZOMBIE_DIGGER:
+		theZombie->AddComponent<DiggerBehaviour>();
+		break;
+	case ZombieType::ZOMBIE_JACK_IN_THE_BOX:
+		theZombie->AddComponent<JackInTheBoxBehaviour>();
+		break;
+	case ZombieType::ZOMBIE_GARGANTUAR:
+	case ZombieType::ZOMBIE_REDEYE_GARGANTUAR:
+		theZombie->AddComponent<GargantuarBehaviour>();
+		break;
+	case ZombieType::ZOMBIE_BOBSLED:
+		theZombie->AddComponent<BobsledBehaviour>();
+		break;
+	case ZombieType::ZOMBIE_ZAMBONI:
+		theZombie->AddComponent<ZamboniBehaviour>();
+		break;
+	case ZombieType::ZOMBIE_LADDER:
+		theZombie->AddComponent<LadderBehaviour>();
+		break;
+	case ZombieType::ZOMBIE_YETI:
+		theZombie->AddComponent<YetiBehaviour>();
+		break;
+	case ZombieType::ZOMBIE_DANCER:
+		theZombie->AddComponent<DancerBehaviour>();
+		break;
+	case ZombieType::ZOMBIE_BACKUP_DANCER:
+		theZombie->AddComponent<BackupDancerBehaviour>();
+		break;
+	case ZombieType::ZOMBIE_IMP:
+		theZombie->AddComponent<ImpBehaviour>();
+		break;
+	case ZombieType::ZOMBIE_PEA_HEAD:
+		theZombie->AddComponent<PeaHeadBehaviour>();
+		break;
+	case ZombieType::ZOMBIE_JALAPENO_HEAD:
+		theZombie->AddComponent<JalapenoHeadBehaviour>();
+		break;
+	case ZombieType::ZOMBIE_GATLING_HEAD:
+		theZombie->AddComponent<GatlingHeadBehaviour>();
+		break;
+	case ZombieType::ZOMBIE_SQUASH_HEAD:
+		theZombie->AddComponent<SquashHeadBehaviour>();
+		break;
+	case ZombieType::ZOMBIE_BOSS:
+		theZombie->AddComponent<BossBehaviour>();
+		break;
+	case ZombieType::ZOMBIE_BUNGEE:
+		theZombie->AddComponent<BungeeBehaviour>();
+		break;
+	case ZombieType::ZOMBIE_POGO:
+		theZombie->AddComponent<PogoBehaviour>();
+		break;
+	default:
+		break;
+	}
+}
+
 void Archetypes::ApplyZombieDefaults(Zombie *theZombie)
 {
-	if (!theZombie->GetEntityRef())
-		return;
+	// Zombies outside a level (Almanac, Zombatar previews) get components too: Pogo and Bungee previews animate
+	// through their behaviours
 
 	// mMindControlled is already set for zombies that spawn hypnotized and for zombies from old saves
 	bool isHypnotized = theZombie->mMindControlled;
@@ -264,6 +345,8 @@ void Archetypes::ApplyZombieDefaults(Zombie *theZombie)
 	{
 		theZombie->AddComponent<UnswallowableComponent>();
 	}
+
+	AddVanillaZombieBehaviours(theZombie);
 }
 
 void Archetypes::ApplyProjectileDefaults(Projectile *theProjectile)

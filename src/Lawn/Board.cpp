@@ -2706,14 +2706,12 @@ Zombie *Board::AddZombieInRow(ZombieType theZombieType, int theRow, int theFromW
 	bool aVariant = !Rand(5);
 	Zombie *aZombie = mZombies.DataArrayAlloc();
 	aZombie->ZombieInitialize(theRow, theZombieType, aVariant, nullptr, theFromWave);
-	Archetypes::ApplyZombieDefaults(aZombie);
 	if (theZombieType == ZombieType::ZOMBIE_BOBSLED && aZombie->IsOnBoard())
 	{
 		for (int _i = 0; _i < 3; _i++)
 		{
 			Zombie *aFollower = mZombies.DataArrayAlloc();
 			aFollower->ZombieInitialize(theRow, ZombieType::ZOMBIE_BOBSLED, false, aZombie, theFromWave);
-			Archetypes::ApplyZombieDefaults(aFollower);
 		}
 	}
 	return aZombie;

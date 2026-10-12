@@ -257,9 +257,6 @@ class Zombie : public GameObject
 	/// @param theIsIceTrap Should the Zombie freeze in place
 	void ApplyChill(bool theIsIceTrap);
 
-	/// @brief Update the BungeeZombie
-	void UpdateZombieBungee();
-
 	/// @brief Land the BungeeZombie
 	void BungeeLanding();
 	
@@ -283,12 +280,6 @@ class Zombie : public GameObject
 
 	/// @brief Pick a random speed for the Zombie
 	void PickRandomSpeed();
-
-	/// @brief Update the PolevaulterZombie
-	void UpdateZombiePolevaulter();
-
-	/// @brief Update the DolphinRiderZombie
-	void UpdateZombieDolphinRider();
 
 	/// @brief Pick a random target for the BungeeZombie
 	/// @param theColumn The column the BungeeZombie can pick from
@@ -346,9 +337,6 @@ class Zombie : public GameObject
 	/// @brief Stop making Zombie sounds
 	void StopZombieSound();
 
-	/// @brief Update the JackInABoxZombie
-	void UpdateZombieJackInTheBox();
-
 	/// @brief Update the Zombie's position
 	void UpdateZombiePosition();
 
@@ -362,9 +350,6 @@ class Zombie : public GameObject
 
 	/// @brief Update the Zombie's walking
 	void UpdateZombieWalking();
-
-	/// @brief Update the BobsledZombie
-	void UpdateZombieBobsled();
 
 	/// @brief Crash the Bobsled
 	void BobsledCrash();
@@ -397,21 +382,9 @@ class Zombie : public GameObject
 	/// @param aParticle The particle system to update
 	void PoolSplash(bool theInToPoolSound);
 
-	/// @brief Update the Flying Zombies
-	void UpdateZombieFlyer();
-
-	/// @brief Update the Pogo Zombie
-	void UpdateZombiePogo();
-
-	/// @brief Update the NewspaperZombie
-	void UpdateZombieNewspaper();
-
 	/// @brief Land the Flying Zombie
 	/// @param theDamageFlags Bitmask of damage types that caused the landing
 	void LandFlyer(unsigned int theDamageFlags);
-
-	/// @brief Update the DiggerZombie
-	void UpdateZombieDigger();
 
 	/// @brief Is the Zombie walking backwards
 	/// @return True if the Zombie is walking backwards, false otherwise
@@ -430,9 +403,6 @@ class Zombie : public GameObject
 
 	/// @brief Update the Zombie's Falling State
 	void UpdateZombieFalling();
-
-	/// @brief Update the DancerZombie
-	void UpdateZombieDancer();
 
 	/// @brief Summon a Backup Dancer
 	/// @param theRow to spawn the Backup Dancer in
@@ -601,9 +571,6 @@ class Zombie : public GameObject
 	/// @return True if the Zombie can target the plant, false otherwise
 	bool CanTargetPlant(Plant *thePlant, ZombieAttackType theAttackType);
 
-	/// @brief Updates the catapult Zombie's logic each tick
-	void UpdateZombieCatapult();
-
 	/// @brief Finds and returns the best plant target for the catapult Zombie to launch at
 	/// @return Pointer to the targeted Plant, or nullptr if no valid target exists
 	Plant *FindCatapultTarget();
@@ -614,9 +581,6 @@ class Zombie : public GameObject
 
 	/// @brief Updates the ladder-climbing Zombie's logic each tick
 	void UpdateClimbingLadder();
-
-	/// @brief Updates the Gargantuar Zombie's logic each tick
-	void UpdateZombieGargantuar();
 
 	/// @brief Returns the damage index for the Zombie's body
 	/// @return Integer index representing the current body damage state
@@ -642,9 +606,6 @@ class Zombie : public GameObject
 	/// @param theBlendTime Duration in ticks to blend from the current animation
 	/// @param theAnimRate Playback rate multiplier for the animation
 	void PlayZombieReanim(const char *theTrackName, ReanimLoopType theLoopType, int theBlendTime, float theAnimRate);
-
-	/// @brief Updates the backup dancer Zombie's logic each tick
-	void UpdateZombieBackupDancer();
 
 	/// @brief Returns the current dance phase of the dancer Zombie
 	/// @return The ZombiePhase enum value representing the dancer's current phase
@@ -699,9 +660,6 @@ class Zombie : public GameObject
 	/// @return Predicted X world coordinate of the Zombie target
 	float ZombieTargetLeadX(float theTime);
 
-	/// @brief Updates the Imp Zombie's logic each tick
-	void UpdateZombieImp();
-
 	/// @brief Applies a squish kill to all zombies and plants within the specified grid square
 	/// @param theX Grid X coordinate of the square to squish
 	/// @param theY Grid Y coordinate of the square to squish
@@ -742,9 +700,6 @@ class Zombie : public GameObject
 	/// @brief Checks whether this Zombie can be chilled (slowed)
 	/// @return True if the Zombie can be chilled, false otherwise
 	bool CanBeChilled();
-
-	/// @brief Updates the snorkel Zombie's logic each tick
-	void UpdateZombieSnorkel();
 
 	/// @brief Sets whether a specific Reanimation track should ignore the clip rectangle
 	/// @param theTrackName Name of the track to configure
@@ -796,14 +751,8 @@ class Zombie : public GameObject
 	/// @brief Triggers the Zombie to walk into the house, ending the game
 	void WalkIntoHouse();
 
-	/// @brief Updates the Zamboni Zombie's movement and crushing logic each tick
-	void UpdateZamboni();
-
 	/// @brief Updates the chimney Zombie's logic each tick
 	void UpdateZombieChimney();
-
-	/// @brief Updates the ladder Zombie's placement logic each tick
-	void UpdateLadder();
 
 	/// @brief Detaches and drops the Zombie's arm based on the damage received
 	/// @param theDamageFlags Bitmask of damage type flags that caused the arm loss
@@ -823,9 +772,6 @@ class Zombie : public GameObject
 
 	/// @brief Re-enables clipping on all Reanimation tracks that had it disabled
 	void ReanimReenableClipping();
-
-	/// @brief Updates the Dr Zomboss boss Zombie's logic each tick
-	void UpdateBoss();
 
 	/// @brief Plays the boss Zombie's idle animation
 	void BossPlayIdle();
@@ -913,9 +859,6 @@ class Zombie : public GameObject
 	/// @brief Checks whether the Zombie has reached the edge of the board and handles the event
 	void CheckForBoardEdge();
 
-	/// @brief Updates the Yeti Zombie's special logic each tick
-	void UpdateYeti();
-
 	/// @brief Draws a specific part of the boss Zombie
 	/// @param g Graphics context to draw to
 	/// @param theBossPart The specific boss body part to draw
@@ -959,12 +902,6 @@ class Zombie : public GameObject
 	/// @param theDrawPos The position data used to place the fireball on screen
 	void DrawBossFireBall(Graphics *g, const ZombieDrawPosition &theDrawPos);
 
-	/// @brief Updates the PeaHead Zombotany Zombie's logic each tick
-	void UpdateZombiePeaHead();
-
-	/// @brief Updates the JalapenoHead Zombotany Zombie's logic each tick
-	void UpdateZombieJalapenoHead();
-
 	/// @brief Enables or disables the smoke particle effect on the boss Zombie
 	/// @param theEnable True to enable smoke particles, false to disable them
 	void ApplyBossSmokeParticles(bool theEnable);
@@ -975,12 +912,6 @@ class Zombie : public GameObject
 	/// @brief Searches for and locks onto the closest brain target for the Zombiquarium Zombie
 	/// @return True if a valid brain target was found, false otherwise
 	bool ZombiquariumFindClosestBrain();
-
-	/// @brief Updates the gatling-head Zombotany Zombie's logic each tick
-	void UpdateZombieGatlingHead();
-
-	/// @brief Updates the squash-head Zombotany Zombie's logic each tick
-	void UpdateZombieSquashHead();
 
 	/// @brief Checks whether this Zombie is a valid target for Tangle Kelp
 	/// @return True if the Zombie can be targeted by Tangle Kelp, false otherwise

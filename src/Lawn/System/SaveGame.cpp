@@ -16,7 +16,8 @@
 // 6: plant behaviours (explosions, fuses, state machines) added to the archetypes
 // 7: tunable behaviour fields, UnswallowableComponent on Gargantuars and the boss
 // 8: plant shooting moved into PlantShooterComponent
-static constexpr uint32_t SAVE_VERSION = 8;
+// 9: zombie behaviours moved into components
+static constexpr uint32_t SAVE_VERSION = 9;
 
 template <typename T>
 void SaveContext::SyncVar(T &aValue, const std::string &aName)

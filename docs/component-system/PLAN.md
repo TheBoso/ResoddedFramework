@@ -187,10 +187,20 @@ hypnosis, team-based projectile collision, generic shooter, plant heads, produce
 - Still seed-checked in Zombie.cpp, by design for now: Bungee grab rules, sleep-icon offsets, I, Zombie and tutorial
   rules, and Tangle Kelp/Squash tracking their own target.
 
-**Phase 4: zombie behaviours.** Same for `Zombie::Update*`: `WalkerComponent` (speed, direction from Facing),
-`EaterComponent`, `VaulterComponent`, `ThrowerComponent` (Imp/basketball), `SummonerComponent` (Dancer), then the
-Zombotany types become pure archetypes (plant head + shooter/explode), deleting `UpdateZombiePeaHead`/`GatlingHead`/
-`JalapenoHead`/`SquashHead`.
+**Phase 4: zombie behaviours (in progress).**
+- Done: the zombie-type dispatch is behaviour components (`ZombieBehaviours.h`). `ZombieBehaviourComponent` has three
+  hooks that run exactly where the old dispatch was: `UpdateActions` (in `Zombie::UpdateActions`, only while the
+  zombie can act), `UpdatePlaying` (every tick on the board, even frozen: Dr. Zomboss) and `UpdateAlways` (every
+  tick, also for Almanac previews: Bungee, Pogo). The 23 behaviour functions (Pole Vaulter, Catapult, Dolphin Rider,
+  Snorkel, Balloon, Newspaper, Digger, Jack-in-the-Box, Gargantuars, Bobsled, Zamboni, Ladder, Yeti, Dancer, Backup
+  Dancer, Imp, the four Zombotany heads, Dr. Zomboss, Bungee, Pogo) moved from Zombie.cpp into their components
+  (`VanillaZombieBehaviours.cpp`). The zombie archetype is now applied at the end of `Zombie::ZombieInitialize`, so
+  zombies outside a level get their components too. `SAVE_VERSION` 9.
+- Next: the per-type checks *inside* the shared zombie code (walking speed, eating, death, animation, sounds,
+  ~380 `mZombieType` checks) become traits and data, the same way the plant traits did (e.g. a `VehicleComponent`
+  for Zamboni/Catapult, `FlyingComponent` users instead of balloon checks, walk speeds as data). The vanilla
+  Zombotany heads keep their own behaviours for now: turning them into plant head + generic shooter would change how
+  they play (the generic shooter waits for a target; the vanilla Peashooter Zombie fires on a timer).
 
 **Phase 5: data-driven archetypes.** Archetypes load from definition files (or the Unity ScriptableObjects on
 `feature/unity-bridge`): a plant/zombie definition is a list of component names and field values, which is exactly
