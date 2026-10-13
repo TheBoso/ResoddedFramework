@@ -2295,3 +2295,63 @@ bool DancerBehaviour::DrawBody(Zombie *theZombie, Sexy::Graphics *g, const Zombi
 	theZombie->DrawDancerReanim(g, theDrawPos);
 	return true;
 }
+
+// ─── Losing an arm ───────────────────────────────────────────────────────────
+
+void PogoBehaviour::OnLoseArm(Zombie *theZombie)
+{
+	Reanimation *aBodyReanim = theZombie->mApp->ReanimationGet(theZombie->mBodyReanimID);
+	aBodyReanim->SetImageOverride("Zombie_pogo_stickhands", IMAGE_REANIM_ZOMBIE_POGO_STICKHANDS2);
+	aBodyReanim->SetImageOverride("Zombie_pogo_stick", IMAGE_REANIM_ZOMBIE_POGO_STICKDAMAGE2);
+	aBodyReanim->SetImageOverride("Zombie_pogo_stick2", IMAGE_REANIM_ZOMBIE_POGO_STICK2DAMAGE2);
+}
+
+void FlagBearerBehaviour::OnLoseArm(Zombie *theZombie)
+{
+	Reanimation *aHeadReanim = theZombie->mApp->ReanimationTryToGet(theZombie->mSpecialHeadReanimID);
+	if (aHeadReanim)
+	{
+		aHeadReanim->SetImageOverride("Zombie_flag", IMAGE_REANIM_ZOMBIE_FLAG3);
+	}
+}
+
+// ─── Butter ──────────────────────────────────────────────────────────────────
+
+void PogoBehaviour::OnButtered(Zombie *theZombie)
+{
+	theZombie->mAltitude = 0.0f;
+	if (theZombie->mOnHighGround)
+	{
+		theZombie->mAltitude += HIGH_GROUND_HEIGHT;
+	}
+}
+
+void BalloonBehaviour::OnButtered(Zombie *theZombie)
+{
+	theZombie->BalloonPropellerHatSpin(false);
+}
+
+void BalloonBehaviour::OnButterRemoved(Zombie *theZombie)
+{
+	theZombie->BalloonPropellerHatSpin(true);
+}
+
+/// @brief A shooting plant head that was mid-shot when buttered goes back to its shooting pace
+static void ResumeShootingHead(Zombie *theZombie, float theShootingRate)
+{
+	Reanimation *aHeadReanim = theZombie->mApp->ReanimationTryToGet(theZombie->mSpecialHeadReanimID);
+	if (aHeadReanim && aHeadReanim->IsAnimPlaying("anim_shooting"))
+	{
+		aHeadReanim->mAnimRate = theShootingRate;
+	}
+}
+
+void PeaHeadBehaviour::OnButterRemoved(Zombie *theZombie)
+{
+	ResumeShootingHead(theZombie, 35.0f);
+}
+
+void GatlingHeadBehaviour::OnButterRemoved(Zombie *theZombie)
+{
+	ResumeShootingHead(theZombie, 38.0f);
+}

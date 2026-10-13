@@ -396,8 +396,16 @@ static void AddVanillaZombieTraits(Zombie *theZombie)
 	}
 }
 
+/// @brief Copy a track name into a fixed-size name field
+template <size_t N>
+static void SetName(char (&theDest)[N], const char *theName)
+{
+	strncpy(theDest, theName, N - 1);
+	theDest[N - 1] = '\0';
+}
+
 /// @brief The bodies of the vanilla zombies that differ from the regular zombie (shadow, flying head, death
-/// animation, charred remains, sounds, place in the house, walking and eating animation)
+/// animation, charred remains, sounds, place in the house, walking and eating animation, lost arm, ice and butter)
 static void AddVanillaZombieBody(Zombie *theZombie)
 {
 	ZombieBodyComponent aBody;
@@ -405,6 +413,28 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 		aBody.mHeadImageId = theImageId;
 		strncpy(aBody.mHeadHiddenPrefixes[0], theHidden1, sizeof(aBody.mHeadHiddenPrefixes[0]) - 1);
 		strncpy(aBody.mHeadHiddenPrefixes[1], theHidden2, sizeof(aBody.mHeadHiddenPrefixes[1]) - 1);
+	};
+	auto aSetArm = [&aBody](const char *theTrack, const char *theUpperTrack, int theUpperImageId, int theImageId) {
+		SetName(aBody.mArmTrack, theTrack);
+		SetName(aBody.mArmUpperTrack, theUpperTrack);
+		aBody.mArmUpperImageId = theUpperImageId;
+		aBody.mArmImageId = theImageId;
+	};
+	auto aHideArmTracks = [&aBody](const char *theTrack1, const char *theTrack2, const char *theTrack3 = "") {
+		aBody.mArmHiddenByPrefix = false;
+		SetName(aBody.mArmHiddenTracks[0], theTrack1);
+		SetName(aBody.mArmHiddenTracks[1], theTrack2);
+		SetName(aBody.mArmHiddenTracks[2], theTrack3);
+	};
+	auto aSetIceTrap = [&aBody](float theX, float theY, float theScale = 1.0f) {
+		aBody.mIceTrapX = theX;
+		aBody.mIceTrapY = theY;
+		aBody.mIceTrapScale = theScale;
+	};
+	auto aSetButter = [&aBody](float theX, float theY, float theScale = 1.0f) {
+		aBody.mButterX = theX;
+		aBody.mButterY = theY;
+		aBody.mButterScale = theScale;
 	};
 	auto aSetCharred = [&aBody](ReanimationType theReanim, float theX, float theY) {
 		aBody.mCharredReanim = theReanim;
@@ -415,6 +445,9 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 	switch (theZombie->mZombieType)
 	{
 	case ZombieType::ZOMBIE_FOOTBALL:
+		SetName(aBody.mArmHiddenTracks[0], "Zombie_football_leftarm_lower");
+		SetName(aBody.mArmHiddenTracks[1], "Zombie_football_leftarm_hand");
+		aSetArm("Zombie_football_leftarm_hand", "Zombie_football_leftarm_upper", ResourceId::IMAGE_REANIM_ZOMBIE_FOOTBALL_LEFTARM_UPPER2_ID, ResourceId::IMAGE_REANIM_ZOMBIE_FOOTBALL_LEFTARM_HAND_ID);
 		aBody.mFootDustTimes[0] = 0.03f;
 		aBody.mFootDustTimes[1] = 0.61f;
 		aBody.mDrawOffsetY = -16.0f;
@@ -428,6 +461,8 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 		aSetHead(ResourceId::IMAGE_ZOMBIEFOOTBALLHEAD_ID);
 		break;
 	case ZombieType::ZOMBIE_NEWSPAPER:
+		aHideArmTracks("Zombie_paper_hands", "Zombie_paper_leftarm_lower");
+		aSetArm("Zombie_paper_leftarm_lower", "Zombie_paper_leftarm_upper", ResourceId::IMAGE_REANIM_ZOMBIE_PAPER_LEFTARM_UPPER2_ID, ResourceId::IMAGE_REANIM_ZOMBIE_PAPER_LEFTARM_LOWER_ID);
 		aBody.mChewTimes[0] = 0.42f;
 		aBody.mChewTimes[1] = 0.42f;
 		aBody.SetDeathFall(0.63f);
@@ -435,6 +470,8 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 		aBody.mHeadParticle = ParticleEffect::PARTICLE_ZOMBIE_NEWSPAPER_HEAD;
 		break;
 	case ZombieType::ZOMBIE_POLEVAULTER:
+		aHideArmTracks("Zombie_polevaulter_outerarm_lower", "Zombie_outerarm_hand");
+		aSetArm("Zombie_polevaulter_outerarm_lower", "Zombie_polevaulter_outerarm_upper", ResourceId::IMAGE_REANIM_ZOMBIE_POLEVAULTER_OUTERARM_UPPER2_ID, ResourceId::IMAGE_REANIM_ZOMBIE_OUTERARM_HAND_ID);
 		aBody.mEatAnimRate = 20.0f;
 		aBody.mChewTimes[0] = 0.38f;
 		aBody.mChewTimes[1] = 0.8f;
@@ -446,6 +483,7 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 		aSetHead(ResourceId::IMAGE_ZOMBIEPOLEVAULTERHEAD_ID);
 		break;
 	case ZombieType::ZOMBIE_BOBSLED:
+		aSetArm("Zombie_outerarm_lower", "Zombie_dolphinrider_outerarm_upper", ResourceId::IMAGE_REANIM_ZOMBIE_BOBSLED_OUTERARM_UPPER2_ID, ResourceId::IMAGE_REANIM_ZOMBIE_BOBSLED_OUTERARM_HAND_ID);
 		aBody.mChewTimes[0] = 0.33f;
 		aBody.mChewTimes[1] = 0.83f;
 		aBody.mDrawOffsetY = -12.0f;
@@ -454,6 +492,7 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 		aSetHead(ResourceId::IMAGE_ZOMBIEBOBSLEDHEAD_ID);
 		break;
 	case ZombieType::ZOMBIE_IMP:
+		aSetArm("Zombie_outerarm_lower", "Zombie_imp_outerarm_upper", ResourceId::IMAGE_REANIM_ZOMBIE_IMP_ARM1_BONE_ID, ResourceId::IMAGE_REANIM_ZOMBIE_IMP_ARM2_ID);
 		aBody.mEatAnimRate = 20.0f;
 		aBody.mChewTimes[0] = 0.33f;
 		aBody.mChewTimes[1] = 0.79f;
@@ -464,6 +503,8 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 		aSetCharred(ReanimationType::REANIM_ZOMBIE_CHARRED_IMP, 16.0f, -10.0f);
 		break;
 	case ZombieType::ZOMBIE_DIGGER:
+		aSetArm("Zombie_outerarm_lower", "Zombie_digger_outerarm_upper", ResourceId::IMAGE_REANIM_ZOMBIE_DIGGER_OUTERARM_UPPER2_ID, ResourceId::IMAGE_ZOMBIEDIGGERARM_ID);
+		aSetIceTrap(-27.0f, 0.0f);
 		aBody.mEatAnimRate = 20.0f;
 		aBody.SetDeathFall(0.85f);
 		aBody.SetDeathAnimRate(18.0f);
@@ -476,6 +517,7 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 		strcpy(aBody.mCharredAnim, "anim_crumble");
 		break;
 	case ZombieType::ZOMBIE_SNORKEL:
+		aSetArm("Zombie_outerarm_lower", "Zombie_snorkle_outerarm_upper", ResourceId::IMAGE_REANIM_ZOMBIE_SNORKLE_OUTERARM_UPPER2_ID, -1);
 		aBody.mEatAnimRate = 20.0f;
 		aBody.mHasDeathFall = false;
 		aBody.SetDeathAnimRate(14.0f);
@@ -483,6 +525,7 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 		aSetHead(ResourceId::IMAGE_REANIM_ZOMBIE_SNORKLE_HEAD_ID);
 		break;
 	case ZombieType::ZOMBIE_DOLPHIN_RIDER:
+		aSetArm("Zombie_outerarm_lower", "Zombie_dolphinrider_outerarm_upper", ResourceId::IMAGE_REANIM_ZOMBIE_DOLPHINRIDER_OUTERARM_UPPER2_ID, ResourceId::IMAGE_REANIM_ZOMBIE_OUTERARM_HAND_ID);
 		aBody.mHasDeathFall = false;
 		aBody.mPuffsWhenMowed = true;
 		aBody.mAppearFoley = FoleyType::FOLEY_DOLPHIN_APPEARS;
@@ -490,6 +533,7 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 		aSetHead(ResourceId::IMAGE_ZOMBIEDOLPHINRIDERHEAD_ID);
 		break;
 	case ZombieType::ZOMBIE_YETI:
+		aSetArm("Zombie_outerarm_hand", "Zombie_yeti_outerarm_upper", ResourceId::IMAGE_REANIM_ZOMBIE_YETI_OUTERARM_UPPER2_ID, ResourceId::IMAGE_REANIM_ZOMBIE_YETI_OUTERARM_HAND_ID);
 		aBody.mEatAnimRate = 20.0f;
 		aBody.mDrawOffsetY = -20.0f;
 		aBody.SetDeathFall(0.68f);
@@ -501,6 +545,8 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 		break;
 	case ZombieType::ZOMBIE_GARGANTUAR:
 	case ZombieType::ZOMBIE_REDEYE_GARGANTUAR:
+		aSetIceTrap(-20.0f, -7.0f, 1.6f);
+		aSetButter(-5.0f, -15.0f, 1.2f);
 		aBody.mDrawOffsetY = -8.0f;
 		aBody.SetDeathFall(0.86f);
 		aBody.SetDeathAnimRate(14.0f);
@@ -510,6 +556,8 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 		aSetCharred(ReanimationType::REANIM_ZOMBIE_CHARRED_GARGANTUAR, 7.0f, -20.0f);
 		break;
 	case ZombieType::ZOMBIE_BALLOON:
+		aSetArm("Zombie_outerarm_lower", "Zombie_outerarm_upper", ResourceId::IMAGE_REANIM_ZOMBIE_BALLOON_OUTERARM_UPPER2_ID, ResourceId::IMAGE_REANIM_ZOMBIE_OUTERARM_HAND_ID);
+		aSetIceTrap(-9.0f, 27.0f);
 		aBody.mEatAnimRate = 20.0f;
 		aBody.mDrawOffsetY = 17.0f;
 		aBody.SetDeathFall(0.68f);
@@ -519,26 +567,35 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 		aSetCharred(ReanimationType::REANIM_ZOMBIE_CHARRED, 22.0f, 21.0f);
 		break;
 	case ZombieType::ZOMBIE_DANCER:
+		aHideArmTracks("Zombie_disco_outerarm_lower", "Zombie_disco_outerhand_point", "Zombie_disco_outerhand");
+		aSetArm("Zombie_disco_outerarm_lower", "Zombie_disco_outerarm_upper", ResourceId::IMAGE_REANIM_ZOMBIE_DISCO_OUTERARM_UPPER2_ID, ResourceId::IMAGE_REANIM_ZOMBIE_DISCO_OUTERARM_HAND_ID);
 		aBody.SetDeathFall(0.83f);
 		aSetHead(ResourceId::IMAGE_ZOMBIEDANCERHEAD_ID, "Zombie_disco_chops", "Zombie_disco_glasses");
 		aBody.mHeadRenderOffset = -1;
 		break;
 	case ZombieType::ZOMBIE_BACKUP_DANCER:
+		aHideArmTracks("Zombie_disco_outerarm_lower", "Zombie_disco_outerhand");
+		aSetArm("Zombie_disco_outerarm_lower", "", -1, ResourceId::IMAGE_REANIM_ZOMBIE_BACKUP_INNERARM_HAND_ID);
 		aBody.SetDeathFall(0.83f);
 		aSetHead(ResourceId::IMAGE_ZOMBIEBACKUPDANCERHEAD_ID, "Zombie_disco_chops", "Zombie_backup_stash");
 		break;
 	case ZombieType::ZOMBIE_LADDER:
+		aSetArm("Zombie_outerarm_hand", "Zombie_ladder_outerarm_upper", ResourceId::IMAGE_REANIM_ZOMBIE_LADDER_OUTERARM_UPPER2_ID, ResourceId::IMAGE_REANIM_ZOMBIE_OUTERARM_HAND_ID);
 		aBody.mChewTimes[0] = 0.42f;
 		aBody.mChewTimes[1] = 0.42f;
 		aBody.SetDeathFall(0.62f);
 		aSetHead(ResourceId::IMAGE_ZOMBIELADDERHEAD_ID);
 		break;
 	case ZombieType::ZOMBIE_POGO:
+		aSetArm("Zombie_outerarm_lower", "Zombie_outerarm_upper", ResourceId::IMAGE_REANIM_ZOMBIE_POGO_OUTERARM_UPPER2_ID, ResourceId::IMAGE_REANIM_ZOMBIE_OUTERARM_HAND_ID);
+		aSetIceTrap(-10.0f, 20.0f);
+		aSetButter(0.0f, -5.0f);
 		aBody.mDrawOffsetY = 16.0f;
 		aBody.SetDeathFall(0.84f);
 		aBody.mHeadParticle = ParticleEffect::PARTICLE_ZOMBIE_POGO_HEAD;
 		break;
 	case ZombieType::ZOMBIE_ZAMBONI:
+		aBody.mCanBeButtered = false;
 		aBody.mDrawOffsetX = 68.0f;
 		aBody.mDrawOffsetY = -23.0f;
 		aBody.mHasDeathFall = false;
@@ -548,12 +605,15 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 		aSetCharred(ReanimationType::REANIM_ZOMBIE_CHARRED_ZAMBONI, 83.0f, -26.0f);
 		break;
 	case ZombieType::ZOMBIE_CATAPULT:
+		aSetIceTrap(32.0f, 0.0f);
+		SetName(aBody.mButterHeadTrack, "Zombie_catapult_driver_head");
 		aBody.mDrawOffsetX = -25.0f;
 		aBody.mDrawOffsetY = -18.0f;
 		aBody.mHasDeathFall = false;
 		aSetCharred(ReanimationType::REANIM_ZOMBIE_CHARRED_CATAPULT, -14.0f, -30.0f);
 		break;
 	case ZombieType::ZOMBIE_JACK_IN_THE_BOX:
+		aSetArm("Zombie_jackbox_outerarm_lower", "Zombie_jackbox_outerarm_lower", ResourceId::IMAGE_REANIM_ZOMBIE_JACKBOX_OUTERARM_LOWER2_ID, ResourceId::IMAGE_ZOMBIEJACKBOXARM_ID);
 		aBody.mEatAnimRate = 20.0f;
 		aBody.mChewTimes[0] = 0.53f;
 		aBody.mChewTimes[1] = 0.53f;
@@ -561,11 +621,14 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 		aBody.mSongFoley = FoleyType::FOLEY_JACKINTHEBOX;
 		break;
 	case ZombieType::ZOMBIE_BUNGEE:
+		aSetIceTrap(-45.0f, -23.0f, 1.2f);
 		aBody.mHasDeathFall = false;
 		aBody.mPuffsWhenMowed = true;
 		aBody.mBurnsInPlace = true;
 		break;
 	case ZombieType::ZOMBIE_BOSS:
+		aBody.mShowsIceTrap = false;
+		aBody.mCanBeButtered = false;
 		aBody.mHasDeathFall = false;
 		aBody.SetDeathAnimRate(18.0f);
 		aBody.mPlaysDeathAnimWhenDisintegrated = true;
@@ -579,6 +642,15 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 	case ZombieType::ZOMBIE_FLAG:
 	case ZombieType::ZOMBIE_PEA_HEAD:
 		aBody.mWalkAnimVariant = 0;
+		break;
+	case ZombieType::ZOMBIE_SQUASH_HEAD:
+		aSetButter(6.0f, -9.0f);
+		break;
+	case ZombieType::ZOMBIE_WALLNUT_HEAD:
+		aSetButter(-6.0f, -1.0f);
+		break;
+	case ZombieType::ZOMBIE_TALLNUT_HEAD:
+		aSetButter(-24.0f, -39.0f);
 		break;
 	default:
 		return;

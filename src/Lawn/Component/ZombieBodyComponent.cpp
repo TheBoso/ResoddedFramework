@@ -70,4 +70,19 @@ void ZombieBodyComponent::Serialize(ComponentArchive &theArchive)
 	theArchive.Value(mDancesInDanceMode);
 	theArchive.Value(mDrawOffsetX);
 	theArchive.Value(mDrawOffsetY);
+	theArchive.Value(mArmHiddenTracks);
+	theArchive.Value(mArmHiddenByPrefix);
+	theArchive.Value(mArmTrack);
+	theArchive.Value(mArmUpperTrack);
+	theArchive.Value(mArmUpperImageId);
+	theArchive.Value(mArmImageId);
+	theArchive.Value(mShowsIceTrap);
+	theArchive.Value(mIceTrapX);
+	theArchive.Value(mIceTrapY);
+	theArchive.Value(mIceTrapScale);
+	theArchive.Value(mCanBeButtered);
+	theArchive.Value(mButterHeadTrack);
+	theArchive.Value(mButterX);
+	theArchive.Value(mButterY);
+	theArchive.Value(mButterScale);
 }

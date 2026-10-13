@@ -229,9 +229,17 @@ hypnosis, team-based projectile collision, generic shooter, plant heads, produce
   dance cheat (the plain zombies, which now get a body) and the body's draw offset. New behaviour hooks `PlaceBody`
   (Dolphin Rider, Snorkel, Bungee place and clip their own body) and `DrawBody` (Bobsled, Bungee, Dancer draw their
   own way). Zombie.cpp went from 91 to 66 `mZombieType ==` checks (and 120 to 110 `case` labels). `SAVE_VERSION` 13.
-- Still type-checked: the legacy sprite path of `UpdateZombieWalking` (zombies without a body animation), lost arms
-  (`SetupReanimForLostArm`), the ice trap and butter art (`DrawIceTrap`, `DrawButter`, `ApplyButter`), Daisy mode,
-  the yucky face, `IsTargetableBy`, the sprite drawing in `DrawZombie` and the type setup in `ZombieInitialize`.
+- Done: lost arms, ice and butter. `ZombieBodyComponent` gained the lost arm (tracks hidden, track the arm falls
+  from, upper-arm image, falling arm image), the ice block (shown or not, offset, scale) and the butter splat (can be
+  buttered, head track, offset, scale); the Wall-nut, Tall-nut and Squash zombies got bodies. New hooks `OnLoseArm`
+  (Pogo stick and the flag show damage), `OnButtered` / `OnButterRemoved` (Pogo lands, Balloon propeller stops, the
+  Peashooter and Gatling heads resume shooting). `BodyOf(zombie)` in Zombie.cpp returns the body or the regular
+  one. A Dancer now hides its pointing hand's track with its arm even when the arm leaves no particle (it never
+  swims, and a disintegrated zombie leaves no body, so this doesn't show). Zombie.cpp went from 66 to 58
+  `mZombieType ==` checks and 110 to 62 `case` labels. `SAVE_VERSION` 14.
+- Still type-checked: the legacy sprite path of `UpdateZombieWalking` (zombies without a body animation), Daisy
+  mode, the yucky face, `IsTargetableBy`, the sprite drawing in `DrawZombie` and the type setup in
+  `ZombieInitialize`.
 - Next: the remaining checks are mostly single types tied to that zombie's own animation and state (Zamboni ice
   trail, Catapult basketball count, Snorkel/Dolphin pool animations, Dr. Zomboss parts). They move into hooks on the
   zombie's behaviour component (e.g. `OnDeathAnim`, `GetDrawPosition`) so the shared code asks the behaviour instead

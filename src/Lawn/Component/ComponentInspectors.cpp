@@ -412,6 +412,16 @@ void ZombieBodyComponent::DrawInspector()
 	ImGui::DragFloat("Draw offset X", &mDrawOffsetX, 0.5f);
 	ImGui::DragFloat("Draw offset Y", &mDrawOffsetY, 0.5f);
 	ImGui::Checkbox("Dances in dance mode", &mDancesInDanceMode);
+	ImGui::InputInt("Arm image id", &mArmImageId);
+	ImGui::InputInt("Upper arm image id", &mArmUpperImageId);
+	ImGui::Checkbox("Shows ice trap", &mShowsIceTrap);
+	ImGui::DragFloat("Ice trap X", &mIceTrapX, 0.5f);
+	ImGui::DragFloat("Ice trap Y", &mIceTrapY, 0.5f);
+	ImGui::DragFloat("Ice trap scale", &mIceTrapScale, 0.01f, 0.1f, 4.0f);
+	ImGui::Checkbox("Can be buttered", &mCanBeButtered);
+	ImGui::DragFloat("Butter X", &mButterX, 0.5f);
+	ImGui::DragFloat("Butter Y", &mButterY, 0.5f);
+	ImGui::DragFloat("Butter scale", &mButterScale, 0.01f, 0.1f, 4.0f);
 }
 
 void TeamComponent::DrawInspector()

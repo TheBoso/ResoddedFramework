@@ -19,7 +19,7 @@ class ZombieDrawPosition;
 ///  - UpdateAlways:  the zombie updates at all, including outside a level (Almanac previews)
 ///
 /// Events (the bool ones: return true to say the behaviour took care of it):
-///  - OnLoseHead, OnBodyDamaged, OnHitByMower, OnMowed, OnBurned
+///  - OnLoseHead, OnLoseArm, OnButtered, OnButterRemoved, OnBodyDamaged, OnHitByMower, OnMowed, OnBurned
 ///  - HasDeathAnim, OnDying, UpdateDying, OnRemoved
 ///  - PlaceBody, DrawBody (zombies drawn their own way)
 ///
@@ -45,6 +45,21 @@ class ZombieBehaviourComponent : public Component
 	{
 		(void)theZombie;
 		(void)theDamageFlags;
+	}
+	/// @brief The zombie just lost its arm (called from Zombie::SetupReanimForLostArm once the arm is gone)
+	virtual void OnLoseArm(Zombie *theZombie)
+	{
+		(void)theZombie;
+	}
+	/// @brief Butter landed on the zombie's head (it can't move until it wears off)
+	virtual void OnButtered(Zombie *theZombie)
+	{
+		(void)theZombie;
+	}
+	/// @brief The butter wore off
+	virtual void OnButterRemoved(Zombie *theZombie)
+	{
+		(void)theZombie;
 	}
 	/// @brief The zombie's body took damage (its health is already lowered). Return true when the behaviour shows the
 	/// damage itself (Zamboni, Gargantuar...) instead of the regular damage states (losing an arm, then the head).
@@ -136,9 +151,7 @@ ZOMBIE_BEHAVIOUR(LadderBehaviour, UpdateActions)
 ZOMBIE_BEHAVIOUR(YetiBehaviour, UpdateActions)
 ZOMBIE_BEHAVIOUR(BackupDancerBehaviour, UpdateActions)
 ZOMBIE_BEHAVIOUR(ImpBehaviour, UpdateActions)
-ZOMBIE_BEHAVIOUR(PeaHeadBehaviour, UpdateActions)
 ZOMBIE_BEHAVIOUR(JalapenoHeadBehaviour, UpdateActions)
-ZOMBIE_BEHAVIOUR(GatlingHeadBehaviour, UpdateActions)
 
 #undef ZOMBIE_BEHAVIOUR
 
@@ -165,6 +178,8 @@ class BalloonBehaviour : public ZombieBehaviourComponent
 	COMPONENT_SUBTYPE(BalloonBehaviour, ZombieBehaviourComponent)
 	void UpdateActions(Zombie *theZombie) override;
 	void OnLoseHead(Zombie *theZombie, unsigned int theDamageFlags) override;
+	void OnButtered(Zombie *theZombie) override;
+	void OnButterRemoved(Zombie *theZombie) override;
 	void OnMowed(Zombie *theZombie) override;
 	void OnBurned(Zombie *theZombie) override;
 };
@@ -175,6 +190,8 @@ class PogoBehaviour : public ZombieBehaviourComponent
 	COMPONENT_SUBTYPE(PogoBehaviour, ZombieBehaviourComponent)
 	void UpdateAlways(Zombie *theZombie) override;
 	void OnLoseHead(Zombie *theZombie, unsigned int theDamageFlags) override;
+	void OnLoseArm(Zombie *theZombie) override;
+	void OnButtered(Zombie *theZombie) override;
 	void OnMowed(Zombie *theZombie) override;
 	void OnDying(Zombie *theZombie) override;
 };
@@ -184,7 +201,24 @@ class FlagBearerBehaviour : public ZombieBehaviourComponent
 {
 	COMPONENT_SUBTYPE(FlagBearerBehaviour, ZombieBehaviourComponent)
 	void OnLoseHead(Zombie *theZombie, unsigned int theDamageFlags) override;
+	void OnLoseArm(Zombie *theZombie) override;
 	void OnMowed(Zombie *theZombie) override;
+};
+
+/// @brief Peashooter zombie: fires peas from its head
+class PeaHeadBehaviour : public ZombieBehaviourComponent
+{
+	COMPONENT_SUBTYPE(PeaHeadBehaviour, ZombieBehaviourComponent)
+	void UpdateActions(Zombie *theZombie) override;
+	void OnButterRemoved(Zombie *theZombie) override;
+};
+
+/// @brief Gatling Pea zombie: fires bursts of peas from its head
+class GatlingHeadBehaviour : public ZombieBehaviourComponent
+{
+	COMPONENT_SUBTYPE(GatlingHeadBehaviour, ZombieBehaviourComponent)
+	void UpdateActions(Zombie *theZombie) override;
+	void OnButterRemoved(Zombie *theZombie) override;
 };
 
 /// @brief Dolphin Rider: rides into the pool. Out of the pool it has no death animation.

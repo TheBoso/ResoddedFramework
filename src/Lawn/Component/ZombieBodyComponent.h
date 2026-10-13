@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../ConstEnums.h"
+#include "../../Resources.h"
 #include "../../Sexy.TodLib/TodFoley.h"
 #include "Component.h"
 
@@ -97,4 +98,29 @@ class ZombieBodyComponent : public Component
 	/// Where the body is drawn, relative to the regular zombie
 	float mDrawOffsetX = 0.0f;
 	float mDrawOffsetY = 0.0f;
+
+	/// Tracks hidden when the arm falls off (matched as prefixes or as whole track names)
+	char mArmHiddenTracks[3][48] = { "Zombie_outerarm_lower", "Zombie_outerarm_hand", "" };
+	bool mArmHiddenByPrefix = true;
+	/// Track the falling arm starts from
+	char mArmTrack[48] = "Zombie_outerarm_lower";
+	/// The upper arm left behind shows this image (ResourceId, -1 to leave it as it is)
+	char mArmUpperTrack[48] = "Zombie_outerarm_upper";
+	int32_t mArmUpperImageId = ResourceId::IMAGE_REANIM_ZOMBIE_OUTERARM_UPPER2_ID;
+	/// Image of the falling arm (ResourceId, -1 for the particle's own)
+	int32_t mArmImageId = -1;
+
+	/// Shows the ice block when frozen (no for Dr. Zomboss)
+	bool mShowsIceTrap = true;
+	float mIceTrapX = 0.0f;
+	float mIceTrapY = 0.0f;
+	float mIceTrapScale = 1.0f;
+
+	/// Kernel-pult butter sticks to it (no for the Zamboni and Dr. Zomboss)
+	bool mCanBeButtered = true;
+	/// Where the butter splat sits, relative to the head ("" for the head track, anim_head1)
+	char mButterHeadTrack[48] = "";
+	float mButterX = 0.0f;
+	float mButterY = 0.0f;
+	float mButterScale = 1.0f;
 };
