@@ -2774,3 +2774,159 @@ void SquashHeadBehaviour::OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn)
 	(void)theSpawn;
 	theZombie->mZombiePhase = ZombiePhase::PHASE_SQUASH_PRE_LAUNCH;
 }
+
+// ─── Small per-zombie rules ──────────────────────────────────────────────────
+
+bool ImpBehaviour::PickSpeed(Zombie *theZombie)
+{
+	// I, Zombie Imps sprint
+	if (!theZombie->mApp->IsIZombieLevel())
+		return false;
+
+	theZombie->mVelX = 0.9f;
+	return true;
+}
+
+bool PogoBehaviour::ControlsAltitude(Zombie *theZombie)
+{
+	(void)theZombie;
+	return true;
+}
+
+bool DiggerBehaviour::IsWalkingBackwards(Zombie *theZombie)
+{
+	// After surfacing the Digger walks from the house end towards the right
+	ZombiePhase aPhase = theZombie->mZombiePhase;
+	if (aPhase == ZombiePhase::PHASE_DIGGER_RISING || aPhase == ZombiePhase::PHASE_DIGGER_STUNNED ||
+	    aPhase == ZombiePhase::PHASE_DIGGER_WALKING)
+	{
+		return true;
+	}
+	else if (aPhase == ZombiePhase::PHASE_ZOMBIE_DYING || aPhase == ZombiePhase::PHASE_ZOMBIE_BURNED ||
+	         aPhase == ZombiePhase::PHASE_ZOMBIE_MOWERED)
+	{
+		return theZombie->mHasObject;
+	}
+
+	return false;
+}
+
+bool YetiBehaviour::IsWalkingBackwards(Zombie *theZombie)
+{
+	// Runs away once it dropped its diamonds' bag
+	return !theZombie->mHasObject;
+}
+
+bool ZamboniBehaviour::CanBeChilled(Zombie *theZombie)
+{
+	(void)theZombie;
+	return false;
+}
+
+bool BossBehaviour::CanBeChilled(Zombie *theZombie)
+{
+	// Only his head, while it is down
+	ZombiePhase aPhase = theZombie->mZombiePhase;
+	return aPhase == ZombiePhase::PHASE_BOSS_HEAD_IDLE_BEFORE_SPIT ||
+	       aPhase == ZombiePhase::PHASE_BOSS_HEAD_IDLE_AFTER_SPIT || aPhase == ZombiePhase::PHASE_BOSS_HEAD_SPIT;
+}
+
+bool BungeeBehaviour::CanBeFrozen(Zombie *theZombie)
+{
+	return theZombie->mZombiePhase == ZombiePhase::PHASE_BUNGEE_AT_BOTTOM;
+}
+
+bool BossBehaviour::HasShadow(Zombie *theZombie)
+{
+	(void)theZombie;
+	return false;
+}
+
+bool BungeeBehaviour::HasShadow(Zombie *theZombie)
+{
+	return theZombie->IsOnBoard() && !theZombie->mHitUmbrella;
+}
+
+void BungeeBehaviour::AdjustShadow(Zombie *theZombie, float &theOffsetX, float &theScale)
+{
+	// The shadow grows as the Bungee drops
+	theOffsetX -= 12.0f;
+	theScale = TodAnimateCurveFloat(BUNGEE_ZOMBIE_HEIGHT - 1000, 100, theZombie->mAltitude, 0.1f, 1.5f,
+	                                TodCurves::CURVE_LINEAR);
+}
+
+void BalloonBehaviour::OnFrozen(Zombie *theZombie)
+{
+	theZombie->BalloonPropellerHatSpin(false);
+}
+
+void BalloonBehaviour::OnThawed(Zombie *theZombie)
+{
+	theZombie->BalloonPropellerHatSpin(true);
+}
+
+void YetiBehaviour::OnKilled(Zombie *theZombie)
+{
+	theZombie->mBoard->mKilledYeti = true;
+}
+
+bool YetiBehaviour::DropOwnLoot(Zombie *theZombie, int theCenterX, int theCenterY)
+{
+	// Four diamonds instead of the regular loot
+	Board *aBoard = theZombie->mBoard;
+	theZombie->mApp->PlayFoley(FoleyType::FOLEY_SPAWN_SUN);
+	aBoard->AddCoin(theCenterX - 20, theCenterY, CoinType::COIN_DIAMOND, CoinMotion::COIN_MOTION_COIN);
+	aBoard->AddCoin(theCenterX - 30, theCenterY, CoinType::COIN_DIAMOND, CoinMotion::COIN_MOTION_COIN);
+	aBoard->AddCoin(theCenterX - 40, theCenterY, CoinType::COIN_DIAMOND, CoinMotion::COIN_MOTION_COIN);
+	aBoard->AddCoin(theCenterX - 50, theCenterY, CoinType::COIN_DIAMOND, CoinMotion::COIN_MOTION_COIN);
+	return true;
+}
+
+bool BossBehaviour::OverrideBodyColor(Zombie *theZombie, Sexy::Color &theColor, int theAlpha)
+{
+	// Flashes gray (blue-gray when cold) once badly hurt
+	if (theZombie->mZombiePhase == ZombiePhase::PHASE_ZOMBIE_DYING ||
+	    theZombie->Health().mHealth >= theZombie->Health().mMaxHealth / BOSS_FLASH_HEALTH_FRACTION)
+		return false;
+
+	int aMainCounter = theZombie->mBoard->mMainCounter;
+	int aGrayness = TodAnimateCurve(0, 39, aMainCounter % 40, 155, 255, TodCurves::CURVE_BOUNCE);
+	if (theZombie->IsChilled() || theZombie->IsFrozen())
+	{
+		int aColdColor = TodAnimateCurve(0, 39, aMainCounter % 40, 65, 75, TodCurves::CURVE_BOUNCE);
+		theColor = Color(aColdColor, aColdColor, aGrayness, theAlpha);
+	}
+	else
+	{
+		theColor = Color(aGrayness, aGrayness, aGrayness, theAlpha);
+	}
+	return true;
+}
+
+void CatapultBehaviour::UpdateBodyReanim(Zombie *theZombie)
+{
+	// The pole shows the damage, and whether a basketball is loaded
+	Reanimation *aBodyReanim = theZombie->mApp->ReanimationGet(theZombie->mBodyReanimID);
+	if (theZombie->GetBodyDamageIndex() == 2 || theZombie->mZombiePhase == ZombiePhase::PHASE_ZOMBIE_DYING)
+	{
+		Image *aPoleImage = aBodyReanim->GetCurrentTrackImage("Zombie_catapult_pole");
+		if (aPoleImage == IMAGE_REANIM_ZOMBIE_CATAPULT_POLE_WITHBALL && theZombie->mSummonCounter != 0)
+		{
+			aBodyReanim->SetImageOverride("Zombie_catapult_pole", IMAGE_REANIM_ZOMBIE_CATAPULT_POLE_DAMAGE_WITHBALL);
+		}
+		else
+		{
+			aBodyReanim->SetImageOverride("Zombie_catapult_pole", IMAGE_REANIM_ZOMBIE_CATAPULT_POLE_DAMAGE);
+		}
+	}
+	else if (theZombie->mSummonCounter == 0)
+	{
+		aBodyReanim->SetImageOverride("Zombie_catapult_pole", IMAGE_REANIM_ZOMBIE_CATAPULT_POLE);
+	}
+}
+
+bool BossBehaviour::UpdatesInLevelIntro(Zombie *theZombie)
+{
+	(void)theZombie;
+	return true;
+}

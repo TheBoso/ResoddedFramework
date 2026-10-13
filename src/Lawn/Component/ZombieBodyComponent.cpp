@@ -117,4 +117,21 @@ void ZombieBodyComponent::Serialize(ComponentArchive &theArchive)
 	theArchive.Value(mPlantHeadX);
 	theArchive.Value(mPlantHeadY);
 	theArchive.Value(mPlantHeadScale);
+	theArchive.Value(mHasDuckyTube);
+	theArchive.Value(mSpansAllRows);
+	theArchive.Value(mGroans);
+	theArchive.Value(mHeadlessDecay);
+	theArchive.Value(mChewEffectX);
+	theArchive.Value(mChewEffectY);
+	theArchive.Value(mSmallScaleOffsetY);
+	theArchive.Value(mPlaysEatAnim);
+	theArchive.Value(mEatsPlants);
+	theArchive.Value(mClimbsLadders);
+	theArchive.Value(mIsBoss);
+	theArchive.Value(mRowYOffset);
+	theArchive.Value(mLosesBodyParts);
+	theArchive.Value(mShadowFollowsAltitude);
+	theArchive.Value(mSpriteGlides);
+	theArchive.Value(mDamagedBelow);
+	theArchive.Value(mBadlyDamagedBelow);
 }

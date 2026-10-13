@@ -163,6 +163,40 @@ class ZombieBodyComponent : public Component
 	RenderLayer mRenderLayer = RenderLayer::RENDER_LAYER_ZOMBIE;
 	int32_t mRenderOffset = 4;
 
+	// Smaller rules
+	/// Wears a duck tube (on every lawn, not only in the pool)
+	bool mHasDuckyTube = false;
+	/// Hit by whatever hits any row (Dr. Zomboss spans the whole lawn)
+	bool mSpansAllRows = false;
+	/// Groans now and then
+	bool mGroans = true;
+	/// Health lost per decay tick once it lost its head (bigger zombies: 3 whatever this says)
+	int32_t mHeadlessDecay = 1;
+	/// Offset of the bits flying off when it chews a Wall-nut
+	float mChewEffectX = 0.0f;
+	float mChewEffectY = 0.0f;
+	/// Moved down this much at scale 0 (Little Trouble, Big Time: keeps the Football Zombie on the ground)
+	float mSmallScaleOffsetY = 0.0f;
+	/// Plays the regular eating animation (no for the Snorkel, which surfaces to eat)
+	bool mPlaysEatAnim = true;
+	/// Eats plants it walks into
+	bool mEatsPlants = true;
+	/// Climbs ladders placed on plants
+	bool mClimbsLadders = true;
+	/// The level's boss: on the final level only it drops the award, which flies out of it
+	bool mIsBoss = false;
+	/// Up/down shift of its row position (fliers and bouncers sit higher)
+	float mRowYOffset = 0.0f;
+	/// Loses its arm and head as it takes damage
+	bool mLosesBodyParts = true;
+	/// The shadow stays on the ground while it is in the air
+	bool mShadowFollowsAltitude = false;
+	/// Without a body animation, keeps moving instead of stepping with its sprite frames
+	bool mSpriteGlides = false;
+	/// Damage states: damaged below health * [0] / [1], badly damaged below health * [0] / [1]
+	int32_t mDamagedBelow[2] = { 2, 3 };
+	int32_t mBadlyDamagedBelow[2] = { 1, 3 };
+
 	/// The Zombotany head: a plant animation attached to one of the zombie's tracks (REANIM_NONE: none)
 	ReanimationType mPlantHeadReanim = ReanimationType::REANIM_NONE;
 	char mPlantHeadAnim[32] = "anim_idle";

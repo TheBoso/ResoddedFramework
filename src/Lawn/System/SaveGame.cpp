@@ -24,7 +24,8 @@
 // 14: zombie body arm, ice trap and butter data, bodies for the Wall-nut, Tall-nut and Squash zombies
 // 15: yucky face body data, bodies for the Jalapeno and Gatling zombies, swimmer under water
 // 16: zombie body spawn, Zombotany head and daisy data, armour from the archetype
-static constexpr uint32_t SAVE_VERSION = 16;
+// 17: the last zombie body rules, dance troupe leader, a body for the Ducky Tube Zombie
+static constexpr uint32_t SAVE_VERSION = 17;
 
 template <typename T>
 void SaveContext::SyncVar(T &aValue, const std::string &aName)

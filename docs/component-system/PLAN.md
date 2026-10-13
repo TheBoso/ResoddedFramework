@@ -255,8 +255,22 @@ hypnosis, team-based projectile collision, generic shooter, plant heads, produce
   shield is attached after the behaviours spawn. Daisy mode reads `mLeavesDaisies` and the daisy offset from the
   body. Random numbers are drawn in the same order as before. Zombie.cpp is down to 45 `mZombieType ==` checks and
   29 `case` labels. `SAVE_VERSION` 16.
-- Still type-checked: the legacy sprite path of `UpdateZombieWalking` (zombies without a body animation), the
-  sprite drawing in `DrawZombie`, and `SetupReanimLayers` (shared with the Almanac).
+- Done: the small remaining checks. Body data: duck tube, spans all rows (Dr. Zomboss is hit by row attacks
+  anywhere), groaning, headless decay, chew-effect offset, Little Trouble ground offset, eating animation, eats
+  plants, climbs ladders, is the level boss (final-level award), row Y offset (Balloon, Pogo), loses body parts,
+  shadow follows altitude, sprite gliding and the damage-state thresholds (as fractions of max health).
+  `DanceTroupeComponent::mIsLeader` replaces the Dancer type checks (`Zombie::IsDanceLeader()`), and
+  `Zombie::SwimsUnderwater()` the Snorkel ones. New hooks: `PickSpeed` (I, Zombie Imps), `ControlsAltitude` (Pogo),
+  `IsWalkingBackwards` (Digger, Yeti), `CanBeChilled` (Zamboni, Dr. Zomboss), `CanBeFrozen` (Bungee), `HasShadow` /
+  `AdjustShadow` (Dr. Zomboss, Bungee), `OnFrozen` / `OnThawed` (Balloon), `OnKilled` / `DropOwnLoot` (Yeti),
+  `OverrideBodyColor` (Dr. Zomboss flashing), `UpdateBodyReanim` (Catapult pole), `UpdatesInLevelIntro`
+  (Dr. Zomboss). Lookups of other zombies (Bungees, the Bobsled team) and the Drop flag/pole guards check for the
+  behaviour component. High ground is skipped for every `Stand` zombie (was: the Bungee only; Dr. Zomboss's level
+  has no high ground). `SAVE_VERSION` 17.
+- Zombie.cpp now has one `mZombieType ==` check left (the Zamboni's sprite offset in `DrawZombiePart`), plus the 29
+  `case` labels of `DrawZombie`: both are the old sprite drawing, used only when a zombie has no body animation
+  (every vanilla zombie type has one in its definition). `SetupReanimLayers` still switches on the type because the Almanac calls it
+  without a zombie.
 - Next: the remaining checks are mostly single types tied to that zombie's own animation and state (Zamboni ice
   trail, Catapult basketball count, Snorkel/Dolphin pool animations, Dr. Zomboss parts). They move into hooks on the
   zombie's behaviour component (e.g. `OnDeathAnim`, `GetDrawPosition`) so the shared code asks the behaviour instead

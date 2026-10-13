@@ -360,6 +360,11 @@ void VehicleComponent::DrawInspector()
 	ImGui::InputInt("Breaks down below health", &mBreakdownHealth);
 }
 
+void DanceTroupeComponent::DrawInspector()
+{
+	ImGui::Checkbox("Leads the troupe", &mIsLeader);
+}
+
 void SwimmerComponent::DrawInspector()
 {
 	ImGui::Checkbox("Swims under water", &mSwimsUnderwater);
@@ -419,6 +424,13 @@ void ZombieBodyComponent::DrawInspector()
 	ImGui::Checkbox("Dances in dance mode", &mDancesInDanceMode);
 	ImGui::Checkbox("Has yucky face", &mHasYuckyFace);
 	ImGui::Checkbox("Leaves daisies", &mLeavesDaisies);
+	ImGui::Checkbox("Loses body parts", &mLosesBodyParts);
+	ImGui::Checkbox("Eats plants", &mEatsPlants);
+	ImGui::Checkbox("Climbs ladders", &mClimbsLadders);
+	ImGui::Checkbox("Groans", &mGroans);
+	ImGui::Checkbox("Spans all rows", &mSpansAllRows);
+	ImGui::InputInt2("Damaged below (fraction)", mDamagedBelow);
+	ImGui::InputInt2("Badly damaged below (fraction)", mBadlyDamagedBelow);
 	if (ImGui::TreeNode("Spawn (next zombie of this kind)"))
 	{
 		ImGui::InputInt("Health", &mSpawnHealth);
@@ -573,6 +585,9 @@ void ZombieBodyComponent::DrawInspector()
 {
 }
 void VehicleComponent::DrawInspector()
+{
+}
+void DanceTroupeComponent::DrawInspector()
 {
 }
 void SwimmerComponent::DrawInspector()

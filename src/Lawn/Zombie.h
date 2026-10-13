@@ -271,6 +271,10 @@ class Zombie : public GameObject
 	bool IsSwimmer();
 	/// @brief Swims under water right now (a Snorkel in the pool, not eating)
 	bool IsSubmerged();
+	/// @brief A swimmer that dives under water (Snorkel), see SwimmerComponent
+	bool SwimsUnderwater();
+	/// @brief Leads its dance troupe (the Dancer), see DanceTroupeComponent
+	bool IsDanceLeader();
 	/// @brief Drives over / smashes spiky plants instead of being stopped by them (Gargantuars, Zamboni)
 	bool CrushesSpikes();
 

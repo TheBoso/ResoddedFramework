@@ -43,6 +43,17 @@ class VehicleComponent : public Component
 class DanceTroupeComponent : public Component
 {
 	COMPONENT_TYPE(DanceTroupeComponent)
+
+	DanceTroupeComponent() = default;
+	explicit DanceTroupeComponent(bool theIsLeader)
+	    : mIsLeader(theIsLeader)
+	{
+	}
+	void Serialize(ComponentArchive &theArchive) override;
+	void DrawInspector() override;
+
+	/// Leads the troupe (the Dancer); the others follow the zombie in mRelatedZombieID
+	bool mIsLeader = false;
 };
 
 /// @brief Gets into the pool on its own terms (Snorkel, Dolphin Rider) instead of the regular pool entry

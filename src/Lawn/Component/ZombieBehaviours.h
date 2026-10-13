@@ -6,7 +6,8 @@
 namespace Sexy
 {
 class Graphics;
-}
+class Color;
+} // namespace Sexy
 
 class Zombie;
 class ZombieDrawPosition;
@@ -36,6 +37,9 @@ struct ZombieSpawn
 ///  - HasDeathAnim, OnDying, UpdateDying, OnRemoved
 ///  - PlaceBody, DrawBody (zombies drawn their own way)
 ///  - CanBeTargeted, CanBeTargetedOffScreen (Zombie::IsTargetableBy)
+///  - Smaller rules: PickSpeed, ControlsAltitude, IsWalkingBackwards, CanBeChilled, CanBeFrozen, HasShadow,
+///    AdjustShadow, OnFrozen, OnThawed, OnKilled, DropOwnLoot, OverrideBodyColor, UpdateBodyReanim,
+///    UpdatesInLevelIntro
 ///
 /// A zombie can have several behaviours; they run in the order they were added.
 class ZombieBehaviourComponent : public Component
@@ -147,6 +151,90 @@ class ZombieBehaviourComponent : public Component
 		(void)theZombie;
 		return false;
 	}
+	/// @brief Return true after setting theZombie->mVelX to override the regular speed pick (I, Zombie Imps)
+	virtual bool PickSpeed(Zombie *theZombie)
+	{
+		(void)theZombie;
+		return false;
+	}
+	/// @brief true: the behaviour sets the zombie's altitude itself, so high ground leaves it alone (Pogo)
+	virtual bool ControlsAltitude(Zombie *theZombie)
+	{
+		(void)theZombie;
+		return false;
+	}
+	/// @brief true: the zombie walks towards the right right now (Digger after surfacing, Yeti running away)
+	virtual bool IsWalkingBackwards(Zombie *theZombie)
+	{
+		(void)theZombie;
+		return false;
+	}
+	/// @brief false: the zombie can't be chilled right now (Zamboni, Dr. Zomboss without his head down)
+	virtual bool CanBeChilled(Zombie *theZombie)
+	{
+		(void)theZombie;
+		return true;
+	}
+	/// @brief false: the zombie can't be frozen right now (a Bungee in the air)
+	virtual bool CanBeFrozen(Zombie *theZombie)
+	{
+		(void)theZombie;
+		return true;
+	}
+	/// @brief false: the zombie has no shadow right now (Dr. Zomboss, a Bungee off the board)
+	virtual bool HasShadow(Zombie *theZombie)
+	{
+		(void)theZombie;
+		return true;
+	}
+	/// @brief Change where the shadow is drawn and how big (a dropping Bungee's shadow grows)
+	virtual void AdjustShadow(Zombie *theZombie, float &theOffsetX, float &theScale)
+	{
+		(void)theZombie;
+		(void)theOffsetX;
+		(void)theScale;
+	}
+	/// @brief The zombie got frozen in an ice block / thawed out
+	virtual void OnFrozen(Zombie *theZombie)
+	{
+		(void)theZombie;
+	}
+	virtual void OnThawed(Zombie *theZombie)
+	{
+		(void)theZombie;
+	}
+	/// @brief The player defeated the zombie (Zombie::DropLoot, once its loot is decided)
+	virtual void OnKilled(Zombie *theZombie)
+	{
+		(void)theZombie;
+	}
+	/// @brief Return true after dropping the zombie's own loot instead of the regular coins (the Yeti's diamonds)
+	virtual bool DropOwnLoot(Zombie *theZombie, int theCenterX, int theCenterY)
+	{
+		(void)theZombie;
+		(void)theCenterX;
+		(void)theCenterY;
+		return false;
+	}
+	/// @brief Return true after setting the body's tint (Dr. Zomboss flashing when badly hurt)
+	virtual bool OverrideBodyColor(Zombie *theZombie, Sexy::Color &theColor, int theAlpha)
+	{
+		(void)theZombie;
+		(void)theColor;
+		(void)theAlpha;
+		return false;
+	}
+	/// @brief Every tick, before the body animation is positioned (Zombie::UpdateReanim)
+	virtual void UpdateBodyReanim(Zombie *theZombie)
+	{
+		(void)theZombie;
+	}
+	/// @brief true: the zombie keeps updating during the level intro (Dr. Zomboss)
+	virtual bool UpdatesInLevelIntro(Zombie *theZombie)
+	{
+		(void)theZombie;
+		return false;
+	}
 	/// @brief Where the body is drawn and clipped this frame (Zombie::GetDrawPos). Return true when the behaviour
 	/// placed it (Dolphin Rider, Snorkel, Bungee) instead of the regular placement.
 	virtual bool PlaceBody(Zombie *theZombie, ZombieDrawPosition &theDrawPos)
@@ -180,15 +268,41 @@ class ZombieBehaviourComponent : public Component
 		void OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn) override; \
 	};
 
-ZOMBIE_BEHAVIOUR(DiggerBehaviour, UpdateActions)
 ZOMBIE_BEHAVIOUR(JackInTheBoxBehaviour, UpdateActions)
 ZOMBIE_BEHAVIOUR(LadderBehaviour, UpdateActions)
-ZOMBIE_BEHAVIOUR(YetiBehaviour, UpdateActions)
 ZOMBIE_BEHAVIOUR(BackupDancerBehaviour, UpdateActions)
-ZOMBIE_BEHAVIOUR(ImpBehaviour, UpdateActions)
 ZOMBIE_BEHAVIOUR(JalapenoHeadBehaviour, UpdateActions)
 
 #undef ZOMBIE_BEHAVIOUR
+
+/// @brief Digger: tunnels to the house end, surfaces and walks back
+class DiggerBehaviour : public ZombieBehaviourComponent
+{
+	COMPONENT_SUBTYPE(DiggerBehaviour, ZombieBehaviourComponent)
+	void UpdateActions(Zombie *theZombie) override;
+	void OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn) override;
+	bool IsWalkingBackwards(Zombie *theZombie) override;
+};
+
+/// @brief Yeti: wanders in, then runs away; drops diamonds
+class YetiBehaviour : public ZombieBehaviourComponent
+{
+	COMPONENT_SUBTYPE(YetiBehaviour, ZombieBehaviourComponent)
+	void UpdateActions(Zombie *theZombie) override;
+	void OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn) override;
+	bool IsWalkingBackwards(Zombie *theZombie) override;
+	void OnKilled(Zombie *theZombie) override;
+	bool DropOwnLoot(Zombie *theZombie, int theCenterX, int theCenterY) override;
+};
+
+/// @brief Imp: thrown by the Gargantuar; sprints in I, Zombie
+class ImpBehaviour : public ZombieBehaviourComponent
+{
+	COMPONENT_SUBTYPE(ImpBehaviour, ZombieBehaviourComponent)
+	void UpdateActions(Zombie *theZombie) override;
+	void OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn) override;
+	bool PickSpeed(Zombie *theZombie) override;
+};
 
 /// @brief Pole Vaulter: runs, vaults over the first plant, then walks. Drops its pole with its head.
 class PolevaulterBehaviour : public ZombieBehaviourComponent
@@ -213,6 +327,8 @@ class NewspaperBehaviour : public ZombieBehaviourComponent
 class BalloonBehaviour : public ZombieBehaviourComponent
 {
 	COMPONENT_SUBTYPE(BalloonBehaviour, ZombieBehaviourComponent)
+	void OnFrozen(Zombie *theZombie) override;
+	void OnThawed(Zombie *theZombie) override;
 	void OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn) override;
 	void UpdateActions(Zombie *theZombie) override;
 	void OnLoseHead(Zombie *theZombie, unsigned int theDamageFlags) override;
@@ -226,6 +342,7 @@ class BalloonBehaviour : public ZombieBehaviourComponent
 class PogoBehaviour : public ZombieBehaviourComponent
 {
 	COMPONENT_SUBTYPE(PogoBehaviour, ZombieBehaviourComponent)
+	bool ControlsAltitude(Zombie *theZombie) override;
 	void OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn) override;
 	void UpdateAlways(Zombie *theZombie) override;
 	void OnLoseHead(Zombie *theZombie, unsigned int theDamageFlags) override;
@@ -296,6 +413,7 @@ class DancerBehaviour : public ZombieBehaviourComponent
 class CatapultBehaviour : public ZombieBehaviourComponent
 {
 	COMPONENT_SUBTYPE(CatapultBehaviour, ZombieBehaviourComponent)
+	void UpdateBodyReanim(Zombie *theZombie) override;
 	void OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn) override;
 	void UpdateActions(Zombie *theZombie) override;
 	bool OnBodyDamaged(Zombie *theZombie, unsigned int theDamageFlags, int theHealthBefore, int theDamageIndexBefore,
@@ -308,6 +426,7 @@ class CatapultBehaviour : public ZombieBehaviourComponent
 class ZamboniBehaviour : public ZombieBehaviourComponent
 {
 	COMPONENT_SUBTYPE(ZamboniBehaviour, ZombieBehaviourComponent)
+	bool CanBeChilled(Zombie *theZombie) override;
 	void OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn) override;
 	void UpdateActions(Zombie *theZombie) override;
 	bool OnBodyDamaged(Zombie *theZombie, unsigned int theDamageFlags, int theHealthBefore, int theDamageIndexBefore,
@@ -354,6 +473,9 @@ class SquashHeadBehaviour : public ZombieBehaviourComponent
 class BungeeBehaviour : public ZombieBehaviourComponent
 {
 	COMPONENT_SUBTYPE(BungeeBehaviour, ZombieBehaviourComponent)
+	bool CanBeFrozen(Zombie *theZombie) override;
+	bool HasShadow(Zombie *theZombie) override;
+	void AdjustShadow(Zombie *theZombie, float &theOffsetX, float &theScale) override;
 	void OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn) override;
 	void UpdateAlways(Zombie *theZombie) override;
 	void OnRemoved(Zombie *theZombie) override;
@@ -367,6 +489,10 @@ class BungeeBehaviour : public ZombieBehaviourComponent
 class BossBehaviour : public ZombieBehaviourComponent
 {
 	COMPONENT_SUBTYPE(BossBehaviour, ZombieBehaviourComponent)
+	bool CanBeChilled(Zombie *theZombie) override;
+	bool HasShadow(Zombie *theZombie) override;
+	bool OverrideBodyColor(Zombie *theZombie, Sexy::Color &theColor, int theAlpha) override;
+	bool UpdatesInLevelIntro(Zombie *theZombie) override;
 	void OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn) override;
 	void UpdatePlaying(Zombie *theZombie) override;
 	bool OnBodyDamaged(Zombie *theZombie, unsigned int theDamageFlags, int theHealthBefore, int theDamageIndexBefore,

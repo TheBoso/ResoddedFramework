@@ -364,7 +364,7 @@ static void AddVanillaZombieTraits(Zombie *theZombie)
 		break;
 	case ZombieType::ZOMBIE_DANCER:
 	case ZombieType::ZOMBIE_BACKUP_DANCER:
-		theZombie->AddComponent<DanceTroupeComponent>();
+		theZombie->AddComponent<DanceTroupeComponent>(theZombie->mZombieType == ZombieType::ZOMBIE_DANCER);
 		theZombie->AddComponent<WalkerComponent>(0.45f, 0.45f, -130);
 		break;
 	case ZombieType::ZOMBIE_SNORKEL:
@@ -476,6 +476,7 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 	switch (theZombie->mZombieType)
 	{
 	case ZombieType::ZOMBIE_FOOTBALL:
+		aBody.mSmallScaleOffsetY = 20.0f;
 		aBody.mUsesPlainZombieReanim = false;
 		aSetRect(aBody.mHitRect, 50, 0, 57, 115);
 		aHidePrefixes("anim_hair");
@@ -530,6 +531,7 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 		aSetHead(ResourceId::IMAGE_ZOMBIEPOLEVAULTERHEAD_ID);
 		break;
 	case ZombieType::ZOMBIE_BOBSLED:
+		aBody.mSpriteGlides = true;
 		aBody.mUsesPlainZombieReanim = false;
 		aBody.mRenderOffset = 3;
 		aBody.mCanHaveTongue = false;
@@ -544,6 +546,8 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 		aSetHead(ResourceId::IMAGE_ZOMBIEBOBSLEDHEAD_ID);
 		break;
 	case ZombieType::ZOMBIE_IMP:
+		aBody.mChewEffectX = 24.0f;
+		aBody.mChewEffectY = 40.0f;
 		aBody.mUsesPlainZombieReanim = false;
 		aBody.mHasYuckyFace = false;
 		aSetArm("Zombie_outerarm_lower", "Zombie_imp_outerarm_upper", ResourceId::IMAGE_REANIM_ZOMBIE_IMP_ARM1_BONE_ID, ResourceId::IMAGE_REANIM_ZOMBIE_IMP_ARM2_ID);
@@ -557,6 +561,7 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 		aSetCharred(ReanimationType::REANIM_ZOMBIE_CHARRED_IMP, 16.0f, -10.0f);
 		break;
 	case ZombieType::ZOMBIE_DIGGER:
+		aBody.mClimbsLadders = false;
 		aBody.mUsesPlainZombieReanim = false;
 		aBody.mCanHaveTongue = false;
 		aBody.mCarriesObject = true;
@@ -576,6 +581,7 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 		strcpy(aBody.mCharredAnim, "anim_crumble");
 		break;
 	case ZombieType::ZOMBIE_SNORKEL:
+		aBody.mPlaysEatAnim = false;
 		aBody.mUsesPlainZombieReanim = false;
 		aSetRect(aBody.mHitRect, 12, 0, 62, 115);
 		aSetAttackRect(-5, 0, 55, 115);
@@ -589,6 +595,7 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 		aSetHead(ResourceId::IMAGE_REANIM_ZOMBIE_SNORKLE_HEAD_ID);
 		break;
 	case ZombieType::ZOMBIE_DOLPHIN_RIDER:
+		aBody.mSpriteGlides = true;
 		aBody.mUsesPlainZombieReanim = false;
 		aBody.mSpawnHealth = 500;
 		aBody.mAnimTicksPerFrame = 6;
@@ -602,6 +609,7 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 		aSetHead(ResourceId::IMAGE_ZOMBIEDOLPHINRIDERHEAD_ID);
 		break;
 	case ZombieType::ZOMBIE_YETI:
+		aBody.mHeadlessDecay = 10;
 		aBody.mUsesPlainZombieReanim = false;
 		aBody.mSpawnHealth = 1350;
 		aBody.mCarriesObject = true;
@@ -643,6 +651,9 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 		aSetCharred(ReanimationType::REANIM_ZOMBIE_CHARRED_GARGANTUAR, 7.0f, -20.0f);
 		break;
 	case ZombieType::ZOMBIE_BALLOON:
+		aBody.mChewEffectY = 47.0f;
+		aBody.mRowYOffset = -30.0f;
+		aBody.mSpriteGlides = true;
 		aBody.mUsesPlainZombieReanim = false;
 		aSetRect(aBody.mHitRect, 36, 30, 42, 115);
 		aSetAttackRect(20, 30, 50, 115);
@@ -694,6 +705,8 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 		aSetHead(ResourceId::IMAGE_ZOMBIELADDERHEAD_ID);
 		break;
 	case ZombieType::ZOMBIE_POGO:
+		aBody.mRowYOffset = -16.0f;
+		aBody.mSpriteGlides = true;
 		aBody.mUsesPlainZombieReanim = false;
 		aBody.mCanHaveTongue = false;
 		aBody.mCarriesObject = true;
@@ -757,6 +770,9 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 		aBody.mSongFoley = FoleyType::FOLEY_JACKINTHEBOX;
 		break;
 	case ZombieType::ZOMBIE_BUNGEE:
+		aBody.mEatsPlants = false;
+		aBody.mLosesBodyParts = false;
+		aBody.mShadowFollowsAltitude = true;
 		aBody.mUsesPlainZombieReanim = false;
 		aBody.mSpawnHealth = 450;
 		aBody.mAnimFrames = 4;
@@ -772,6 +788,15 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 		aBody.mBurnsInPlace = true;
 		break;
 	case ZombieType::ZOMBIE_BOSS:
+		aBody.mSpansAllRows = true;
+		aBody.mGroans = false;
+		aBody.mEatsPlants = false;
+		aBody.mIsBoss = true;
+		aBody.mLosesBodyParts = false;
+		aBody.mDamagedBelow[0] = 4;
+		aBody.mDamagedBelow[1] = 5;
+		aBody.mBadlyDamagedBelow[0] = 1;
+		aBody.mBadlyDamagedBelow[1] = 2;
 		aBody.mUsesPlainZombieReanim = false;
 		aSetSpawnX(0.0f, 0);
 		aSetRect(aBody.mHitRect, 700, 80, 90, 430);
@@ -847,6 +872,9 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 		aSetPlantHead(ReanimationType::REANIM_GATLINGPEA, "anim_head_idle", "anim_head1", 65.0f, -5.0f, 1.0f);
 		aBody.mCanHaveTongue = false;
 		aBody.mHasYuckyFace = false;
+		break;
+	case ZombieType::ZOMBIE_DUCKY_TUBE:
+		aBody.mHasDuckyTube = true;
 		break;
 	default:
 		return;
