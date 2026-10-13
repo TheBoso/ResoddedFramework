@@ -365,6 +365,12 @@ void WalkerComponent::DrawInspector()
 	ImGui::DragFloat("Min speed", &mMinSpeed, 0.01f, 0.0f, 5.0f);
 	ImGui::DragFloat("Max speed", &mMaxSpeed, 0.01f, 0.0f, 5.0f);
 	ImGui::InputInt("House edge X", &mHouseEdgeX);
+	static const char *kMoveStyles[] = {"Walk", "Glide", "Drive", "Stand"};
+	int aMoveStyle = (int)mMoveStyle;
+	if (ImGui::Combo("Move style", &aMoveStyle, kMoveStyles, IM_ARRAYSIZE(kMoveStyles)))
+	{
+		mMoveStyle = (MoveStyle)aMoveStyle;
+	}
 	if (Zombie *aZombie = GetZombie())
 	{
 		ImGui::Text("Current speed: %.2f", aZombie->mVelX);
@@ -401,6 +407,11 @@ void ZombieBodyComponent::DrawInspector()
 	ImGui::DragFloat("House X", &mHouseX, 0.5f);
 	ImGui::DragFloat("House Y", &mHouseY, 0.5f);
 	ImGui::Checkbox("Idles in house", &mIdlesInHouse);
+	ImGui::DragFloat("Eat anim speed", &mEatAnimRate, 0.5f, 1.0f, 100.0f);
+	ImGui::SliderFloat2("Chew times", mChewTimes, 0.0f, 1.0f);
+	ImGui::DragFloat("Draw offset X", &mDrawOffsetX, 0.5f);
+	ImGui::DragFloat("Draw offset Y", &mDrawOffsetY, 0.5f);
+	ImGui::Checkbox("Dances in dance mode", &mDancesInDanceMode);
 }
 
 void TeamComponent::DrawInspector()

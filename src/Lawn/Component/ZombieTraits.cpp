@@ -18,4 +18,5 @@ void WalkerComponent::Serialize(ComponentArchive &theArchive)
 	theArchive.Value(mMinSpeed);
 	theArchive.Value(mMaxSpeed);
 	theArchive.Value(mHouseEdgeX);
+	theArchive.Value(mMoveStyle);
 }

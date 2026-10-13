@@ -2,7 +2,13 @@
 
 #include "Component.h"
 
+namespace Sexy
+{
+class Graphics;
+}
+
 class Zombie;
+class ZombieDrawPosition;
 
 /// @brief Base of zombie behaviours (what used to be the zombie-type checks in Zombie.cpp). The hooks run exactly
 /// where those checks were, so timing and the frozen/buttered rules are unchanged.
@@ -15,6 +21,7 @@ class Zombie;
 /// Events (the bool ones: return true to say the behaviour took care of it):
 ///  - OnLoseHead, OnBodyDamaged, OnHitByMower, OnMowed, OnBurned
 ///  - HasDeathAnim, OnDying, UpdateDying, OnRemoved
+///  - PlaceBody, DrawBody (zombies drawn their own way)
 ///
 /// A zombie can have several behaviours; they run in the order they were added.
 class ZombieBehaviourComponent : public Component
@@ -91,6 +98,25 @@ class ZombieBehaviourComponent : public Component
 	{
 		(void)theZombie;
 	}
+	/// @brief Where the body is drawn and clipped this frame (Zombie::GetDrawPos). Return true when the behaviour
+	/// placed it (Dolphin Rider, Snorkel, Bungee) instead of the regular placement.
+	virtual bool PlaceBody(Zombie *theZombie, ZombieDrawPosition &theDrawPos)
+	{
+		(void)theZombie;
+		(void)theDrawPos;
+		return false;
+	}
+	/// @brief Draw the body animation. Return true when the behaviour drew it (Bobsled with its sled, Bungee with its
+	/// cord, Dancer with its spotlight) instead of the regular drawing.
+	virtual bool DrawBody(Zombie *theZombie, Sexy::Graphics *g, const ZombieDrawPosition &theDrawPos,
+	                      int theBaseRenderGroup)
+	{
+		(void)theZombie;
+		(void)g;
+		(void)theDrawPos;
+		(void)theBaseRenderGroup;
+		return false;
+	}
 };
 
 // The behaviours of the vanilla zombies (implemented in VanillaZombieBehaviours.cpp, moved from Zombie.cpp).
@@ -104,12 +130,10 @@ class ZombieBehaviourComponent : public Component
 		void Hook(Zombie *theZombie) override;                 \
 	};
 
-ZOMBIE_BEHAVIOUR(SnorkelBehaviour, UpdateActions)
 ZOMBIE_BEHAVIOUR(DiggerBehaviour, UpdateActions)
 ZOMBIE_BEHAVIOUR(JackInTheBoxBehaviour, UpdateActions)
 ZOMBIE_BEHAVIOUR(LadderBehaviour, UpdateActions)
 ZOMBIE_BEHAVIOUR(YetiBehaviour, UpdateActions)
-ZOMBIE_BEHAVIOUR(DancerBehaviour, UpdateActions)
 ZOMBIE_BEHAVIOUR(BackupDancerBehaviour, UpdateActions)
 ZOMBIE_BEHAVIOUR(ImpBehaviour, UpdateActions)
 ZOMBIE_BEHAVIOUR(PeaHeadBehaviour, UpdateActions)
@@ -169,6 +193,24 @@ class DolphinRiderBehaviour : public ZombieBehaviourComponent
 	COMPONENT_SUBTYPE(DolphinRiderBehaviour, ZombieBehaviourComponent)
 	void UpdateActions(Zombie *theZombie) override;
 	bool HasDeathAnim(Zombie *theZombie) override;
+	bool PlaceBody(Zombie *theZombie, ZombieDrawPosition &theDrawPos) override;
+};
+
+/// @brief Snorkel Zombie: dives into the pool and swims under water, coming up to eat
+class SnorkelBehaviour : public ZombieBehaviourComponent
+{
+	COMPONENT_SUBTYPE(SnorkelBehaviour, ZombieBehaviourComponent)
+	void UpdateActions(Zombie *theZombie) override;
+	bool PlaceBody(Zombie *theZombie, ZombieDrawPosition &theDrawPos) override;
+};
+
+/// @brief Dancer: moonwalks in, summons Backup Dancers and leads the troupe under its spotlight
+class DancerBehaviour : public ZombieBehaviourComponent
+{
+	COMPONENT_SUBTYPE(DancerBehaviour, ZombieBehaviourComponent)
+	void UpdateActions(Zombie *theZombie) override;
+	bool DrawBody(Zombie *theZombie, Sexy::Graphics *g, const ZombieDrawPosition &theDrawPos,
+	              int theBaseRenderGroup) override;
 };
 
 /// @brief Catapult: lobs basketballs at plants; blows up when mowed or destroyed
@@ -209,6 +251,8 @@ class BobsledBehaviour : public ZombieBehaviourComponent
 	void UpdateActions(Zombie *theZombie) override;
 	void OnBurned(Zombie *theZombie) override;
 	void OnRemoved(Zombie *theZombie) override;
+	bool DrawBody(Zombie *theZombie, Sexy::Graphics *g, const ZombieDrawPosition &theDrawPos,
+	              int theBaseRenderGroup) override;
 };
 
 /// @brief Squash head: jumps on a plant. A headless one loses its squash when it dies.
@@ -226,6 +270,9 @@ class BungeeBehaviour : public ZombieBehaviourComponent
 	COMPONENT_SUBTYPE(BungeeBehaviour, ZombieBehaviourComponent)
 	void UpdateAlways(Zombie *theZombie) override;
 	void OnRemoved(Zombie *theZombie) override;
+	bool PlaceBody(Zombie *theZombie, ZombieDrawPosition &theDrawPos) override;
+	bool DrawBody(Zombie *theZombie, Sexy::Graphics *g, const ZombieDrawPosition &theDrawPos,
+	              int theBaseRenderGroup) override;
 };
 
 /// @brief Dr. Zomboss: the whole boss fight, its damaged look and its finale

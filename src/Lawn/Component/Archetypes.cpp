@@ -352,11 +352,11 @@ static void AddVanillaZombieTraits(Zombie *theZombie)
 		break;
 	case ZombieType::ZOMBIE_ZAMBONI:
 		theZombie->AddComponent<VehicleComponent>(true, 200);
-		theZombie->AddComponent<WalkerComponent>(kMin, kMax, -175);
+		theZombie->AddComponent<WalkerComponent>(kMin, kMax, -175)->mMoveStyle = MoveStyle::Drive;
 		break;
 	case ZombieType::ZOMBIE_CATAPULT:
 		theZombie->AddComponent<VehicleComponent>(false, 200);
-		theZombie->AddComponent<WalkerComponent>(kMin, kMax, -175);
+		theZombie->AddComponent<WalkerComponent>(kMin, kMax, -175)->mMoveStyle = MoveStyle::Glide;
 		break;
 	case ZombieType::ZOMBIE_FOOTBALL:
 		theZombie->AddComponent<WalkerComponent>(0.66f, 0.68f, -175);
@@ -386,13 +386,18 @@ static void AddVanillaZombieTraits(Zombie *theZombie)
 	case ZombieType::ZOMBIE_YETI:
 		theZombie->AddComponent<WalkerComponent>(0.4f, 0.4f, WalkerComponent::kRegularHouseEdgeX);
 		break;
+	case ZombieType::ZOMBIE_BUNGEE:
+	case ZombieType::ZOMBIE_BOSS:
+		theZombie->AddComponent<WalkerComponent>(kMin, kMax, WalkerComponent::kRegularHouseEdgeX)->mMoveStyle =
+		    MoveStyle::Stand;
+		break;
 	default:
 		break;
 	}
 }
 
 /// @brief The bodies of the vanilla zombies that differ from the regular zombie (shadow, flying head, death
-/// animation, charred remains, sounds, place in the house)
+/// animation, charred remains, sounds, place in the house, walking and eating animation)
 static void AddVanillaZombieBody(Zombie *theZombie)
 {
 	ZombieBodyComponent aBody;
@@ -410,6 +415,9 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 	switch (theZombie->mZombieType)
 	{
 	case ZombieType::ZOMBIE_FOOTBALL:
+		aBody.mFootDustTimes[0] = 0.03f;
+		aBody.mFootDustTimes[1] = 0.61f;
+		aBody.mDrawOffsetY = -16.0f;
 		aBody.SetDeathFall(0.52f);
 		aBody.SetDeathAnimRate(24.0f);
 		aBody.mPoolHouseX = -10.0f;
@@ -420,22 +428,35 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 		aSetHead(ResourceId::IMAGE_ZOMBIEFOOTBALLHEAD_ID);
 		break;
 	case ZombieType::ZOMBIE_NEWSPAPER:
+		aBody.mChewTimes[0] = 0.42f;
+		aBody.mChewTimes[1] = 0.42f;
 		aBody.SetDeathFall(0.63f);
 		aBody.SetShadow(29.0f, 5.0f, 4.0f);
 		aBody.mHeadParticle = ParticleEffect::PARTICLE_ZOMBIE_NEWSPAPER_HEAD;
 		break;
 	case ZombieType::ZOMBIE_POLEVAULTER:
+		aBody.mEatAnimRate = 20.0f;
+		aBody.mChewTimes[0] = 0.38f;
+		aBody.mChewTimes[1] = 0.8f;
+		aBody.mDrawOffsetX = -6.0f;
+		aBody.mDrawOffsetY = -11.0f;
 		aBody.SetDeathFall(0.68f);
 		aBody.mIdlesInHouse = false;
 		aBody.SetShadow(36.0f, -5.0f, 11.0f);
 		aSetHead(ResourceId::IMAGE_ZOMBIEPOLEVAULTERHEAD_ID);
 		break;
 	case ZombieType::ZOMBIE_BOBSLED:
+		aBody.mChewTimes[0] = 0.33f;
+		aBody.mChewTimes[1] = 0.83f;
+		aBody.mDrawOffsetY = -12.0f;
 		aBody.SetDeathFall(0.81f);
 		aBody.SetShadow(20.0f, 13.0f, 13.0f);
 		aSetHead(ResourceId::IMAGE_ZOMBIEBOBSLEDHEAD_ID);
 		break;
 	case ZombieType::ZOMBIE_IMP:
+		aBody.mEatAnimRate = 20.0f;
+		aBody.mChewTimes[0] = 0.33f;
+		aBody.mChewTimes[1] = 0.79f;
 		aBody.mHasDeathFall = false;
 		aBody.mPuffsWhenMowed = true;
 		aBody.SetShadow(25.0f, 13.0f, 7.0f, 0.6f);
@@ -443,6 +464,7 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 		aSetCharred(ReanimationType::REANIM_ZOMBIE_CHARRED_IMP, 16.0f, -10.0f);
 		break;
 	case ZombieType::ZOMBIE_DIGGER:
+		aBody.mEatAnimRate = 20.0f;
 		aBody.SetDeathFall(0.85f);
 		aBody.SetDeathAnimRate(18.0f);
 		aBody.mPuffsWhenMowed = true;
@@ -454,6 +476,7 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 		strcpy(aBody.mCharredAnim, "anim_crumble");
 		break;
 	case ZombieType::ZOMBIE_SNORKEL:
+		aBody.mEatAnimRate = 20.0f;
 		aBody.mHasDeathFall = false;
 		aBody.SetDeathAnimRate(14.0f);
 		aBody.SetShadow(35.0f, -2.0f, 5.0f);
@@ -467,6 +490,8 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 		aSetHead(ResourceId::IMAGE_ZOMBIEDOLPHINRIDERHEAD_ID);
 		break;
 	case ZombieType::ZOMBIE_YETI:
+		aBody.mEatAnimRate = 20.0f;
+		aBody.mDrawOffsetY = -20.0f;
 		aBody.SetDeathFall(0.68f);
 		aBody.SetDeathAnimRate(14.0f);
 		aBody.mPuffsWhenMowed = true;
@@ -476,6 +501,7 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 		break;
 	case ZombieType::ZOMBIE_GARGANTUAR:
 	case ZombieType::ZOMBIE_REDEYE_GARGANTUAR:
+		aBody.mDrawOffsetY = -8.0f;
 		aBody.SetDeathFall(0.86f);
 		aBody.SetDeathAnimRate(14.0f);
 		aBody.mHouseY = 30.0f;
@@ -484,6 +510,8 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 		aSetCharred(ReanimationType::REANIM_ZOMBIE_CHARRED_GARGANTUAR, 7.0f, -20.0f);
 		break;
 	case ZombieType::ZOMBIE_BALLOON:
+		aBody.mEatAnimRate = 20.0f;
+		aBody.mDrawOffsetY = 17.0f;
 		aBody.SetDeathFall(0.68f);
 		aBody.mAppearFoley = FoleyType::FOLEY_BALLOONINFLATE;
 		aBody.SetShadow(23.0f, 11.0f, 13.0f);
@@ -500,14 +528,19 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 		aSetHead(ResourceId::IMAGE_ZOMBIEBACKUPDANCERHEAD_ID, "Zombie_disco_chops", "Zombie_backup_stash");
 		break;
 	case ZombieType::ZOMBIE_LADDER:
+		aBody.mChewTimes[0] = 0.42f;
+		aBody.mChewTimes[1] = 0.42f;
 		aBody.SetDeathFall(0.62f);
 		aSetHead(ResourceId::IMAGE_ZOMBIELADDERHEAD_ID);
 		break;
 	case ZombieType::ZOMBIE_POGO:
+		aBody.mDrawOffsetY = 16.0f;
 		aBody.SetDeathFall(0.84f);
 		aBody.mHeadParticle = ParticleEffect::PARTICLE_ZOMBIE_POGO_HEAD;
 		break;
 	case ZombieType::ZOMBIE_ZAMBONI:
+		aBody.mDrawOffsetX = 68.0f;
+		aBody.mDrawOffsetY = -23.0f;
 		aBody.mHasDeathFall = false;
 		aBody.mAppearFoley = FoleyType::FOLEY_ZAMBONI;
 		aBody.mHouseY = 15.0f;
@@ -515,10 +548,15 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 		aSetCharred(ReanimationType::REANIM_ZOMBIE_CHARRED_ZAMBONI, 83.0f, -26.0f);
 		break;
 	case ZombieType::ZOMBIE_CATAPULT:
+		aBody.mDrawOffsetX = -25.0f;
+		aBody.mDrawOffsetY = -18.0f;
 		aBody.mHasDeathFall = false;
 		aSetCharred(ReanimationType::REANIM_ZOMBIE_CHARRED_CATAPULT, -14.0f, -30.0f);
 		break;
 	case ZombieType::ZOMBIE_JACK_IN_THE_BOX:
+		aBody.mEatAnimRate = 20.0f;
+		aBody.mChewTimes[0] = 0.53f;
+		aBody.mChewTimes[1] = 0.53f;
 		aBody.SetDeathFall(0.64f);
 		aBody.mSongFoley = FoleyType::FOLEY_JACKINTHEBOX;
 		break;
@@ -532,6 +570,15 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 		aBody.SetDeathAnimRate(18.0f);
 		aBody.mPlaysDeathAnimWhenDisintegrated = true;
 		aBody.mBurnsAsDamage = true;
+		break;
+	case ZombieType::ZOMBIE_NORMAL:
+	case ZombieType::ZOMBIE_TRAFFIC_CONE:
+	case ZombieType::ZOMBIE_PAIL:
+		aBody.mDancesInDanceMode = true;
+		break;
+	case ZombieType::ZOMBIE_FLAG:
+	case ZombieType::ZOMBIE_PEA_HEAD:
+		aBody.mWalkAnimVariant = 0;
 		break;
 	default:
 		return;

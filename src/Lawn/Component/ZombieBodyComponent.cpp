@@ -63,4 +63,11 @@ void ZombieBodyComponent::Serialize(ComponentArchive &theArchive)
 	theArchive.Value(mRoofHouseX);
 	theArchive.Value(mRoofHouseY);
 	theArchive.Value(mIdlesInHouse);
+	theArchive.Value(mEatAnimRate);
+	theArchive.Value(mChewTimes);
+	theArchive.Value(mFootDustTimes);
+	theArchive.Value(mWalkAnimVariant);
+	theArchive.Value(mDancesInDanceMode);
+	theArchive.Value(mDrawOffsetX);
+	theArchive.Value(mDrawOffsetY);
 }

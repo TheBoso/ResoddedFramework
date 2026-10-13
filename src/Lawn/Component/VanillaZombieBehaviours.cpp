@@ -2160,3 +2160,138 @@ void BossBehaviour::OnRemoved(Zombie *theZombie)
 {
 	theZombie->BossDie();
 }
+
+// ─── Drawing ─────────────────────────────────────────────────────────────────
+
+bool DolphinRiderBehaviour::PlaceBody(Zombie *theZombie, ZombieDrawPosition &theDrawPos)
+{
+	float aAltitude = theZombie->mAltitude;
+	theDrawPos.mBodyY = -aAltitude;
+	theDrawPos.mClipHeight = CLIP_HEIGHT_OFF;
+
+	ZombiePhase aPhase = theZombie->mZombiePhase;
+	if (aPhase == ZombiePhase::PHASE_DOLPHIN_INTO_POOL)
+	{
+		Reanimation *aBodyReanim = theZombie->mApp->ReanimationGet(theZombie->mBodyReanimID);
+
+		if (aBodyReanim->mAnimTime >= 0.56f && aBodyReanim->mAnimTime <= 0.65f)
+		{
+			theDrawPos.mClipHeight = 0.0f;
+		}
+		else if (aBodyReanim->mAnimTime >= 0.75f)
+		{
+			theDrawPos.mClipHeight = -aAltitude - 10.0f;
+		}
+	}
+	else if (aPhase == ZombiePhase::PHASE_DOLPHIN_RIDING)
+	{
+		theDrawPos.mImageOffsetX += 70.0f;
+
+		if (theZombie->mZombieHeight == ZombieHeight::HEIGHT_DRAGGED_UNDER)
+		{
+			theDrawPos.mClipHeight = -aAltitude - 15.0f;
+		}
+		else
+		{
+			theDrawPos.mClipHeight = -aAltitude - 10.0f;
+		}
+	}
+	else if (aPhase == ZombiePhase::PHASE_DOLPHIN_IN_JUMP)
+	{
+		theDrawPos.mImageOffsetX += 70.0f + aAltitude;
+
+		Reanimation *aBodyReanim = theZombie->mApp->ReanimationGet(theZombie->mBodyReanimID);
+		if (aBodyReanim->mAnimTime <= 0.06f)
+		{
+			theDrawPos.mClipHeight = -aAltitude - 10.0f;
+		}
+		else if (aBodyReanim->mAnimTime >= 0.5f && aBodyReanim->mAnimTime <= 0.76f)
+		{
+			theDrawPos.mClipHeight = -13.0f;
+		}
+	}
+	else if (aPhase == ZombiePhase::PHASE_DOLPHIN_WALKING_IN_POOL || aPhase == ZombiePhase::PHASE_ZOMBIE_DYING)
+	{
+		theDrawPos.mImageOffsetY += 50.0f;
+
+		if (aPhase == ZombiePhase::PHASE_ZOMBIE_DYING)
+		{
+			theDrawPos.mClipHeight = -aAltitude + 44.0f;
+		}
+		else if (theZombie->mZombieHeight == ZombieHeight::HEIGHT_DRAGGED_UNDER)
+		{
+			theDrawPos.mClipHeight = -aAltitude + 36.0f;
+		}
+	}
+	else if (aPhase == ZombiePhase::PHASE_DOLPHIN_WALKING &&
+	         theZombie->mZombieHeight == ZombieHeight::HEIGHT_OUT_OF_POOL)
+	{
+		theDrawPos.mClipHeight = -aAltitude;
+	}
+	else if (aPhase == ZombiePhase::PHASE_DOLPHIN_WALKING_WITHOUT_DOLPHIN &&
+	         theZombie->mZombieHeight == ZombieHeight::HEIGHT_OUT_OF_POOL)
+	{
+		theDrawPos.mClipHeight = -aAltitude;
+	}
+	return true;
+}
+
+bool SnorkelBehaviour::PlaceBody(Zombie *theZombie, ZombieDrawPosition &theDrawPos)
+{
+	theDrawPos.mBodyY = -theZombie->mAltitude;
+	theDrawPos.mClipHeight = CLIP_HEIGHT_OFF;
+
+	if (theZombie->mZombiePhase == ZombiePhase::PHASE_SNORKEL_INTO_POOL)
+	{
+		Reanimation *aBodyReanim = theZombie->mApp->ReanimationGet(theZombie->mBodyReanimID);
+		if (aBodyReanim->mAnimTime >= 0.8f)
+		{
+			theDrawPos.mClipHeight = -10.0f;
+		}
+	}
+	else if (theZombie->mInPool)
+	{
+		theDrawPos.mClipHeight = -theZombie->mAltitude - 5.0f;
+		theDrawPos.mClipHeight += 20.0f - 20.0f * theZombie->mScaleZombie;
+	}
+	return true;
+}
+
+bool BungeeBehaviour::PlaceBody(Zombie *theZombie, ZombieDrawPosition &theDrawPos)
+{
+	theDrawPos.mBodyY = -theZombie->mAltitude;
+	theDrawPos.mImageOffsetX -= 18.0f;
+
+	if (theZombie->IsOnHighGround())
+	{
+		theDrawPos.mBodyY -= HIGH_GROUND_HEIGHT;
+	}
+
+	theDrawPos.mClipHeight = CLIP_HEIGHT_OFF;
+	return true;
+}
+
+bool BobsledBehaviour::DrawBody(Zombie *theZombie, Sexy::Graphics *g, const ZombieDrawPosition &theDrawPos,
+                                int theBaseRenderGroup)
+{
+	theZombie->DrawBobsledReanim(g, theDrawPos, true);
+	theZombie->mApp->ReanimationGet(theZombie->mBodyReanimID)->DrawRenderGroup(g, theBaseRenderGroup);
+	theZombie->DrawBobsledReanim(g, theDrawPos, false);
+	return true;
+}
+
+bool BungeeBehaviour::DrawBody(Zombie *theZombie, Sexy::Graphics *g, const ZombieDrawPosition &theDrawPos,
+                               int theBaseRenderGroup)
+{
+	(void)theBaseRenderGroup;
+	theZombie->DrawBungeeReanim(g, theDrawPos);
+	return true;
+}
+
+bool DancerBehaviour::DrawBody(Zombie *theZombie, Sexy::Graphics *g, const ZombieDrawPosition &theDrawPos,
+                               int theBaseRenderGroup)
+{
+	(void)theBaseRenderGroup;
+	theZombie->DrawDancerReanim(g, theDrawPos);
+	return true;
+}

@@ -83,4 +83,18 @@ class ZombieBodyComponent : public Component
 	float mRoofHouseY = 0.0f;
 	/// Plays its idle animation in the house
 	bool mIdlesInHouse = true;
+
+	/// Speed of the eating animation
+	float mEatAnimRate = 36.0f;
+	/// When in the eating animation the hands chomp (sound and the plant shaking)
+	float mChewTimes[2] = { 0.14f, 0.68f };
+	/// When in the walk animation the feet kick up dust (Football), -1 for none
+	float mFootDustTimes[2] = { -1.0f, -1.0f };
+	/// Walk animation: -1 picks one at random, 0 always anim_walk2 (Flag Zombie, Peashooter zombie)
+	int32_t mWalkAnimVariant = -1;
+	/// Dances instead of walking with the dance cheat (the plain zombies)
+	bool mDancesInDanceMode = false;
+	/// Where the body is drawn, relative to the regular zombie
+	float mDrawOffsetX = 0.0f;
+	float mDrawOffsetY = 0.0f;
 };

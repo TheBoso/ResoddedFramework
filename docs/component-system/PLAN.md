@@ -222,6 +222,16 @@ hypnosis, team-based projectile collision, generic shooter, plant heads, produce
   place / fire only hurting, the appear and song sounds, and where the zombie stands in the house; Jack-in-the-Box,
   Bungee and Dr. Zomboss got bodies. Gargantuar body cracks moved from `IsGiant()` to `GargantuarBehaviour`.
   Zombie.cpp went from 132 to 91 checks. `SAVE_VERSION` 12.
+- Done: walking and animation. `WalkerComponent::mMoveStyle` says how a zombie moves: `Walk` (feet follow the
+  walk animation), `Glide` (Catapult: own speed, animation at its own pace), `Drive` (Zamboni: own speed even when
+  chilled), `Stand` (Bungee, Dr. Zomboss never walk). `ZombieBodyComponent` gained the eating animation speed, when
+  the hands chomp, foot dust (Football), the walk animation variant (Flag, Peashooter zombie), dancing with the
+  dance cheat (the plain zombies, which now get a body) and the body's draw offset. New behaviour hooks `PlaceBody`
+  (Dolphin Rider, Snorkel, Bungee place and clip their own body) and `DrawBody` (Bobsled, Bungee, Dancer draw their
+  own way). Zombie.cpp went from 91 to 66 `mZombieType ==` checks (and 120 to 110 `case` labels). `SAVE_VERSION` 13.
+- Still type-checked: the legacy sprite path of `UpdateZombieWalking` (zombies without a body animation), lost arms
+  (`SetupReanimForLostArm`), the ice trap and butter art (`DrawIceTrap`, `DrawButter`, `ApplyButter`), Daisy mode,
+  the yucky face, `IsTargetableBy`, the sprite drawing in `DrawZombie` and the type setup in `ZombieInitialize`.
 - Next: the remaining checks are mostly single types tied to that zombie's own animation and state (Zamboni ice
   trail, Catapult basketball count, Snorkel/Dolphin pool animations, Dr. Zomboss parts). They move into hooks on the
   zombie's behaviour component (e.g. `OnDeathAnim`, `GetDrawPosition`) so the shared code asks the behaviour instead

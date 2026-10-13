@@ -51,7 +51,21 @@ class SwimmerComponent : public Component
 	COMPONENT_TYPE(SwimmerComponent)
 };
 
-/// @brief How a zombie walks: its speed range, and how far past the lawn it must walk to get into the house.
+/// @brief How a zombie moves across the lawn
+enum class MoveStyle : int32_t
+{
+	/// Its feet follow the walk animation (the "_ground" track); slowed down when chilled
+	Walk,
+	/// Moves at its speed whatever the animation does, which plays at its own pace; slowed down when chilled
+	/// (Catapult)
+	Glide,
+	/// Moves at its speed whatever the animation does, even when chilled (Zamboni)
+	Drive,
+	/// Never walks on its own (Bungee, Dr. Zomboss)
+	Stand,
+};
+
+/// @brief How a zombie walks: its move style, its speed range, and how far past the lawn it must walk to get into the house.
 /// Zombies without one walk at the regular 0.23-0.37 and get in at x = -100. Phases with their own speed
 /// (Pole Vaulter running, Dolphin Rider in the pool, Digger tunnelling...) still override it.
 class WalkerComponent : public Component
@@ -81,4 +95,5 @@ class WalkerComponent : public Component
 	float mMaxSpeed = kRegularMaxSpeed;
 	/// The zombie gets into the house once it walks past this x (big zombies have to walk further)
 	int32_t mHouseEdgeX = kRegularHouseEdgeX;
+	MoveStyle mMoveStyle = MoveStyle::Walk;
 };
