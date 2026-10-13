@@ -1,0 +1,13 @@
+{
+  // A new projectile: a pea that hits twice as hard and looks bigger. Copy to assets/definitions/projectiles/.
+  "projectile": "PROJECTILE_BIG_PEA",
+  "basedOn": "PROJECTILE_PEA",
+  "id": 20,
+  "info": {
+    "damage": 40,
+    // A game image ("IMAGE_..._ID") or an image id from properties/resources.xml; its base's when left out
+    "image": "IMAGE_PROJECTILEPEA_ID",
+    "scale": 1.5
+  }
+  // No "components": it gets its base's (the pea's team)
+}

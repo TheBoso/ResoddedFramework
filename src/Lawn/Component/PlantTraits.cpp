@@ -1,3 +1,4 @@
+#include "CustomTypes.h"
 #include "PlantTraits.h"
 #include "../Board.h"
 
@@ -71,8 +72,14 @@ void ProjectileConverterComponent::OnTick()
 	Projectile *aProjectile = nullptr;
 	while (GetBoard()->IterateProjectiles(aProjectile))
 	{
-		ProjectileType aConverted = GetConversion(aProjectile->mProjectileType);
-		if (aProjectile->mRow == aPlant->mRow && aConverted != aProjectile->mProjectileType &&
+		// Its own type's conversion, else (a custom projectile) its base's
+		ProjectileType aOwnType = aProjectile->mDefinitionType;
+		ProjectileType aConverted = GetConversion(aOwnType);
+		if (aConverted == aOwnType)
+		{
+			aConverted = GetConversion(aProjectile->mProjectileType);
+		}
+		if (aProjectile->mRow == aPlant->mRow && aConverted != aOwnType && aConverted != aProjectile->mProjectileType &&
 		    GetRectOverlap(aRect, aProjectile->GetProjectileRect()) >= 10)
 		{
 			aProjectile->ConvertTo(aConverted, aPlant->mPlantCol);

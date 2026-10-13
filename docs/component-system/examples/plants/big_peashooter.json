@@ -1,0 +1,31 @@
+{
+  // A new plant that fires a new projectile (examples/projectiles/big_pea.json). Copy both to assets/definitions/.
+  "plant": "SEED_BIG_PEASHOOTER",
+  "basedOn": "SEED_PEASHOOTER",
+  "id": 81,
+  "info": {
+    "name": "Big Peashooter",
+    "tooltip": "Shoots big peas",
+    "descriptionHeader": "Big Peashooter",
+    "description": "Big Peashooters shoot peas twice the size.{SHORTLINE}Cost: 150",
+    "cost": 150
+  },
+  "components": [
+    { "type": "TeamComponent", "team": 0, "nativeTeam": 0 },
+    { "type": "FacingComponent" },
+    { "type": "HypnotizableComponent", "hypnotizedTeam": 1 },
+    {
+      "type": "PlantShooterComponent",
+      "weapons": [
+        {
+          "projectile": "PROJECTILE_BIG_PEA",
+          "foley": "FOLEY_THROW",
+          "muzzleAnchor": "PeaHead",
+          "muzzleX": 24,
+          "muzzleY": -33,
+          "shootDelay": 33
+        }
+      ]
+    }
+  ]
+}

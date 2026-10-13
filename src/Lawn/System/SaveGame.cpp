@@ -26,7 +26,8 @@
 // 16: zombie body spawn, Zombotany head and daisy data, armour from the archetype
 // 17: the last zombie body rules, dance troupe leader, a body for the Ducky Tube Zombie
 // 18: custom zombie and plant types (Plant/Zombie::mDefinitionType)
-static constexpr uint32_t SAVE_VERSION = 18;
+// 19: custom projectile types (Projectile::mDefinitionType)
+static constexpr uint32_t SAVE_VERSION = 19;
 
 template <typename T>
 void SaveContext::SyncVar(T &aValue, const std::string &aName)

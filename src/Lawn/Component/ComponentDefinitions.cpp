@@ -665,6 +665,60 @@ int RegisterCustomZombie(const Json &theRoot, const std::string &theTypeName, co
 	return anInfo->mType;
 }
 
+/// @brief Register a custom projectile type from its file; its type, or -1
+int RegisterCustomProjectile(const Json &theRoot, const std::string &theTypeName, const KindInfo &theKind,
+                             const std::string &theWhere)
+{
+	int aBase = ReadBase(theRoot, theKind, theWhere);
+	if (aBase < 0)
+		return -1;
+
+	std::string anError;
+	CustomTypes::ProjectileInfo *anInfo = CustomTypes::RegisterProjectile(
+	    theTypeName, (ProjectileType)aBase, ReadInt(theRoot, "id", -1, theWhere), anError);
+	if (anInfo == nullptr)
+	{
+		Log(theWhere + ": " + anError);
+		return -1;
+	}
+	anInfo->mFile = theWhere;
+
+	Json anInfoJson = theRoot.contains("info") ? theRoot["info"] : Json::object();
+	CheckInfoKeys(anInfoJson, { "damage", "image", "imageRow", "scale" }, theWhere);
+
+	ProjectileDefinition aDef = gProjectileDefinition[aBase];
+	aDef.mProjectileType = anInfo->mType;
+	aDef.mDamage = ReadInt(anInfoJson, "damage", aDef.mDamage, theWhere);
+	aDef.mImageRow = ReadInt(anInfoJson, "imageRow", anInfoJson.contains("image") ? 0 : aDef.mImageRow, theWhere);
+	anInfo->mDefinition = aDef;
+
+	anInfo->mImage.clear();
+	if (anInfoJson.contains("image"))
+	{
+		if (anInfoJson["image"].is_string())
+		{
+			anInfo->mImage = anInfoJson["image"].get<std::string>();
+		}
+		else
+		{
+			Log(theWhere + ": \"image\" should be an image name");
+		}
+	}
+	anInfo->mScale = 0.0f;
+	if (anInfoJson.contains("scale"))
+	{
+		if (anInfoJson["scale"].is_number())
+		{
+			anInfo->mScale = anInfoJson["scale"].get<float>();
+		}
+		else
+		{
+			Log(theWhere + ": \"scale\" should be a number");
+		}
+	}
+	return anInfo->mType;
+}
+
 /// @brief Register a custom plant type from its file; its type, or -1
 int RegisterCustomPlant(const Json &theRoot, const std::string &theTypeName, const KindInfo &theKind,
                         const std::string &theWhere)
@@ -725,7 +779,8 @@ void ComponentDefinitions::Load(const std::string &theFolder)
 	aStore.mMessages.clear();
 	CustomTypes::BeginReload();
 
-	for (EntityKind aKindId : kKinds)
+	// Projectiles first, so their names are known to the plant and zombie files' info
+	for (EntityKind aKindId : { EntityKind::Projectile, EntityKind::Plant, EntityKind::Zombie })
 	{
 		const KindInfo &aKind = KindOf(aKindId);
 		fs::path aFolder = fs::path(theFolder) / aKind.mFolder;
@@ -775,7 +830,7 @@ void ComponentDefinitions::Load(const std::string &theFolder)
 				}
 				else
 				{
-					Log(aWhere + ": new " + aKind.mKey + " types aren't supported yet");
+					aType = RegisterCustomProjectile(aRoot, aTypeName, aKind, aWhere);
 				}
 				if (aType < 0)
 					continue;
@@ -816,27 +871,31 @@ void ComponentDefinitions::Load(const std::string &theFolder)
 				continue;
 			}
 			aStore.mDefinitions[aKey] = { aWhere, aComponents };
-
-			// Report unknown components and fields once, at load time
-			ComponentList aCheck;
-			std::vector<std::string> aMessages;
-			if (aComponents.is_array())
-			{
-				for (const Json &aComponent : aComponents)
-				{
-					if (Component *aBuilt = ComponentFromJson(aComponent, aWhere, aMessages))
-					{
-						aCheck.Add(aBuilt);
-					}
-				}
-			}
-			for (const std::string &aMessage : aMessages)
-			{
-				Log(aMessage);
-			}
 		}
 	}
 	CustomTypes::EndReload();
+
+	// Then report unknown components and fields once, now that every new type's name is known (a plant's shooter
+	// can fire a new projectile)
+	for (auto &[aKey, aDefinition] : aStore.mDefinitions)
+	{
+		if (!aDefinition.mComponents.is_array())
+			continue;
+
+		ComponentList aCheck;
+		std::vector<std::string> aMessages;
+		for (const Json &aComponent : aDefinition.mComponents)
+		{
+			if (Component *aBuilt = ComponentFromJson(aComponent, aDefinition.mFile, aMessages))
+			{
+				aCheck.Add(aBuilt);
+			}
+		}
+		for (const std::string &aMessage : aMessages)
+		{
+			Log(aMessage);
+		}
+	}
 }
 
 void ComponentDefinitions::EnsureLoaded()
@@ -863,6 +922,10 @@ bool ComponentDefinitions::Build(EntityKind theKind, int theType, ComponentList 
 		else if (theKind == EntityKind::Plant)
 		{
 			aBase = CustomTypes::PlaysAs((SeedType)theType);
+		}
+		else if (theKind == EntityKind::Projectile)
+		{
+			aBase = CustomTypes::PlaysAs((ProjectileType)theType);
 		}
 		return aBase != theType && Build(theKind, aBase, theOut);
 	}
@@ -1020,6 +1083,16 @@ int CheckDefinitions(const std::string &theFolder, std::ostream &theLog)
 		ComponentDefinitions::Build(EntityKind::Plant, aType, aComponents);
 		theLog << "custom plant " << anInfo->mTypeName << " = " << (int)aType << ", based on "
 		       << EnumNames::NameOf(anInfo->mBase) << ", cost " << anInfo->mDefinition.mSeedCost << ", "
+		       << aComponents.Get().size() << " components\n";
+	}
+
+	for (ProjectileType aType : CustomTypes::CustomProjectileTypes())
+	{
+		CustomTypes::ProjectileInfo *anInfo = CustomTypes::GetProjectile(aType);
+		ComponentList aComponents;
+		ComponentDefinitions::Build(EntityKind::Projectile, aType, aComponents);
+		theLog << "custom projectile " << anInfo->mTypeName << " = " << (int)aType << ", based on "
+		       << EnumNames::NameOf(anInfo->mBase) << ", damage " << anInfo->mDefinition.mDamage << ", "
 		       << aComponents.Get().size() << " components\n";
 	}
 

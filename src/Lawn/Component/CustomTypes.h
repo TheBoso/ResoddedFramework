@@ -4,9 +4,10 @@
 #include <vector>
 #include "../../ConstEnums.h"
 #include "../Plant.h"
+#include "../Projectile.h"
 #include "../Zombie.h"
 
-/// @brief Zombie and plant types added by definition files, without code changes (see docs/component-system/
+/// @brief Zombie, plant and projectile types added by definition files, without code changes (see docs/component-system/
 /// DEFINITIONS.md):
 ///
 ///     { "zombie": "ZOMBIE_BLACK_FOOTBALL", "basedOn": "ZOMBIE_FOOTBALL",
@@ -45,15 +46,33 @@ struct PlantInfo
 	bool mActive = false;
 };
 
+struct ProjectileInfo
+{
+	std::string mTypeName; // "PROJECTILE_FIRE_STAR"
+	ProjectileType mType = ProjectileType::PROJECTILE_PEA;
+	ProjectileType mBase = ProjectileType::PROJECTILE_PEA;
+	/// What Projectile::GetProjectileDef returns for it (damage, image row)
+	ProjectileDefinition mDefinition = {};
+	/// Its own image: a game image ("IMAGE_PROJECTILEPEA_ID") or an image id from resources.xml; "" for its base's
+	std::string mImage;
+	/// Scale of its image (0: its base's)
+	float mScale = 0.0f;
+	std::string mFile;
+	bool mActive = false;
+};
+
 bool IsCustom(ZombieType theType);
 bool IsCustom(SeedType theType);
+bool IsCustom(ProjectileType theType);
 /// @brief A registered custom type (or any vanilla one)
 bool Exists(ZombieType theType);
 bool Exists(SeedType theType);
+bool Exists(ProjectileType theType);
 
 /// @brief The vanilla type a type plays as: its base for a custom type, itself otherwise
 ZombieType PlaysAs(ZombieType theType);
 SeedType PlaysAs(SeedType theType);
+ProjectileType PlaysAs(ProjectileType theType);
 
 /// @brief Every zombie type: the vanilla ones, then the custom ones (in ID order)
 const std::vector<ZombieType> &AllZombieTypes();
@@ -61,10 +80,14 @@ const std::vector<ZombieType> &AllZombieTypes();
 const std::vector<SeedType> &AllPlantTypes();
 const std::vector<ZombieType> &CustomZombieTypes();
 const std::vector<SeedType> &CustomPlantTypes();
+const std::vector<ProjectileType> &CustomProjectileTypes();
 
 /// @brief A custom type's info, or nullptr for a vanilla or unregistered type
 ZombieInfo *GetZombie(ZombieType theType);
 PlantInfo *GetPlant(SeedType theType);
+ProjectileInfo *GetProjectile(ProjectileType theType);
+/// @brief A custom projectile's own image, or nullptr for its base's (looked up the first time it is drawn)
+Sexy::Image *GetProjectileImage(ProjectileType theType);
 
 // ── Registration (ComponentDefinitions::Load) ──
 
@@ -75,6 +98,8 @@ void BeginReload();
 ZombieInfo *RegisterZombie(const std::string &theTypeName, ZombieType theBase, int theRequestedId,
                            std::string &theError);
 PlantInfo *RegisterPlant(const std::string &theTypeName, SeedType theBase, int theRequestedId, std::string &theError);
+ProjectileInfo *RegisterProjectile(const std::string &theTypeName, ProjectileType theBase, int theRequestedId,
+                                   std::string &theError);
 /// @brief Rebuild the type lists after registering
 void EndReload();
 

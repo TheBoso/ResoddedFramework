@@ -1,3 +1,4 @@
+#include "Component/CustomTypes.h"
 #include "Board.h"
 #include "Plant.h"
 #include "Zombie.h"
@@ -44,7 +45,14 @@ void Projectile::ProjectileInitialize(int theX, int theY, int theRenderOrder, in
                                       ProjectileType theProjectileType)
 {
 	int aGridX = mBoard->PixelToGridXKeepOnBoard(theX, theY);
-	mProjectileType = theProjectileType;
+	if (!CustomTypes::Exists(theProjectileType))
+	{
+		// A custom type whose definition file is gone (from a save): a pea instead
+		theProjectileType = ProjectileType::PROJECTILE_PEA;
+	}
+	// A custom type plays as its base type (see Component/CustomTypes.h)
+	mDefinitionType = theProjectileType;
+	mProjectileType = CustomTypes::PlaysAs(theProjectileType);
 	mPosX = theX;
 	mPosY = theY;
 	mPosZ = 0.0f;
@@ -1089,6 +1097,19 @@ void Projectile::Draw(Graphics *g)
 		TOD_ASSERT(false);
 	}
 
+	// A custom projectile can have its own image and scale (see Component/CustomTypes.h)
+	if (CustomTypes::ProjectileInfo *aCustom = CustomTypes::GetProjectile(mDefinitionType))
+	{
+		if (Image *aCustomImage = CustomTypes::GetProjectileImage(mDefinitionType))
+		{
+			aImage = aCustomImage;
+		}
+		if (aCustom->mScale > 0.0f)
+		{
+			aScale = aCustom->mScale;
+		}
+	}
+
 	bool aMirror = false;
 	if (mMotionType == ProjectileMotion::MOTION_BEE_BACKWARDS)
 	{
@@ -1098,11 +1119,12 @@ void Projectile::Draw(Graphics *g)
 	if (aImage)
 	{
 		TOD_ASSERT(aProjectileDef.mImageRow < aImage->mNumRows);
-		TOD_ASSERT(mFrame < aImage->mNumCols);
+		// A custom image can have fewer frames than its base's
+		int aFrame = mFrame < aImage->mNumCols ? mFrame : 0;
 
 		int aCelWidth = aImage->GetCelWidth();
 		int aCelHeight = aImage->GetCelHeight();
-		Rect aSrcRect(aCelWidth * mFrame, aCelHeight * aProjectileDef.mImageRow, aCelWidth, aCelHeight);
+		Rect aSrcRect(aCelWidth * aFrame, aCelHeight * aProjectileDef.mImageRow, aCelWidth, aCelHeight);
 		if (FloatApproxEqual(mRotation, 0.0f) && FloatApproxEqual(aScale, 1.0f))
 		{
 			Rect aDestRect(0, 0, aCelWidth, aCelHeight);
@@ -1256,6 +1278,7 @@ void Projectile::ConvertToFireball(int theGridX)
 		return;
 
 	mProjectileType = ProjectileType::PROJECTILE_FIREBALL;
+	mDefinitionType = ProjectileType::PROJECTILE_FIREBALL;
 	mHitTorchwoodGridX = theGridX;
 	mApp->PlayFoley(FoleyType::FOLEY_FIREPEA);
 
@@ -1276,19 +1299,26 @@ void Projectile::ConvertToFireball(int theGridX)
 
 void Projectile::ConvertTo(ProjectileType theType, int theGridX)
 {
-	if (theType == ProjectileType::PROJECTILE_FIREBALL)
+	// A custom type converts the way its base does, then keeps its own type
+	ProjectileType aPlaysAs = CustomTypes::PlaysAs(theType);
+	if (aPlaysAs == ProjectileType::PROJECTILE_FIREBALL)
 	{
 		ConvertToFireball(theGridX);
 	}
-	else if (theType == ProjectileType::PROJECTILE_PEA)
+	else if (aPlaysAs == ProjectileType::PROJECTILE_PEA)
 	{
 		ConvertToPea(theGridX);
 	}
 	else if (mHitTorchwoodGridX != theGridX)
 	{
 		AttachmentDie(mAttachmentID);
-		mProjectileType = theType;
+		mProjectileType = aPlaysAs;
 		mHitTorchwoodGridX = theGridX;
+	}
+
+	if (mHitTorchwoodGridX == theGridX)
+	{
+		mDefinitionType = theType;
 	}
 }
 
@@ -1299,12 +1329,16 @@ void Projectile::ConvertToPea(int theGridX)
 
 	AttachmentDie(mAttachmentID);
 	mProjectileType = ProjectileType::PROJECTILE_PEA;
+	mDefinitionType = ProjectileType::PROJECTILE_PEA;
 	mHitTorchwoodGridX = theGridX;
 	mApp->PlayFoley(FoleyType::FOLEY_THROW);
 }
 
 ProjectileDefinition &Projectile::GetProjectileDef()
 {
+	if (CustomTypes::ProjectileInfo *aCustom = CustomTypes::GetProjectile(mDefinitionType))
+		return aCustom->mDefinition;
+
 	ProjectileDefinition &aProjectileDef = gProjectileDefinition[(int)mProjectileType];
 	TOD_ASSERT(aProjectileDef.mProjectileType == mProjectileType);
 

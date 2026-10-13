@@ -37,7 +37,7 @@ The file name doesn't matter; the type comes from the key inside the file.
 The components are attached in the order they're listed, and the type gets exactly those components. A type
 without a file falls back to the built-in tables in `Archetypes.cpp`.
 
-## New zombies and plants
+## New zombies, plants and projectiles
 
 A file that names a type the game doesn't have, plus the game type it is `"basedOn"`, adds a new type. No code
 changes are needed. Examples are in `docs/component-system/examples/`: copy them into `assets/definitions/` to try
@@ -53,13 +53,13 @@ them.
 }
 ```
 
-**How a new type plays.** A new type is a variant of its base. In play its zombie or plant has the base's type
-(`mZombieType` / `mSeedType`), so every rule still written per type in the code treats it like the base: where it
+**How a new type plays.** A new type is a variant of its base. In play its zombie, plant or projectile has the base's
+type (`mZombieType` / `mSeedType` / `mProjectileType`), so every rule still written per type in the code treats it like the base: where it
 can be planted, how it enters the pool, special packets and so on. Its own type (`mDefinitionType`) picks:
 - its components (this file);
 - its animation;
 - its name and Almanac texts;
-- its cost and recharge;
+- its cost and recharge (plants), its damage and image (projectiles);
 - for zombies, when it shows up in levels.
 
 **`info` for a zombie.** Every field is optional and defaults to the base's.
@@ -86,6 +86,21 @@ can be planted, how it enters the pool, special packets and so on. Its own type 
 | `launchRate` | How often its producer or shooter acts, when its components use the plant's rate |
 | `subClass` | `SUBCLASS_NORMAL` or `SUBCLASS_SHOOTER` |
 
+**`info` for a projectile.** Every field is optional and defaults to the base's.
+
+| Field | Meaning |
+|---|---|
+| `damage` | Damage per hit (splash damage follows from it, as for its base) |
+| `image` | Its picture: a game image (`"IMAGE_PROJECTILEPEA_ID"`) or an image id from `properties/resources.xml`. The image's group has to be loaded when it is first drawn |
+| `imageRow` | Which row of the image to draw (0 when it has its own `image`) |
+| `scale` | Size it is drawn at |
+
+A new projectile flies, hits and splashes like its base: a lobbed base arcs, a fireball base burns. Plants and
+zombies fire it by naming it in their components (a `PlantShooterComponent` weapon's `"projectile"`, a
+`ShooterComponent`'s `"projectileType"`), and a `ProjectileConverterComponent` (Torchwood) can turn projectiles
+into it or turn it into something else. It converts like its base unless the converter lists it by name. See
+`examples/projectiles/big_pea.json` and `examples/plants/big_peashooter.json`.
+
 **Where they show up.**
 - New zombies stay out of levels until their `info` sets a `pickWeight`. With one, they join the waves of the
   levels their base appears on (or `allowedLevels`), from `startingLevel` and `firstAllowedWave` (the base's
@@ -96,7 +111,8 @@ can be planted, how it enters the pool, special packets and so on. Its own type 
   Close.
 - Both are listed in the debugger's spawn menus.
 
-**IDs and saves.** New types get IDs after the game's own: zombies from 35 to 99, plants from 75 to 138. A save remembers types by
+**IDs and saves.** New types get IDs after the game's own: zombies from 35 to 99, plants from 75 to 138,
+projectiles from 14 to 77. A save remembers types by
 ID. Without `"id"`, a file gets the next free ID in file-name order, so adding or removing other new types can
 shift it. Give each new type a fixed `"id"` once saves matter.
 
@@ -106,7 +122,6 @@ listed in `properties/resources.xml`, like the game's own.
 
 **Limits for now.**
 - `basedOn` must be a game type, not another new type.
-- New projectile types aren't supported yet.
 - Zombies that bring others along spawn their base's companions: a new Dancer's backup dancers and a new Bobsled
   team's followers are the vanilla ones.
 - Crazy Dave's picks, the Imitater and the random seed button only use the game's plants.

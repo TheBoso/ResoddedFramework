@@ -38,7 +38,10 @@ class Projectile : public GameObject
 	bool mDead;
 	int mAnimTicksPerFrame;
 	ProjectileMotion mMotionType;
+	/// The type it plays as: a custom type's base (see Component/CustomTypes.h), else its own type
 	ProjectileType mProjectileType;
+	/// The type it was fired as: picks its definition (components), damage and image
+	ProjectileType mDefinitionType;
 	int mProjectileAge;
 	int mClickBackoffCounter;
 	float mRotation;

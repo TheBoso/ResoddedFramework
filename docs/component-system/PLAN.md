@@ -290,7 +290,7 @@ hypnosis, team-based projectile collision, generic shooter, plant heads, produce
   from the component's defaults), and `-checkdefinitions=<folder>` verifies that every file builds byte-identical
   components to the tables (all 100 vanilla files do). Both run before the game starts. The debugger has a
   Definitions tab: load problems (unknown components, fields, enum names) and a Reload button.
-- Done, step 2: new zombie and plant types from files alone (see "New zombies and plants" in `DEFINITIONS.md`).
+- Done, step 2: new zombie and plant types from files alone (see "New zombies, plants and projectiles" in `DEFINITIONS.md`).
   A file naming an unknown type with `"basedOn"` registers it in `CustomTypes` (`Component/CustomTypes.h`). It gets
   an ID from `FIRST_CUSTOM_ZOMBIE_TYPE` / `FIRST_CUSTOM_SEED_TYPE` (`ConstEnums.h`; arrays indexed by type are
   now `MAX_ZOMBIE_TYPES` / `MAX_SEED_TYPES` long), its `ZombieDefinition` / `PlantDefinition` (the base's,
@@ -305,7 +305,11 @@ hypnosis, team-based projectile collision, generic shooter, plant heads, produce
   New zombies stay out of levels until their file sets a `pickWeight`. The page buttons use the chooser's small
   button art: in the seed chooser above the Almanac button, in the Almanac centred between Index and Close
   (placed from mockups of the game's art, not yet seen in game).
-- Not yet: new projectile types; a new type based on another new type; a custom Dancer or Bobsled bringing custom
+- Done: new projectile types the same way (`"projectile": ..., "basedOn": ...` with `damage`, `image`, `imageRow`,
+  `scale`). `Projectile::mDefinitionType` holds the custom type; conversions (Torchwood) set both types. Definition
+  files now load in two passes: every new type of every kind registers first (projectiles first), then the
+  components of every file are checked, so a plant file can fire a new projectile by name. `SAVE_VERSION` 19.
+- Not yet: a new type based on another new type; a custom Dancer or Bobsled bringing custom
   companions.
 
 ## Adding a component

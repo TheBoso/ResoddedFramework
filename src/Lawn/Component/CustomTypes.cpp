@@ -1,18 +1,32 @@
 #include "CustomTypes.h"
 #include <array>
 #include "EnumNames.h"
+#include <map>
+#include "../../Resources.h"
+#include "../../SexyAppFramework/ResourceManager.h"
 #include "../../SexyAppFramework/SexyAppBase.h"
+#include "../../SexyAppFramework/SharedImage.h"
 
 namespace
 {
 constexpr int kZombieSlots = MAX_ZOMBIE_TYPES - FIRST_CUSTOM_ZOMBIE_TYPE;
 constexpr int kPlantSlots = MAX_SEED_TYPES - FIRST_CUSTOM_SEED_TYPE;
+constexpr int kProjectileSlots = MAX_PROJECTILE_TYPES - FIRST_CUSTOM_PROJECTILE_TYPE;
 
 struct Registry
 {
 	// Fixed slots: the definitions' name pointers stay valid for the whole run
 	std::array<CustomTypes::ZombieInfo, kZombieSlots> mZombies;
 	std::array<CustomTypes::PlantInfo, kPlantSlots> mPlants;
+	std::array<CustomTypes::ProjectileInfo, kProjectileSlots> mProjectiles;
+	std::vector<ProjectileType> mCustomProjectiles;
+	/// Projectile images found so far (an image from resources.xml stays referenced)
+	struct CachedImage
+	{
+		Sexy::Image *mImage = nullptr;
+		Sexy::SharedImageRef mRef;
+	};
+	std::map<ProjectileType, CachedImage> mProjectileImages;
 	std::vector<ZombieType> mAllZombies, mCustomZombies;
 	std::vector<SeedType> mAllPlants, mCustomPlants;
 	bool mListsBuilt = false;
@@ -31,6 +45,14 @@ void BuildLists()
 	aRegistry.mCustomZombies.clear();
 	aRegistry.mAllPlants.clear();
 	aRegistry.mCustomPlants.clear();
+	aRegistry.mCustomProjectiles.clear();
+	for (const CustomTypes::ProjectileInfo &aProjectile : aRegistry.mProjectiles)
+	{
+		if (aProjectile.mActive)
+		{
+			aRegistry.mCustomProjectiles.push_back(aProjectile.mType);
+		}
+	}
 
 	for (int i = 0; i < (int)ZombieType::NUM_ZOMBIE_TYPES; i++)
 	{
@@ -128,6 +150,70 @@ bool CustomTypes::IsCustom(SeedType theType)
 	return theType >= FIRST_CUSTOM_SEED_TYPE && theType < MAX_SEED_TYPES;
 }
 
+bool CustomTypes::IsCustom(ProjectileType theType)
+{
+	return theType >= FIRST_CUSTOM_PROJECTILE_TYPE && theType < MAX_PROJECTILE_TYPES;
+}
+
+bool CustomTypes::Exists(ProjectileType theType)
+{
+	if (theType >= 0 && theType < ProjectileType::NUM_PROJECTILES)
+		return true;
+	return GetProjectile(theType) != nullptr;
+}
+
+ProjectileType CustomTypes::PlaysAs(ProjectileType theType)
+{
+	if (ProjectileInfo *anInfo = GetProjectile(theType))
+		return anInfo->mBase;
+	return theType;
+}
+
+const std::vector<ProjectileType> &CustomTypes::CustomProjectileTypes()
+{
+	return GetListedRegistry().mCustomProjectiles;
+}
+
+CustomTypes::ProjectileInfo *CustomTypes::GetProjectile(ProjectileType theType)
+{
+	if (!IsCustom(theType))
+		return nullptr;
+	ProjectileInfo &anInfo = GetRegistry().mProjectiles[theType - FIRST_CUSTOM_PROJECTILE_TYPE];
+	return anInfo.mTypeName.empty() ? nullptr : &anInfo;
+}
+
+Sexy::Image *CustomTypes::GetProjectileImage(ProjectileType theType)
+{
+	ProjectileInfo *anInfo = GetProjectile(theType);
+	if (anInfo == nullptr || anInfo->mImage.empty())
+		return nullptr;
+
+	Registry &aRegistry = GetRegistry();
+	auto aCached = aRegistry.mProjectileImages.find(theType);
+	if (aCached != aRegistry.mProjectileImages.end())
+		return aCached->second.mImage;
+
+	// A game image by its ResourceId name, else an image id from resources.xml
+	Registry::CachedImage anImage;
+	int64_t aResourceId;
+	if (EnumNames::ValueOf(EnumKey<Sexy::ResourceId>(), anInfo->mImage.c_str(), aResourceId))
+	{
+		anImage.mImage = Sexy::GetImageById((int)aResourceId);
+	}
+	else if (Sexy::gSexyAppBase && Sexy::gSexyAppBase->mResourceManager)
+	{
+		anImage.mRef = Sexy::gSexyAppBase->mResourceManager->GetImage(anInfo->mImage);
+		anImage.mImage = (Sexy::Image *)anImage.mRef;
+	}
+
+	// Not found (yet: its resource group may load later): look again next time
+	if (anImage.mImage != nullptr)
+	{
+		aRegistry.mProjectileImages[theType] = anImage;
+	}
+	return anImage.mImage;
+}
+
 bool CustomTypes::Exists(ZombieType theType)
 {
 	if (theType >= 0 && theType < ZombieType::NUM_ZOMBIE_TYPES)
@@ -203,6 +289,11 @@ void CustomTypes::BeginReload()
 	{
 		aPlant.mActive = false;
 	}
+	for (ProjectileInfo &aProjectile : aRegistry.mProjectiles)
+	{
+		aProjectile.mActive = false;
+	}
+	aRegistry.mProjectileImages.clear();
 }
 
 CustomTypes::ZombieInfo *CustomTypes::RegisterZombie(const std::string &theTypeName, ZombieType theBase,
@@ -248,6 +339,29 @@ CustomTypes::PlantInfo *CustomTypes::RegisterPlant(const std::string &theTypeNam
 	anInfo.mBase = theBase;
 	anInfo.mActive = true;
 	EnumNames::Add(EnumKey<SeedType>(), anInfo.mTypeName, anInfo.mType);
+	return &anInfo;
+}
+
+CustomTypes::ProjectileInfo *CustomTypes::RegisterProjectile(const std::string &theTypeName, ProjectileType theBase,
+                                                             int theRequestedId, std::string &theError)
+{
+	Registry &aRegistry = GetRegistry();
+	int aRequestedSlot = theRequestedId < 0 ? -1 : theRequestedId - FIRST_CUSTOM_PROJECTILE_TYPE;
+	if (theRequestedId >= 0 && aRequestedSlot < 0)
+	{
+		theError = "\"id\" must be at least " + std::to_string(FIRST_CUSTOM_PROJECTILE_TYPE);
+		return nullptr;
+	}
+	int aSlot = PickSlot(aRegistry.mProjectiles, theTypeName, aRequestedSlot, theError);
+	if (aSlot < 0)
+		return nullptr;
+
+	ProjectileInfo &anInfo = aRegistry.mProjectiles[aSlot];
+	anInfo.mTypeName = theTypeName;
+	anInfo.mType = (ProjectileType)(FIRST_CUSTOM_PROJECTILE_TYPE + aSlot);
+	anInfo.mBase = theBase;
+	anInfo.mActive = true;
+	EnumNames::Add(EnumKey<ProjectileType>(), anInfo.mTypeName, anInfo.mType);
 	return &anInfo;
 }
 

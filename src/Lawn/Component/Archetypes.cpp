@@ -1001,7 +1001,7 @@ void Archetypes::ApplyProjectileDefaults(Projectile *theProjectile)
 		return;
 
 	ComponentList aComponents;
-	if (!ComponentDefinitions::Build(EntityKind::Projectile, theProjectile->mProjectileType, aComponents))
+	if (!ComponentDefinitions::Build(EntityKind::Projectile, theProjectile->mDefinitionType, aComponents))
 	{
 		BuildVanillaProjectile(theProjectile->mProjectileType, aComponents);
 	}

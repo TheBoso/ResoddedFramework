@@ -21,6 +21,7 @@
 #include "../Component/EntityBuilder.h"
 #include "../Component/ComponentDefinitions.h"
 #include "../Component/CustomTypes.h"
+#include "../Component/EnumNames.h"
 #include "../Component/Teams.h"
 
 using namespace Sexy;
@@ -337,9 +338,16 @@ void DebuggerWindow::DrawBoardTab()
 			ImGui::SameLine();
 			ImGui::TextDisabled("(applies to what spawns from now on)");
 
-			if (ImGui::TreeNode("Custom types", "Custom types (%d zombies, %d plants)",
-			                    (int)CustomTypes::CustomZombieTypes().size(), (int)CustomTypes::CustomPlantTypes().size()))
+			if (ImGui::TreeNode("Custom types", "Custom types (%d zombies, %d plants, %d projectiles)",
+			                    (int)CustomTypes::CustomZombieTypes().size(), (int)CustomTypes::CustomPlantTypes().size(),
+			                    (int)CustomTypes::CustomProjectileTypes().size()))
 			{
+				for (ProjectileType aType : CustomTypes::CustomProjectileTypes())
+				{
+					CustomTypes::ProjectileInfo *anInfo = CustomTypes::GetProjectile(aType);
+					ImGui::BulletText("%s (%d), based on %s, damage %d", anInfo->mTypeName.c_str(), (int)aType,
+					                  EnumNames::NameOf(anInfo->mBase), anInfo->mDefinition.mDamage);
+				}
 				for (ZombieType aType : CustomTypes::CustomZombieTypes())
 				{
 					CustomTypes::ZombieInfo *anInfo = CustomTypes::GetZombie(aType);

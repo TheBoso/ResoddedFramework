@@ -1403,6 +1403,8 @@ constexpr int FIRST_CUSTOM_ZOMBIE_TYPE = (int)ZombieType::NUM_CACHED_ZOMBIE_TYPE
 constexpr int MAX_ZOMBIE_TYPES = 100;
 constexpr int FIRST_CUSTOM_SEED_TYPE = (int)SeedType::SEED_ZOMBIE_IMP + 1;
 constexpr int MAX_SEED_TYPES = FIRST_CUSTOM_SEED_TYPE + 64;
+constexpr int FIRST_CUSTOM_PROJECTILE_TYPE = (int)ProjectileType::NUM_PROJECTILES;
+constexpr int MAX_PROJECTILE_TYPES = FIRST_CUSTOM_PROJECTILE_TYPE + 64;
 
 //////////////////////////////
 enum AttachmentID
