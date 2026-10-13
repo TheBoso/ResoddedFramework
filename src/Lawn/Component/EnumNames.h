@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <string>
 #include "Component.h"
 
 /// @brief Names of the game's enum values ("ZOMBIE_FOOTBALL", "HELMTYPE_PAIL", "IMAGE_ZOMBIEFOOTBALLHEAD_ID"...),
@@ -17,6 +18,10 @@ namespace EnumNames
 {
 /// @param theEnumName The C++ name of the enum ("ZombieType")
 void Register(const void *theEnumKey, const char *theEnumName, const EnumNameEntry *theEntries, size_t theCount);
+
+/// @brief Name one more value at runtime (custom types from definition files). A name that had another value is
+/// moved to this one.
+void Add(const void *theEnumKey, const std::string &theName, int64_t theValue);
 
 /// @brief The name of a value, or nullptr when it has none (or the enum has no registered names)
 const char *NameOf(const void *theEnumKey, int64_t theValue);

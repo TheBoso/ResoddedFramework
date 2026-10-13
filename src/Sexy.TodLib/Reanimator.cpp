@@ -1,3 +1,5 @@
+#include <deque>
+#include <string>
 #include <format>
 #include "TodDebug.h"
 #include "TodCommon.h"
@@ -1152,9 +1154,59 @@ void ReanimatorLoadDefinitions(ReanimationParams *theReanimationParamArray, int 
 	{
 		ReanimationParams *aReanimationParams = &theReanimationParamArray[i];
 		TOD_ASSERT(aReanimationParams->mReanimationType == i);
+		// Reserved slots for custom reanimations have no file yet
+		if (aReanimationParams->mReanimFileName == nullptr || aReanimationParams->mReanimFileName[0] == '\0')
+			continue;
 		if (recompile || !DefinitionIsCompiled(StringToSexyString(aReanimationParams->mReanimFileName)))
 			ReanimatorEnsureDefinitionLoaded(aReanimationParams->mReanimationType, true, recompile);
 	}
+}
+
+// Room for custom reanimation files after the game's own (see ReanimatorRegisterCustom)
+static constexpr int kMaxCustomReanims = 64;
+static ReanimationParams gLawnReanimationArrayWithCustom[(int)ReanimationType::NUM_REANIMS + kMaxCustomReanims];
+static int gNextCustomReanim = (int)ReanimationType::NUM_REANIMS;
+
+void ReanimatorLoadLawnDefinitions(bool recompile)
+{
+	for (int i = 0; i < (int)ReanimationType::NUM_REANIMS; i++)
+	{
+		gLawnReanimationArrayWithCustom[i] = gLawnReanimationArray[i];
+	}
+	for (int i = (int)ReanimationType::NUM_REANIMS; i < (int)LENGTH(gLawnReanimationArrayWithCustom); i++)
+	{
+		gLawnReanimationArrayWithCustom[i] = { (ReanimationType)i, "", 0 };
+	}
+	ReanimatorLoadDefinitions(gLawnReanimationArrayWithCustom, (int)LENGTH(gLawnReanimationArrayWithCustom), recompile);
+}
+
+ReanimationType ReanimatorRegisterCustom(const char *theFileName)
+{
+	if (gReanimationParamArray != gLawnReanimationArrayWithCustom || theFileName == nullptr || theFileName[0] == '\0')
+		return ReanimationType::REANIM_NONE;
+
+	auto aSameFile = [](const char *theA, const char *theB)
+	{
+		for (; *theA && *theB; theA++, theB++)
+		{
+			if (tolower((unsigned char)*theA) != tolower((unsigned char)*theB))
+				return false;
+		}
+		return *theA == *theB;
+	};
+	for (int i = (int)ReanimationType::NUM_REANIMS; i < gNextCustomReanim; i++)
+	{
+		if (aSameFile(gLawnReanimationArrayWithCustom[i].mReanimFileName, theFileName))
+			return (ReanimationType)i;
+	}
+	if (gNextCustomReanim >= (int)LENGTH(gLawnReanimationArrayWithCustom))
+		return ReanimationType::REANIM_NONE;
+
+	// The file names have to outlive the definitions
+	static std::deque<std::string> sFileNames;
+	sFileNames.push_back(theFileName);
+	gLawnReanimationArrayWithCustom[gNextCustomReanim].mReanimFileName = sFileNames.back().c_str();
+	return (ReanimationType)gNextCustomReanim++;
 }
 
 void ReanimatorFreeDefinitions()

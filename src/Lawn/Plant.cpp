@@ -1,3 +1,4 @@
+#include "Component/CustomTypes.h"
 #include "../Resources.h"
 #include "Coin.h"
 #include "Plant.h"
@@ -108,7 +109,14 @@ void Plant::PlantInitialize(int theGridX, int theGridY, SeedType theSeedType, Se
 	mState = PlantState::STATE_NOTREADY;
 	mDead = false;
 	mSquished = false;
-	mSeedType = theSeedType;
+	if (CustomTypes::IsCustom(theSeedType) && !CustomTypes::Exists(theSeedType))
+	{
+		// A custom type whose definition file is gone (from a save): a Peashooter instead
+		theSeedType = SeedType::SEED_PEASHOOTER;
+	}
+	// A custom type plays as its base type (see Component/CustomTypes.h)
+	mDefinitionType = theSeedType;
+	mSeedType = CustomTypes::PlaysAs(theSeedType);
 	mImitaterType = theImitaterType;
 	Health().mHealth = 300;
 	mDoSpecialCountdown = 0;
@@ -177,7 +185,7 @@ void Plant::PlantInitialize(int theGridX, int theGridY, SeedType theSeedType, Se
 	else
 		mLaunchCounter = 0;
 
-	switch (theSeedType)
+	switch (mSeedType)
 	{
 	case SeedType::SEED_BLOVER: {
 		mDoSpecialCountdown = 50;
@@ -1409,6 +1417,7 @@ void Plant::UpdateAbilities()
 
 bool Plant::IsPartOfUpgradableTo(SeedType theUpgradedType)
 {
+	theUpgradedType = CustomTypes::PlaysAs(theUpgradedType);
 	if (theUpgradedType == SeedType::SEED_COBCANNON && mSeedType == SeedType::SEED_KERNELPULT)
 	{
 		return mBoard->IsValidCobCannonSpot(mPlantCol, mRow) || mBoard->IsValidCobCannonSpot(mPlantCol - 1, mRow);
@@ -1419,6 +1428,7 @@ bool Plant::IsPartOfUpgradableTo(SeedType theUpgradedType)
 
 bool Plant::IsUpgradableTo(SeedType theUpgradedType)
 {
+	theUpgradedType = CustomTypes::PlaysAs(theUpgradedType);
 	if (theUpgradedType == SeedType::SEED_GATLINGPEA && mSeedType == SeedType::SEED_REPEATER)
 	{
 		return true;
@@ -2125,6 +2135,7 @@ void Plant::Animate()
 
 float PlantFlowerPotHeightOffset(SeedType theSeedType, float theFlowerPotScale)
 {
+	theSeedType = CustomTypes::PlaysAs(theSeedType);
 	float aHeightOffset = -5.0f * theFlowerPotScale;
 	float aScaleOffsetFix = 0.0f;
 
@@ -2175,6 +2186,7 @@ float PlantFlowerPotHeightOffset(SeedType theSeedType, float theFlowerPotScale)
 
 float PlantDrawHeightOffset(Board *theBoard, Plant *thePlant, SeedType theSeedType, int theCol, int theRow)
 {
+	theSeedType = CustomTypes::PlaysAs(theSeedType);
 	float aHeightOffset = 0.0f;
 
 	bool doFloating = false;
@@ -2781,21 +2793,24 @@ void Plant::DrawSeedType(Graphics *g, SeedType theSeedType, SeedType theImitater
 		    theImitaterType == SeedType::SEED_LILYPAD)
 			aDrawVariation = DrawVariation::VARIATION_IMITATER_LESS;
 	}
-	else if (theDrawVariation == DrawVariation::VARIATION_NORMAL && theSeedType == SeedType::SEED_TANGLEKELP)
+	else if (theDrawVariation == DrawVariation::VARIATION_NORMAL &&
+	         CustomTypes::PlaysAs(theSeedType) == SeedType::SEED_TANGLEKELP)
 	{
 		aDrawVariation = DrawVariation::VARIATION_AQUARIUM;
 	}
+	// Placed like its base, drawn with its own animation
+	SeedType aPlaysAs = CustomTypes::PlaysAs(aSeedType);
 
 	if (((LawnApp *)gSexyAppBase)->mGameMode == GameMode::GAMEMODE_CHALLENGE_BIG_TIME &&
-	    (aSeedType == SeedType::SEED_WALLNUT || aSeedType == SeedType::SEED_SUNFLOWER ||
-	     aSeedType == SeedType::SEED_MARIGOLD))
+	    (aPlaysAs == SeedType::SEED_WALLNUT || aPlaysAs == SeedType::SEED_SUNFLOWER ||
+	     aPlaysAs == SeedType::SEED_MARIGOLD))
 	{
 		aSeedG.mScaleX *= 1.5f;
 		aSeedG.mScaleY *= 1.5f;
 		aOffsetX = -20.0f;
 		aOffsetY = -40.0f;
 	}
-	if (aSeedType == SeedType::SEED_LEFTPEATER)
+	if (aPlaysAs == SeedType::SEED_LEFTPEATER)
 	{
 		aOffsetX += aSeedG.mScaleX * 80.0f;
 		aSeedG.mScaleX *= -1.0f;
@@ -2810,7 +2825,7 @@ void Plant::DrawSeedType(Graphics *g, SeedType theSeedType, SeedType theImitater
 	{
 		const PlantDefinition &aPlantDef = GetPlantDefinition(aSeedType);
 
-		if (aSeedType == SeedType::SEED_GIANT_WALLNUT)
+		if (aPlaysAs == SeedType::SEED_GIANT_WALLNUT)
 		{
 			aSeedG.mScaleX *= 1.4f;
 			aSeedG.mScaleY *= 1.4f;
@@ -2824,11 +2839,11 @@ void Plant::DrawSeedType(Graphics *g, SeedType theSeedType, SeedType theImitater
 		}
 		else
 		{
-			if (aSeedType == SeedType::SEED_KERNELPULT)
+			if (aPlaysAs == SeedType::SEED_KERNELPULT)
 			{
 				aCelRow = 2;
 			}
-			else if (aSeedType == SeedType::SEED_TWINSUNFLOWER)
+			else if (aPlaysAs == SeedType::SEED_TWINSUNFLOWER)
 			{
 				aCelRow = 1;
 			}
@@ -3259,6 +3274,14 @@ void Plant::Die()
 
 PlantDefinition &GetPlantDefinition(SeedType theSeedType)
 {
+	if (CustomTypes::PlantInfo *aCustom = CustomTypes::GetPlant(theSeedType))
+		return aCustom->mDefinition;
+	if (CustomTypes::IsCustom(theSeedType))
+	{
+		// A custom type whose definition file is gone (from a save)
+		return gPlantDefs[SeedType::SEED_PEASHOOTER];
+	}
+
 	TOD_ASSERT(gPlantDefs[theSeedType].mSeedType == theSeedType);
 	TOD_ASSERT(theSeedType >= 0 && theSeedType < (int)SeedType::NUM_SEED_TYPES);
 
@@ -3392,6 +3415,7 @@ int Plant::GetRefreshTime(SeedType theSeedType, SeedType theImitaterType)
 
 bool Plant::IsNocturnal(SeedType theSeedtype)
 {
+	theSeedtype = CustomTypes::PlaysAs(theSeedtype);
 	return theSeedtype == SeedType::SEED_PUFFSHROOM || theSeedtype == SeedType::SEED_SEASHROOM ||
 	       theSeedtype == SeedType::SEED_SUNSHROOM || theSeedtype == SeedType::SEED_FUMESHROOM ||
 	       theSeedtype == SeedType::SEED_HYPNOSHROOM || theSeedtype == SeedType::SEED_DOOMSHROOM ||
@@ -3401,17 +3425,20 @@ bool Plant::IsNocturnal(SeedType theSeedtype)
 
 bool Plant::IsAquatic(SeedType theSeedType)
 {
+	theSeedType = CustomTypes::PlaysAs(theSeedType);
 	return theSeedType == SeedType::SEED_LILYPAD || theSeedType == SeedType::SEED_TANGLEKELP ||
 	       theSeedType == SeedType::SEED_SEASHROOM || theSeedType == SeedType::SEED_CATTAIL;
 }
 
 bool Plant::IsFlying(SeedType theSeedtype)
 {
+	theSeedtype = CustomTypes::PlaysAs(theSeedtype);
 	return theSeedtype == SeedType::SEED_INSTANT_COFFEE;
 }
 
 bool Plant::IsUpgrade(SeedType theSeedtype)
 {
+	theSeedtype = CustomTypes::PlaysAs(theSeedtype);
 	return theSeedtype == SeedType::SEED_GATLINGPEA || theSeedtype == SeedType::SEED_WINTERMELON ||
 	       theSeedtype == SeedType::SEED_TWINSUNFLOWER || theSeedtype == SeedType::SEED_SPIKEROCK ||
 	       theSeedtype == SeedType::SEED_COBCANNON || theSeedtype == SeedType::SEED_GOLD_MAGNET ||
@@ -3506,6 +3533,18 @@ Rect Plant::GetPlantAttackRect(PlantWeapon thePlantWeapon)
 
 void Plant::PreloadPlantResources(SeedType theSeedType)
 {
+	if (CustomTypes::IsCustom(theSeedType))
+	{
+		// A custom type: its own animation, then whatever its base needs
+		const PlantDefinition &aCustomDef = GetPlantDefinition(theSeedType);
+		if (aCustomDef.mReanimationType != ReanimationType::REANIM_NONE)
+		{
+			ReanimatorEnsureDefinitionLoaded(aCustomDef.mReanimationType, true);
+		}
+		PreloadPlantResources(CustomTypes::PlaysAs(theSeedType));
+		return;
+	}
+
 	const PlantDefinition &aPlantDef = GetPlantDefinition(theSeedType);
 	if (aPlantDef.mReanimationType != ReanimationType::REANIM_NONE)
 	{

@@ -1,3 +1,4 @@
+#include "Component/CustomTypes.h"
 #include "Coin.h"
 #include "Board.h"
 #include "LawnCommon.h"
@@ -2358,6 +2359,8 @@ void Challenge::PlantAdded(Plant *thePlant)
 
 PlantingReason Challenge::CanPlantAt(int theGridX, int theGridY, SeedType theSeedType)
 {
+	// A custom type follows its base type's rules
+	theSeedType = CustomTypes::PlaysAs(theSeedType);
 	if (mApp->IsWallnutBowlingLevel())
 	{
 		return theGridX > 2 ? PLANTING_NOT_PASSED_LINE : PLANTING_OK;

@@ -39,6 +39,7 @@
 #include "../SexyAppFramework/MTRand.h"
 #include "../Sexy.TodLib/TodParticle.h"
 #include "Component/Archetypes.h"
+#include "Component/CustomTypes.h"
 #include "Component/ComponentRegistry.h"
 #include "Component/Teams.h"
 #include "../SexyAppFramework/SysFont.h"
@@ -594,10 +595,10 @@ void Board::PutZombieInWave(ZombieType theZombieType, int theWaveNumber, ZombieP
 
 void Board::PutInMissingZombies(int theWaveNumber, ZombiePicker *theZombiePicker)
 {
-	for (ZombieType aZombieType = ZombieType::ZOMBIE_NORMAL; aZombieType < ZombieType::NUM_ZOMBIE_TYPES;
-	     aZombieType = (ZombieType)((int)aZombieType + 1))
+	for (ZombieType aZombieType : CustomTypes::AllZombieTypes())
 	{
-		if (theZombiePicker->mZombieTypeCount[(int)aZombieType] <= 0 && aZombieType != ZombieType::ZOMBIE_YETI &&
+		if (theZombiePicker->mZombieTypeCount[(int)aZombieType] <= 0 &&
+		    CustomTypes::PlaysAs(aZombieType) != ZombieType::ZOMBIE_YETI &&
 		    CanZombieSpawnOnLevel(aZombieType, mLevel))
 		{
 			PutZombieInWave(aZombieType, theWaveNumber, theZombiePicker);
@@ -1185,9 +1186,9 @@ void Board::InitZombieWavesForLevel(int theForLevel)
 		return;
 	}
 
-	for (int aZombieType = ZombieType::ZOMBIE_NORMAL; aZombieType < ZombieType::NUM_ZOMBIE_TYPES; aZombieType++)
+	for (ZombieType aZombieType : CustomTypes::AllZombieTypes())
 	{
-		mZombieAllowed[aZombieType] = CanZombieSpawnOnLevel((ZombieType)aZombieType, theForLevel);
+		mZombieAllowed[aZombieType] = CanZombieSpawnOnLevel(aZombieType, theForLevel);
 	}
 }
 
@@ -1197,7 +1198,7 @@ bool Board::IsZombieWaveDistributionOk()
 	if (!mApp->IsAdventureMode())
 		return true;
 
-	int aZombieTypeCount[(int)ZombieType::NUM_ZOMBIE_TYPES] = { 0 };
+	int aZombieTypeCount[MAX_ZOMBIE_TYPES] = { 0 };
 	for (int aWave = 0; aWave < mNumWaves; aWave++)
 	{
 		for (int aIndex = 0; aIndex < MAX_ZOMBIES_IN_WAVE; aIndex++)
@@ -1208,15 +1209,14 @@ bool Board::IsZombieWaveDistributionOk()
 				break;
 			}
 
-			TOD_ASSERT(aZombieType >= 0 && aZombieType < ZombieType::NUM_ZOMBIE_TYPES);
+			TOD_ASSERT(aZombieType >= 0 && aZombieType < MAX_ZOMBIE_TYPES);
 			aZombieTypeCount[(int)aZombieType]++;
 		}
 	}
 
-	for (ZombieType aZombieType = ZombieType::ZOMBIE_NORMAL; aZombieType < ZombieType::NUM_ZOMBIE_TYPES;
-	     aZombieType = (ZombieType)((int)aZombieType + 1))
+	for (ZombieType aZombieType : CustomTypes::AllZombieTypes())
 	{
-		if (aZombieType != ZombieType::ZOMBIE_YETI && CanZombieSpawnOnLevel(aZombieType, mLevel) &&
+		if (CustomTypes::PlaysAs(aZombieType) != ZombieType::ZOMBIE_YETI && CanZombieSpawnOnLevel(aZombieType, mLevel) &&
 		    aZombieTypeCount[(int)aZombieType] == 0)
 		{
 			TodTraceAndLog("[LawnProject] - Didn't spawn required zombie %s, level %d",
@@ -2123,6 +2123,7 @@ Plant *Board::AddPlant(int theGridX, int theGridY, SeedType theSeedType, SeedTyp
 	SeedType aActualType = theSeedType;
 	if (theSeedType == SeedType::SEED_IMITATER && theImitaterType != SeedType::SEED_NONE)
 		aActualType = theImitaterType;
+	aActualType = CustomTypes::PlaysAs(aActualType); // for the achievements below
 
 	if (StageHasPool() && !StageIsNight())
 	{
@@ -2349,11 +2350,13 @@ int Board::CountSunFlowers()
 
 int Board::CountPlantByType(SeedType theSeedType)
 {
+	// A custom type counts its own plants; a game type also counts the custom plants based on it
+	bool isCustom = CustomTypes::IsCustom(theSeedType);
 	int aCount = 0;
 	Plant *aPlant = nullptr;
 	while (IteratePlants(aPlant))
 	{
-		if (aPlant->mSeedType == theSeedType)
+		if ((isCustom ? aPlant->mDefinitionType : aPlant->mSeedType) == theSeedType)
 		{
 			aCount++;
 		}
@@ -2423,7 +2426,7 @@ Projectile *Board::AddProjectile(int theX, int theY, int theRenderOrder, int the
 bool Board::CanZombieSpawnOnLevel(ZombieType theZombieType, int theLevel)
 {
 	const ZombieDefinition &aZombieDef = GetZombieDefinition(theZombieType);
-	if (theZombieType == ZombieType::ZOMBIE_YETI)
+	if (CustomTypes::PlaysAs(theZombieType) == ZombieType::ZOMBIE_YETI)
 	{
 		return gLawnApp->CanSpawnYetis();
 	}
@@ -2432,6 +2435,11 @@ bool Board::CanZombieSpawnOnLevel(ZombieType theZombieType, int theLevel)
 	{
 		return false;
 	}
+
+	if (CustomTypes::ZombieInfo *aCustom = CustomTypes::GetZombie(theZombieType))
+		return aCustom->mAllowedOnLevel[ClampInt(theLevel - 1, 0, 49)];
+	if (theZombieType < 0 || theZombieType >= NUM_ZOMBIE_TYPES)
+		return false;
 
 	TOD_ASSERT(gZombieAllowedLevels[theZombieType].mZombieType == theZombieType);
 	return gZombieAllowedLevels[theZombieType].mAllowedOnLevel[ClampInt(theLevel - 1, 0, 49)];
@@ -2488,16 +2496,17 @@ ZombieType Board::PickGraveRisingZombieType(int theZombiePoints)
 ZombieType Board::PickZombieType(int theZombiePoints, int theWaveIndex, ZombiePicker *theZombiePicker)
 {
 	int aPickCount = 0;
-	TodWeightedArray aZombieWeightArray[ZombieType::NUM_ZOMBIE_TYPES];
-	for (int aZombieType = ZombieType::ZOMBIE_NORMAL; aZombieType < ZombieType::NUM_ZOMBIE_TYPES; aZombieType++)
+	TodWeightedArray aZombieWeightArray[MAX_ZOMBIE_TYPES];
+	for (ZombieType aZombieType : CustomTypes::AllZombieTypes())
 	{
 		if (!mZombieAllowed[aZombieType])
 			continue;
+		ZombieType aPlaysAs = CustomTypes::PlaysAs(aZombieType);
 
-		const ZombieDefinition &aZombieDef = GetZombieDefinition((ZombieType)aZombieType);
+		const ZombieDefinition &aZombieDef = GetZombieDefinition(aZombieType);
 
 		GameMode aGameMode = mApp->mGameMode;
-		if (aZombieType == ZombieType::ZOMBIE_BUNGEE && mApp->IsSurvivalEndless(aGameMode))
+		if (aPlaysAs == ZombieType::ZOMBIE_BUNGEE && mApp->IsSurvivalEndless(aGameMode))
 		{
 			if (!IsFlagWave(theWaveIndex))
 			{
@@ -2525,7 +2534,7 @@ ZombieType Board::PickZombieType(int theZombiePoints, int theWaveIndex, ZombiePi
 		if (mApp->IsSurvivalMode())
 		{
 			int aFlags = GetSurvivalFlagsCompleted();
-			if (aZombieType == ZombieType::ZOMBIE_GARGANTUAR || aZombieType == ZombieType::ZOMBIE_ZAMBONI)
+			if (aPlaysAs == ZombieType::ZOMBIE_GARGANTUAR || aPlaysAs == ZombieType::ZOMBIE_ZAMBONI)
 			{
 				if (theZombiePicker->mZombieTypeCount[aZombieType] >=
 				    TodAnimateCurve(10, 50, aFlags, 2, 50, TodCurves::CURVE_LINEAR))
@@ -2533,7 +2542,7 @@ ZombieType Board::PickZombieType(int theZombiePoints, int theWaveIndex, ZombiePi
 					continue;
 				}
 			}
-			else if (aZombieType == ZombieType::ZOMBIE_REDEYE_GARGANTUAR)
+			else if (aPlaysAs == ZombieType::ZOMBIE_REDEYE_GARGANTUAR)
 			{
 				if (IsFlagWave(theWaveIndex))
 				{
@@ -2553,11 +2562,11 @@ ZombieType Board::PickZombieType(int theZombiePoints, int theWaveIndex, ZombiePi
 					aPickWeight = 1000;
 				}
 			}
-			else if (aZombieType == ZombieType::ZOMBIE_NORMAL)
+			else if (aPlaysAs == ZombieType::ZOMBIE_NORMAL)
 			{
 				aPickWeight = TodAnimateCurve(10, 50, aFlags, aPickWeight, aPickWeight / 10, TodCurves::CURVE_LINEAR);
 			}
-			else if (aZombieType == ZombieType::ZOMBIE_TRAFFIC_CONE)
+			else if (aPlaysAs == ZombieType::ZOMBIE_TRAFFIC_CONE)
 			{
 				aPickWeight = TodAnimateCurve(10, 50, aFlags, aPickWeight, aPickWeight / 4, TodCurves::CURVE_LINEAR);
 			}
@@ -2769,6 +2778,8 @@ bool Board::IsIceAt(int theGridX, int theGridY)
 
 PlantingReason Board::CanPlantAt(int theGridX, int theGridY, SeedType theSeedType)
 {
+	// A custom type follows its base type's rules
+	theSeedType = CustomTypes::PlaysAs(theSeedType);
 	if (theGridX < 0 || theGridX >= MAX_GRID_SIZE_X || theGridY < 0 || theGridY >= MAX_GRID_SIZE_Y)
 	{
 		return PlantingReason::PLANTING_NOT_HERE;
@@ -3200,7 +3211,8 @@ void Board::UpdateMousePosition()
 		aPlant->mHighlighted = false;
 	}
 
-	SeedType aCursorSeedType = GetSeedTypeInCursor();
+	// Highlights follow the planting rules, which are the base's for a custom plant
+	SeedType aCursorSeedType = CustomTypes::PlaysAs(GetSeedTypeInCursor());
 	int aMouseX = mApp->mWidgetManager->mLastMouseX - mX;
 	int aMouseY = mApp->mWidgetManager->mLastMouseY - mY;
 
@@ -3331,7 +3343,7 @@ void Board::UpdateToolTip()
 			return;
 		}
 
-		SexyString aZombieName = StrFormat("[%s]", GetZombieDefinition(aZombie->mZombieType).mZombieName);
+		SexyString aZombieName = StrFormat("[%s]", GetZombieDefinition(aZombie->mDefinitionType).mZombieName);
 		mToolTip->SetTitle(aZombieName);
 		if (mApp->CanShowAlmanac() && aZombie->mZombieType != ZombieType::ZOMBIE_REDEYE_GARGANTUAR)
 		{
@@ -3715,6 +3727,8 @@ void Board::MouseDownWithPlant(int x, int y, int theClickCount)
 	}
 
 	SeedType aPlantingSeedType = GetSeedTypeInCursor();
+	// A custom plant follows its base's planting rules; it is still planted (and paid for) as itself
+	SeedType aPlaysAs = CustomTypes::PlaysAs(aPlantingSeedType);
 	int aGridX = PlantingPixelToGridX(x, y, aPlantingSeedType);
 	int aGridY = PlantingPixelToGridY(x, y, aPlantingSeedType);
 
@@ -3740,7 +3754,7 @@ void Board::MouseDownWithPlant(int x, int y, int theClickCount)
 			DisplayAdvice("[ADVICE_GRAVEBUSTERS_ON_GRAVES]", MessageStyle::MESSAGE_STYLE_HINT_FAST,
 			              AdviceType::ADVICE_PLANT_GRAVEBUSTERS_ON_GRAVES);
 		}
-		else if (aPlantingSeedType == SeedType::SEED_LILYPAD)
+		else if (aPlaysAs == SeedType::SEED_LILYPAD)
 		{
 			if (aReason == PlantingReason::PLANTING_ONLY_IN_POOL)
 			{
@@ -3748,7 +3762,7 @@ void Board::MouseDownWithPlant(int x, int y, int theClickCount)
 				              AdviceType::ADVICE_PLANT_LILYPAD_ON_WATER);
 			}
 		}
-		else if (aPlantingSeedType == SeedType::SEED_TANGLEKELP)
+		else if (aPlaysAs == SeedType::SEED_TANGLEKELP)
 		{
 			if (aReason == PlantingReason::PLANTING_ONLY_IN_POOL)
 			{
@@ -3756,7 +3770,7 @@ void Board::MouseDownWithPlant(int x, int y, int theClickCount)
 				              AdviceType::ADVICE_PLANT_TANGLEKELP_ON_WATER);
 			}
 		}
-		else if (aPlantingSeedType == SeedType::SEED_SEASHROOM)
+		else if (aPlaysAs == SeedType::SEED_SEASHROOM)
 		{
 			if (aReason == PlantingReason::PLANTING_ONLY_IN_POOL)
 			{
@@ -3776,7 +3790,7 @@ void Board::MouseDownWithPlant(int x, int y, int theClickCount)
 		}
 		else if (aReason == PlantingReason::PLANTING_NEEDS_UPGRADE)
 		{
-			switch (aPlantingSeedType)
+			switch (aPlaysAs)
 			{
 			case SeedType::SEED_GATLINGPEA:
 				DisplayAdvice("[ADVICE_ONLY_ON_REPEATERS]", MessageStyle::MESSAGE_STYLE_HINT_FAST,
@@ -3865,7 +3879,7 @@ void Board::MouseDownWithPlant(int x, int y, int theClickCount)
 				DisplayAdvice("[ZEN_ONLY_AQUATIC_PLANTS]", MessageStyle::MESSAGE_STYLE_HINT_FAST,
 				              AdviceType::ADVICE_NONE);
 			}
-			else if (aPlantingSeedType == SeedType::SEED_POTATOMINE)
+			else if (aPlaysAs == SeedType::SEED_POTATOMINE)
 			{
 				DisplayAdvice("[ADVICE_POTATO_MINE_ON_LILY]", MessageStyle::MESSAGE_STYLE_HINT_FAST,
 				              AdviceType::ADVICE_PLANT_POTATOE_MINE_ON_LILY);
@@ -3936,28 +3950,28 @@ void Board::MouseDownWithPlant(int x, int y, int theClickCount)
 	Plant *aPumpkinPlant = aPlantOnLawn.mPumpkinPlant;
 	if (aNormalPlant && aNormalPlant->IsUpgradableTo(aPlantingSeedType))
 	{
-		if (aPlantingSeedType == SeedType::SEED_GLOOMSHROOM)
+		if (aPlaysAs == SeedType::SEED_GLOOMSHROOM)
 		{
 			aIsAwake = !aNormalPlant->mIsAsleep;
 			aWakeUpCounter = aNormalPlant->mWakeUpCounter;
 		}
 		aNormalPlant->Die();
 	}
-	if ((aPlantingSeedType == SeedType::SEED_WALLNUT || aPlantingSeedType == SeedType::SEED_TALLNUT) && aNormalPlant)
+	if ((aPlaysAs == SeedType::SEED_WALLNUT || aPlaysAs == SeedType::SEED_TALLNUT) && aNormalPlant)
 	{
-		if (aNormalPlant->mSeedType == aPlantingSeedType)
+		if (aNormalPlant->mSeedType == aPlaysAs)
 		{
 			aNormalPlant->Die();
 		}
 	}
-	if (aPlantingSeedType == SeedType::SEED_PUMPKINSHELL && aPumpkinPlant)
+	if (aPlaysAs == SeedType::SEED_PUMPKINSHELL && aPumpkinPlant)
 	{
 		if (aPumpkinPlant->mSeedType == SeedType::SEED_PUMPKINSHELL)
 		{
 			aPumpkinPlant->Die();
 		}
 	}
-	if (aPlantingSeedType == SeedType::SEED_COBCANNON)
+	if (aPlaysAs == SeedType::SEED_COBCANNON)
 	{
 		Plant *aRightPlant = GetTopPlantAt(aGridX + 1, aGridY, PlantPriority::TOPPLANT_ONLY_NORMAL_POSITION);
 		if (aRightPlant)
@@ -3965,7 +3979,7 @@ void Board::MouseDownWithPlant(int x, int y, int theClickCount)
 			aRightPlant->Die();
 		}
 	}
-	if (aPlantingSeedType == SeedType::SEED_CATTAIL)
+	if (aPlaysAs == SeedType::SEED_CATTAIL)
 	{
 		if (aPlantOnLawn.mUnderPlant)
 		{
@@ -4018,15 +4032,15 @@ void Board::MouseDownWithPlant(int x, int y, int theClickCount)
 			if (aRow == aGridY || CanPlantAt(aGridX, aRow, aPlantingSeedType) != PlantingReason::PLANTING_OK)
 				continue;
 
-			if (aPlantingSeedType == SeedType::SEED_WALLNUT || aPlantingSeedType == SeedType::SEED_TALLNUT)
+			if (aPlaysAs == SeedType::SEED_WALLNUT || aPlaysAs == SeedType::SEED_TALLNUT)
 			{
 				aNormalPlant = GetTopPlantAt(aGridX, aRow, PlantPriority::TOPPLANT_ONLY_NORMAL_POSITION);
-				if (aNormalPlant && aNormalPlant->mSeedType == aPlantingSeedType)
+				if (aNormalPlant && aNormalPlant->mSeedType == aPlaysAs)
 				{
 					aNormalPlant->Die();
 				}
 			}
-			if (aPlantingSeedType == SeedType::SEED_PUMPKINSHELL)
+			if (aPlaysAs == SeedType::SEED_PUMPKINSHELL)
 			{
 				aPumpkinPlant = GetTopPlantAt(aGridX, aRow, PlantPriority::TOPPLANT_ONLY_PUMPKIN);
 				if (aPumpkinPlant && aPumpkinPlant->mSeedType == SeedType::SEED_PUMPKINSHELL)
@@ -4046,7 +4060,7 @@ void Board::MouseDownWithPlant(int x, int y, int theClickCount)
 	else if (mTutorialState == TutorialState::TUTORIAL_LEVEL_2_PLANT_SUNFLOWER)
 	{
 		int aSunFlowersCount = CountSunFlowers();
-		if (aPlantingSeedType == SeedType::SEED_SUNFLOWER && aSunFlowersCount == 2)
+		if (aPlaysAs == SeedType::SEED_SUNFLOWER && aSunFlowersCount == 2)
 		{
 			DisplayAdvice("[ADVICE_MORE_SUNFLOWERS]", MessageStyle::MESSAGE_STYLE_TUTORIAL_LEVEL2,
 			              AdviceType::ADVICE_NONE);
@@ -9787,6 +9801,8 @@ int Board::GetSeedBankExtraWidth()
 
 void Board::OffsetYForPlanting(int &theY, SeedType theSeedType)
 {
+	// A custom type follows its base type's rules
+	theSeedType = CustomTypes::PlaysAs(theSeedType);
 	if (Plant::IsFlying(theSeedType) || theSeedType == SeedType::SEED_GRAVEBUSTER)
 	{
 		theY += 15;
@@ -9804,12 +9820,16 @@ void Board::OffsetYForPlanting(int &theY, SeedType theSeedType)
 
 int Board::PlantingPixelToGridX(int theX, int theY, SeedType theSeedType)
 {
+	// A custom type follows its base type's rules
+	theSeedType = CustomTypes::PlaysAs(theSeedType);
 	OffsetYForPlanting(theY, theSeedType);
 	return PixelToGridX(theX, theY);
 }
 
 int Board::PlantingPixelToGridY(int theX, int theY, SeedType theSeedType)
 {
+	// A custom type follows its base type's rules
+	theSeedType = CustomTypes::PlaysAs(theSeedType);
 	OffsetYForPlanting(theY, theSeedType);
 
 	int aGridY = PixelToGridY(theX, theY);
@@ -10205,6 +10225,8 @@ void Board::KillAllPlantsInRadius(int theAttackerTeam, int theX, int theY, int t
 
 unsigned int Board::SeedNotRecommendedForLevel(SeedType theSeedType)
 {
+	// A custom type follows its base type's rules
+	theSeedType = CustomTypes::PlaysAs(theSeedType);
 	unsigned int aNotRec = 0;
 	if (Plant::IsNocturnal(theSeedType) && !StageIsNight())
 	{
@@ -10530,6 +10552,8 @@ void Board::UpdateGridItems()
 
 bool Board::PlantingRequirementsMet(SeedType theSeedType)
 {
+	// A custom type follows its base type's rules
+	theSeedType = CustomTypes::PlaysAs(theSeedType);
 	switch (theSeedType)
 	{
 	case SeedType::SEED_GATLINGPEA:
@@ -10655,6 +10679,8 @@ void Board::RemoveParticleByType(ParticleEffect theEffectType)
 
 bool Board::PlantUsesAcceleratedPricing(SeedType theSeedType)
 {
+	// A custom type follows its base type's rules
+	theSeedType = CustomTypes::PlaysAs(theSeedType);
 	return Plant::IsUpgrade(theSeedType) && mApp->IsSurvivalEndless(mApp->mGameMode);
 }
 
@@ -10794,6 +10820,7 @@ int Board::NumberZombiesInWave(int theWaveIndex)
 
 bool Board::IsZombieTypeSpawnedOnly(ZombieType theZombieType)
 {
-	return (theZombieType == ZombieType::ZOMBIE_BACKUP_DANCER || theZombieType == ZombieType::ZOMBIE_BOBSLED ||
-	        theZombieType == ZombieType::ZOMBIE_IMP);
+	ZombieType aPlaysAs = CustomTypes::PlaysAs(theZombieType);
+	return (aPlaysAs == ZombieType::ZOMBIE_BACKUP_DANCER || aPlaysAs == ZombieType::ZOMBIE_BOBSLED ||
+	        aPlaysAs == ZombieType::ZOMBIE_IMP);
 }

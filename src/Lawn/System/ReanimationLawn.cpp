@@ -1,3 +1,4 @@
+#include "../Component/CustomTypes.h"
 #include "../Plant.h"
 #include "../Zombie.h"
 #include "../../LawnApp.h"
@@ -132,6 +133,8 @@ MemoryImage *ReanimatorCache::ConvertGPUImageToMemoryImage(GPUImage* theImage)
 void ReanimatorCache::GetPlantImageSize(
     SeedType theSeedType, int &theOffsetX, int &theOffsetY, int &theWidth, int &theHeight)
 {
+	// Sized like its base
+	theSeedType = CustomTypes::PlaysAs(theSeedType);
 	theOffsetX = -20;
 	theOffsetY = -20;
 	theWidth = 120;
@@ -235,6 +238,8 @@ MemoryImage *ReanimatorCache::MakeCachedPlantFrame(SeedType theSeedType, DrawVar
 
 	PlantDefinition &aPlantDef = GetPlantDefinition(theSeedType);
 	//TOD_ASSERT(aPlantDef.mReanimationType != ReanimationType::REANIM_NONE);
+	// Its own animation, posed like its base
+	theSeedType = CustomTypes::PlaysAs(theSeedType);
 
 	if (theSeedType == SeedType::SEED_POTATOMINE)
 	{
@@ -329,6 +334,9 @@ MemoryImage *ReanimatorCache::MakeCachedZombieFrame(ZombieType theZombieType)
 	}
 	ZombieDefinition &aZombieDef = GetZombieDefinition(aUseZombieType);
 	TOD_ASSERT(aZombieDef.mReanimationType != ReanimationType::REANIM_NONE);
+	// Its own animation, posed like its base
+	aUseZombieType = CustomTypes::PlaysAs(aUseZombieType);
+	theZombieType = CustomTypes::PlaysAs(theZombieType);
 
 	float aPosX = 40.0f, aPosY = 40.0f;
 	if (aZombieDef.mReanimationType == ReanimationType::REANIM_ZOMBIE)
@@ -430,17 +438,17 @@ MemoryImage *ReanimatorCache::MakeCachedZombieFrame(ZombieType theZombieType)
 void ReanimatorCache::ReanimatorCacheInitialize()
 {
 	mApp = (LawnApp *)gSexyAppBase;
-	for (int i = 0; i < SeedType::NUM_SEED_TYPES; i++)
+	for (int i = 0; i < MAX_SEED_TYPES; i++)
 		mPlantImages[i] = nullptr;
 	for (int i = 0; i < LawnMowerType::NUM_MOWER_TYPES; i++)
 		mLawnMowers[i] = nullptr;
-	for (int i = 0; i < ZombieType::NUM_ZOMBIE_TYPES; i++)
+	for (int i = 0; i < MAX_ZOMBIE_TYPES; i++)
 		mZombieImages[i] = nullptr;
 }
 
 void ReanimatorCache::ReanimatorCacheDispose()
 {
-	for (int i = 0; i < SeedType::NUM_SEED_TYPES; i++)
+	for (int i = 0; i < MAX_SEED_TYPES; i++)
 		delete mPlantImages[i];
 	while (mImageVariationList.mSize != 0)
 	{
@@ -450,14 +458,14 @@ void ReanimatorCache::ReanimatorCacheDispose()
 	}
 	for (int i = 0; i < LawnMowerType::NUM_MOWER_TYPES; i++)
 		delete mLawnMowers[i];
-	for (int i = 0; i < ZombieType::NUM_ZOMBIE_TYPES; i++)
+	for (int i = 0; i < MAX_ZOMBIE_TYPES; i++)
 		delete mZombieImages[i];
 }
 
 void ReanimatorCache::DrawCachedPlant(
     Graphics *g, float thePosX, float thePosY, SeedType theSeedType, DrawVariation theDrawVariation)
 {
-	TOD_ASSERT(theSeedType >= 0 && theSeedType < SeedType::NUM_SEED_TYPES);
+	TOD_ASSERT(theSeedType >= 0 && theSeedType < MAX_SEED_TYPES);
 
 	MemoryImage *aImage = nullptr;
 	if (theDrawVariation != DrawVariation::VARIATION_NORMAL)
@@ -513,7 +521,7 @@ void ReanimatorCache::DrawCachedMower(Graphics *g, float thePosX, float thePosY,
 
 void ReanimatorCache::DrawCachedZombie(Graphics *g, float thePosX, float thePosY, ZombieType theZombieType)
 {
-	TOD_ASSERT(theZombieType >= 0 && theZombieType < ZombieType::NUM_CACHED_ZOMBIE_TYPES);
+	TOD_ASSERT(theZombieType >= 0 && theZombieType < MAX_ZOMBIE_TYPES);
 
 	if (mZombieImages[(int)theZombieType] == nullptr)
 		mZombieImages[(int)theZombieType] = MakeCachedZombieFrame(theZombieType);

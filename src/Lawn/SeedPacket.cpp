@@ -1,3 +1,4 @@
+#include "Component/CustomTypes.h"
 #include "Board.h"
 #include "Cutscene.h"
 #include "Challenge.h"
@@ -201,55 +202,57 @@ void SeedPacketDrawSeed(Graphics *g, float x, float y, SeedType theSeedType, See
 		aImage = FilterEffectGetImage(aImage, aFilterEffect);
 	}
 
-	if (aSeedType == SeedType::SEED_POTATOMINE && g->mScaleX <= 1.0f)
+	// Placed and scaled like its base
+	SeedType aPlaysAs = CustomTypes::PlaysAs(aSeedType);
+	if (aPlaysAs == SeedType::SEED_POTATOMINE && g->mScaleX <= 1.0f)
 	{
 		TodDrawImageCelScaledF(g, aImage, x, y, 0, 0, g->mScaleX, g->mScaleY);
 	}
-	else if (aSeedType == SeedType::SEED_CHOMPER && g->mScaleX <= 1.0f)
+	else if (aPlaysAs == SeedType::SEED_CHOMPER && g->mScaleX <= 1.0f)
 	{
 		TodDrawImageCelScaledF(g, aImage, x, y, 1, 0, g->mScaleX, g->mScaleY);
 	}
-	else if (aSeedType == SeedType::SEED_HYPNOSHROOM && g->mScaleX <= 1.0f)
+	else if (aPlaysAs == SeedType::SEED_HYPNOSHROOM && g->mScaleX <= 1.0f)
 	{
 		TodDrawImageCelScaledF(g, aImage, x, y, 2, 0, g->mScaleX, g->mScaleY);
 	}
-	else if (aSeedType == SeedType::SEED_TALLNUT && g->mScaleX <= 1.0f)
+	else if (aPlaysAs == SeedType::SEED_TALLNUT && g->mScaleX <= 1.0f)
 	{
 		TodDrawImageCelScaledF(g, aImage, x, y, 3, 0, g->mScaleX, g->mScaleY);
 	}
-	else if (aSeedType == SeedType::SEED_BLOVER && g->mScaleX <= 1.0f)
+	else if (aPlaysAs == SeedType::SEED_BLOVER && g->mScaleX <= 1.0f)
 	{
 		TodDrawImageCelScaledF(g, aImage, x, y, 4, 0, g->mScaleX, g->mScaleY);
 	}
-	else if (aSeedType == SeedType::SEED_PUMPKINSHELL && g->mScaleX <= 1.0f)
+	else if (aPlaysAs == SeedType::SEED_PUMPKINSHELL && g->mScaleX <= 1.0f)
 	{
 		TodDrawImageCelScaledF(g, aImage, x, y, 5, 0, g->mScaleX, g->mScaleY);
 	}
-	else if (aSeedType == SeedType::SEED_TWINSUNFLOWER && g->mScaleX <= 1.0f)
+	else if (aPlaysAs == SeedType::SEED_TWINSUNFLOWER && g->mScaleX <= 1.0f)
 	{
 		TodDrawImageCelScaledF(g, aImage, x, y, 6, 0, g->mScaleX, g->mScaleY);
 	}
-	else if (aSeedType == SeedType::SEED_COBCANNON && g->mScaleX <= 1.0f)
+	else if (aPlaysAs == SeedType::SEED_COBCANNON && g->mScaleX <= 1.0f)
 	{
 		TodDrawImageCelScaledF(g, aImage, x, y, 7, 0, g->mScaleX, g->mScaleY);
 	}
-	else if (aSeedType == SeedType::SEED_CABBAGEPULT && g->mScaleX <= 1.0f)
+	else if (aPlaysAs == SeedType::SEED_CABBAGEPULT && g->mScaleX <= 1.0f)
 	{
 		TodDrawImageCelScaledF(g, aImage, x, y, 8, 0, g->mScaleX, g->mScaleY);
 	}
-	else if (aSeedType == SeedType::SEED_KERNELPULT && g->mScaleX <= 1.0f)
+	else if (aPlaysAs == SeedType::SEED_KERNELPULT && g->mScaleX <= 1.0f)
 	{
 		TodDrawImageCelScaledF(g, aImage, x, y, 9, 0, g->mScaleX, g->mScaleY);
 	}
-	else if (aSeedType == SeedType::SEED_MELONPULT && g->mScaleX <= 1.0f)
+	else if (aPlaysAs == SeedType::SEED_MELONPULT && g->mScaleX <= 1.0f)
 	{
 		TodDrawImageCelScaledF(g, aImage, x, y, 10, 0, g->mScaleX, g->mScaleY);
 	}
-	else if (aSeedType == SeedType::SEED_WINTERMELON && g->mScaleX <= 1.0f)
+	else if (aPlaysAs == SeedType::SEED_WINTERMELON && g->mScaleX <= 1.0f)
 	{
 		TodDrawImageCelScaledF(g, aImage, x, y, 11, 0, g->mScaleX, g->mScaleY);
 	}
-	else if (aSeedType == SeedType::SEED_SPIKEROCK && g->mScaleX <= 1.0f)
+	else if (aPlaysAs == SeedType::SEED_SPIKEROCK && g->mScaleX <= 1.0f)
 	{
 		TodDrawImageCelScaledF(g, aImage, x, y, 12, 0, g->mScaleX, g->mScaleY);
 	}
@@ -271,6 +274,9 @@ void DrawSeedPacket(Graphics *g, float x, float y, SeedType theSeedType, SeedTyp
 	{
 		aSeedType = theImitaterType;
 	}
+
+	// Drawn like its base's packet
+	SeedType aPlaysAs = CustomTypes::PlaysAs(aSeedType);
 
 	if (theGrayness != 255)
 	{
@@ -309,7 +315,7 @@ void DrawSeedPacket(Graphics *g, float x, float y, SeedType theSeedType, SeedTyp
 	bool aDrawSeedInMiddle = true;
 	float aOffsetX = 5.0f;
 	float aOffsetY = 8.0f;
-	switch (aSeedType)
+	switch (aPlaysAs)
 	{
 	case SeedType::SEED_TALLNUT:
 		aScale = 0.3f;
@@ -505,14 +511,14 @@ void DrawSeedPacket(Graphics *g, float x, float y, SeedType theSeedType, SeedTyp
 	}
 	if (((LawnApp *)gSexyAppBase)->mGameMode == GameMode::GAMEMODE_CHALLENGE_BIG_TIME)
 	{
-		if (aSeedType == SeedType::SEED_WALLNUT || aSeedType == SeedType::SEED_SUNFLOWER ||
-		    aSeedType == SeedType::SEED_MARIGOLD)
+		if (aPlaysAs == SeedType::SEED_WALLNUT || aPlaysAs == SeedType::SEED_SUNFLOWER ||
+		    aPlaysAs == SeedType::SEED_MARIGOLD)
 		{
 			aOffsetX = 16.0f;
 			aOffsetY = 34.0f;
 		}
 	}
-	if (aSeedType == SeedType::SEED_GIANT_WALLNUT)
+	if (aPlaysAs == SeedType::SEED_GIANT_WALLNUT)
 	{
 		aScale *= 0.75f;
 		aOffsetX = 52.0f;

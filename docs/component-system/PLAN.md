@@ -290,10 +290,23 @@ hypnosis, team-based projectile collision, generic shooter, plant heads, produce
   from the component's defaults), and `-checkdefinitions=<folder>` verifies that every file builds byte-identical
   components to the tables (all 100 vanilla files do). Both run before the game starts. The debugger has a
   Definitions tab: load problems (unknown components, fields, enum names) and a Reload button.
-- Next, step 2: new types. A definition that names a type the game doesn't have yet (`"zombie": "ZOMBIE_MY_ZOMBIE"`)
-  registers it, with what the fixed C++ tables hold today (animation, Almanac name and text, sun cost, seed packet,
-  when it appears in levels...). Everything indexed by `ZombieType` / `SeedType` (definition tables, per-type
-  arrays, the Almanac, the seed chooser, wave spawning) has to accept those IDs.
+- Done, step 2: new zombie and plant types from files alone (see "New zombies and plants" in `DEFINITIONS.md`).
+  A file naming an unknown type with `"basedOn"` registers it in `CustomTypes` (`Component/CustomTypes.h`). It gets
+  an ID from `FIRST_CUSTOM_ZOMBIE_TYPE` / `FIRST_CUSTOM_SEED_TYPE` (`ConstEnums.h`; arrays indexed by type are
+  now `MAX_ZOMBIE_TYPES` / `MAX_SEED_TYPES` long), its `ZombieDefinition` / `PlantDefinition` (the base's,
+  overridden by `"info"`), its strings, and optionally a fixed `"id"`. A custom type plays as its base:
+  `Zombie::mZombieType` / `Plant::mSeedType` hold the base, and the new `mDefinitionType` holds the custom type.
+  `CustomTypes::PlaysAs` resolves a type to its base where rules are written per type: placement, packets, offsets,
+  the Almanac, waves, cutscene previews. Custom `.reanim` files get reserved reanimation slots
+  (`ReanimatorRegisterCustom`, 64 of them). Waves, the street preview, preloading, the debugger's spawn lists, the
+  seed chooser (extra pages behind a "More Plants" button) and the Almanac (extra pages) all include custom types.
+  Definitions load in the loading thread, right after the string tables. Examples are in
+  `docs/component-system/examples/`. `-checkdefinitions` also lists the custom types it loads. `SAVE_VERSION` 18.
+  New zombies stay out of levels until their file sets a `pickWeight`. The page buttons use the chooser's small
+  button art: in the seed chooser above the Almanac button, in the Almanac centred between Index and Close
+  (placed from mockups of the game's art, not yet seen in game).
+- Not yet: new projectile types; a new type based on another new type; a custom Dancer or Bobsled bringing custom
+  companions.
 
 ## Adding a component
 

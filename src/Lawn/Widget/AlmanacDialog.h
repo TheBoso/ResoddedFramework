@@ -1,6 +1,7 @@
 #ifndef __ALMANACDIALOG_H__
 #define __ALMANACDIALOG_H__
 
+#include <vector>
 #include "LawnDialog.h"
 
 #define NUM_ALMANAC_SEEDS 49
@@ -31,7 +32,8 @@ class AlmanacDialog : public LawnDialog
 		ALMANAC_BUTTON_CLOSE = 0,
 		ALMANAC_BUTTON_PLANT = 1,
 		ALMANAC_BUTTON_ZOMBIE = 2,
-		ALMANAC_BUTTON_INDEX = 3
+		ALMANAC_BUTTON_INDEX = 3,
+		ALMANAC_BUTTON_MORE = 4
 	};
 
   public:
@@ -40,6 +42,11 @@ class AlmanacDialog : public LawnDialog
 	GameButton *mIndexButton;
 	GameButton *mPlantButton;
 	GameButton *mZombieButton;
+	/// Switches between the game's plants or zombies and the custom ones (see Component/CustomTypes.h)
+	GameButton *mMoreButton;
+	/// The page of the plant and zombie grids on show: 0 the game's, 1 and up the custom ones
+	int mPlantPage;
+	int mZombiePage;
 	AlmanacPage mOpenPage;
 	Reanimation *mReanim[4];
 	SeedType mSelectedSeed;
@@ -65,6 +72,12 @@ class AlmanacDialog : public LawnDialog
 	void DrawZombies(Graphics *g);
 	virtual void Draw(Graphics *g);
 	void GetSeedPosition(SeedType theSeedType, int &x, int &y);
+	/// @brief The plants in the grid on show
+	std::vector<SeedType> PlantsOnPage();
+	int NumPlantPages();
+	int NumZombiePages();
+	/// @brief Show or hide the button for the next page, with the right label
+	void UpdateMoreButton();
 	SeedType SeedHitTest(int x, int y);
 	bool ZombieHasSilhouette(ZombieType theZombieType);
 	bool ZombieIsShown(ZombieType theZombieType);
@@ -78,11 +91,12 @@ class AlmanacDialog : public LawnDialog
 	}
 
 	virtual void MouseWheel(int theDelta);
-	static ZombieType GetZombieType(int theIndex);
+	/// @brief The zombie in a window of the grid on show
+	ZombieType GetZombieType(int theIndex);
 	void ShowPlant(SeedType theSeedType);
 	void ShowZombie(ZombieType theZombieType);
 };
-extern bool gZombieDefeated[NUM_ZOMBIE_TYPES];
+extern bool gZombieDefeated[MAX_ZOMBIE_TYPES];
 
 void AlmanacInitForPlayer();
 void AlmanacPlayerDefeatedZombie(ZombieType theZombieType);

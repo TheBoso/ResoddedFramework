@@ -1397,6 +1397,13 @@ enum ZombieType
 	NUM_CACHED_ZOMBIE_TYPES
 };
 
+// Custom zombie and plant types (definition files, see Lawn/Component/CustomTypes.h) get the IDs from FIRST_CUSTOM_*
+// up to MAX_* - 1. Arrays indexed by a zombie or seed type that can be custom are MAX_* long.
+constexpr int FIRST_CUSTOM_ZOMBIE_TYPE = (int)ZombieType::NUM_CACHED_ZOMBIE_TYPES;
+constexpr int MAX_ZOMBIE_TYPES = 100;
+constexpr int FIRST_CUSTOM_SEED_TYPE = (int)SeedType::SEED_ZOMBIE_IMP + 1;
+constexpr int MAX_SEED_TYPES = FIRST_CUSTOM_SEED_TYPE + 64;
+
 //////////////////////////////
 enum AttachmentID
 {

@@ -141,7 +141,10 @@ class TodParticleSystem;
 class Plant : public GameObject
 {
   public:
+	/// The type it plays as: a custom type's base (see Component/CustomTypes.h), else its own type
 	SeedType mSeedType;
+	/// The type it was planted as: picks its definition (components), animation, name and cost
+	SeedType mDefinitionType;
 	int mPlantCol;
 	int mAnimCounter;
 	int mFrame;

@@ -85,8 +85,8 @@ struct ZombiePicker
 {
 	int mZombieCount;
 	int mZombiePoints;
-	int mZombieTypeCount[NUM_ZOMBIE_TYPES];
-	int mAllWavesZombieTypeCount[NUM_ZOMBIE_TYPES];
+	int mZombieTypeCount[MAX_ZOMBIE_TYPES];
+	int mAllWavesZombieTypeCount[MAX_ZOMBIE_TYPES];
 };
 
 void ZombiePickerInitForWave(ZombiePicker *theZombiePicker);

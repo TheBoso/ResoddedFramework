@@ -1,3 +1,5 @@
+#include "Lawn/Component/CustomTypes.h"
+#include "Lawn/Component/ComponentDefinitions.h"
 #include "LawnApp.h"
 #include "Lawn/Board.h"
 #include "Lawn/Plant.h"
@@ -1274,7 +1276,7 @@ void LawnApp::Init()
 		TodTraceAndLog("[LawnProject] compiling reanims");
 	}
 
-	ReanimatorLoadDefinitions(gLawnReanimationArray, ReanimationType::NUM_REANIMS, mRunInCompileMode);
+	ReanimatorLoadLawnDefinitions(mRunInCompileMode);
 	ReanimatorEnsureDefinitionLoaded(ReanimationType::REANIM_LOADBAR_SPROUT, true);
 	ReanimatorEnsureDefinitionLoaded(ReanimationType::REANIM_LOADBAR_ZOMBIEHEAD, true);
 
@@ -1701,6 +1703,8 @@ void LawnApp::LoadingThreadProc()
 	TodStringListLoad("properties/LawnStrings.txt");
 	TodStringListLoad("properties/ZombatarTOS.txt");
 	TodStringListLoad("properties/FrameworkStrings.txt");
+	// Definition files: custom zombie and plant types need the strings and the reanimation slots
+	ComponentDefinitions::Load();
 
 	if (mTitleScreen)
 	{
@@ -2302,6 +2306,8 @@ int LawnApp::GetSeedsAvailable()
 
 bool LawnApp::HasSeedType(SeedType theSeedType)
 {
+	// A custom plant is unlocked with its base
+	theSeedType = CustomTypes::PlaysAs(theSeedType);
 	if (IsTrialStageLocked() && theSeedType >= SeedType::SEED_JALAPENO)
 		return false;
 
@@ -2967,7 +2973,7 @@ int LawnApp::GetNumPreloadingTasks()
 	int aTaskCount = 10;
 	if (mPlayerInfo)
 	{
-		for (SeedType i = SeedType::SEED_PEASHOOTER; i < SeedType::NUM_SEED_TYPES; i = (SeedType)((int)i + 1))
+		for (SeedType i : CustomTypes::AllPlantTypes())
 		{
 			if (SeedTypeAvailable(i) || HasFinishedAdventure())
 			{
@@ -2975,7 +2981,7 @@ int LawnApp::GetNumPreloadingTasks()
 			}
 		}
 
-		for (ZombieType i = ZombieType::ZOMBIE_NORMAL; i < ZombieType::NUM_ZOMBIE_TYPES; i = (ZombieType)((int)i + 1))
+		for (ZombieType i : CustomTypes::AllZombieTypes())
 		{
 			if (HasFinishedAdventure() || mPlayerInfo->mLevel >= GetZombieDefinition(i).mStartingLevel)
 			{
@@ -3020,7 +3026,7 @@ void LawnApp::PreloadForUser()
 
 	if (mPlayerInfo)
 	{
-		for (SeedType i = SeedType::SEED_PEASHOOTER; i < SeedType::NUM_SEED_TYPES; i = (SeedType)((int)i + 1))
+		for (SeedType i : CustomTypes::AllPlantTypes())
 		{
 			if (SeedTypeAvailable(i) || HasFinishedAdventure())
 			{
@@ -3044,7 +3050,7 @@ void LawnApp::PreloadForUser()
 			}
 		}
 
-		for (ZombieType i = ZombieType::ZOMBIE_NORMAL; i < ZombieType::NUM_ZOMBIE_TYPES; i = (ZombieType)((int)i + 1))
+		for (ZombieType i : CustomTypes::AllZombieTypes())
 		{
 			if (!HasFinishedAdventure() && mPlayerInfo->mLevel < GetZombieDefinition(i).mStartingLevel)
 			{

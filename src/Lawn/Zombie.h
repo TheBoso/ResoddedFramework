@@ -92,7 +92,10 @@ class Zombie : public GameObject
 	};
 
   public:
+	/// The type it plays as: a custom type's base (see Component/CustomTypes.h), else its own type
 	ZombieType mZombieType;
+	/// The type it was spawned as: picks its definition (components), animation, name and Almanac entry
+	ZombieType mDefinitionType;
 	ZombiePhase mZombiePhase;
 	float mPosX;
 	float mPosY;

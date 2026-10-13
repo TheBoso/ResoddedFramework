@@ -83,6 +83,12 @@ void ReanimationFreeDefinition(ReanimatorDefinition *theDefinition);
 void _cdecl ReanimatorEnsureDefinitionLoaded(ReanimationType theReanimType, bool theIsPreloading, bool recompile = false);
 void ReanimatorLoadDefinitions(ReanimationParams *theReanimationParamArray, int theReanimationParamArraySize, bool recompile);
 void ReanimatorFreeDefinitions();
+/// @brief Load the game's reanimation definitions, with room for custom ones (ReanimatorRegisterCustom)
+void ReanimatorLoadLawnDefinitions(bool recompile);
+/// @brief A reanimation type for a .reanim file that isn't one of the game's (custom types in definition files).
+/// The same file always gets the same type; REANIM_NONE when the definitions aren't loaded or all slots are used.
+/// It loads the first time it is used.
+ReanimationType ReanimatorRegisterCustom(const char *theFileName);
 
 extern ReanimationParams gLawnReanimationArray[(int)ReanimationType::NUM_REANIMS];
 

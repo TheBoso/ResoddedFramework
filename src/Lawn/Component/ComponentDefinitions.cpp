@@ -11,6 +11,9 @@
 #include <json.hpp>
 #include "Archetypes.h"
 #include "EnumNames.h"
+#include "CustomTypes.h"
+#include "../Challenge.h"
+#include "../../Sexy.TodLib/Reanimator.h"
 #include "../Plant.h"
 
 using Json = nlohmann::ordered_json;
@@ -20,6 +23,8 @@ namespace fs = std::filesystem;
 
 namespace
 {
+ReanimationType RegisterReanimFile(const std::string &theFile);
+
 /// @brief ComponentFields over a JSON object (see ComponentArchive)
 class JsonFields : public ComponentFields
 {
@@ -154,6 +159,15 @@ class JsonFields : public ComponentFields
 		{
 			if (EnumNames::ValueOf(theEnumKey, aValue->get<std::string>().c_str(), theValue))
 				return true;
+			if (theEnumKey == EnumKey<ReanimationType>() && aValue->get<std::string>().find(".reanim") != std::string::npos)
+			{
+				ReanimationType aReanim = RegisterReanimFile(aValue->get<std::string>());
+				if (aReanim != ReanimationType::REANIM_NONE)
+				{
+					theValue = aReanim;
+					return true;
+				}
+			}
 			Error(theName, "unknown name \"" + aValue->get<std::string>() + "\"");
 			return false;
 		}
@@ -444,6 +458,7 @@ void BuildVanilla(EntityKind theKind, int theType, ComponentList &theOut)
 struct Definition
 {
 	std::string mFile;
+	/// null: a custom type that uses its base's components
 	Json mComponents;
 };
 
@@ -465,6 +480,241 @@ void Log(const std::string &theMessage)
 	GetStore().mMessages.push_back(theMessage);
 	fprintf(stderr, "[Definitions] %s\n", theMessage.c_str());
 }
+
+// ─── Custom types ────────────────────────────────────────────────────────────
+
+ReanimationType RegisterReanimFile(const std::string &theFile)
+{
+	ReanimationType aType = ReanimatorRegisterCustom(theFile.c_str());
+	if (aType != ReanimationType::REANIM_NONE)
+	{
+		// Components can name it too ("charredReanim": "reanim/My_charred.reanim")
+		EnumNames::Add(EnumKey<ReanimationType>(), theFile, aType);
+	}
+	return aType;
+}
+
+int ReadInt(const Json &theObject, const char *theKey, int theDefault, const std::string &theWhere)
+{
+	auto anIt = theObject.find(theKey);
+	if (anIt == theObject.end())
+		return theDefault;
+	if (!anIt->is_number())
+	{
+		Log(theWhere + ": \"" + theKey + "\" should be a number");
+		return theDefault;
+	}
+	return (int)anIt->get<double>();
+}
+
+/// @brief The "reanim" of an "info": a reanimation type ("REANIM_ZOMBIE_FOOTBALL") or a .reanim file
+/// ("reanim/Zombie_blackfootball.reanim")
+void ReadReanim(const Json &theInfo, ReanimationType &theReanim, const std::string &theWhere)
+{
+	auto anIt = theInfo.find("reanim");
+	if (anIt == theInfo.end())
+		return;
+	if (!anIt->is_string())
+	{
+		Log(theWhere + ": \"reanim\" should be a reanimation name or a .reanim file");
+		return;
+	}
+
+	std::string aName = anIt->get<std::string>();
+	int64_t aValue;
+	if (EnumNames::ValueOf(EnumKey<ReanimationType>(), aName.c_str(), aValue))
+	{
+		theReanim = (ReanimationType)aValue;
+		return;
+	}
+	ReanimationType aCustom = RegisterReanimFile(aName);
+	if (aCustom != ReanimationType::REANIM_NONE)
+	{
+		theReanim = aCustom;
+	}
+	else if (gReanimatorDefArray != nullptr) // the command-line tools run without animations
+	{
+		Log(theWhere + ": can't use reanim \"" + aName + "\" (unknown name, or too many custom reanims)");
+	}
+}
+
+/// @brief Report the keys of an "info" the game doesn't know
+void CheckInfoKeys(const Json &theInfo, std::initializer_list<const char *> theKnown, const std::string &theWhere)
+{
+	for (auto &[aKey, aValue] : theInfo.items())
+	{
+		bool isKnown = false;
+		for (const char *aKnown : theKnown)
+		{
+			isKnown |= aKey == aKnown;
+		}
+		if (!isKnown)
+		{
+			Log(theWhere + ": unknown \"info\" field \"" + aKey + "\" (ignored)");
+		}
+	}
+}
+
+/// @brief The name, tooltip and Almanac texts of a custom type: the file's, else its base's
+void SetTypeStrings(const std::string &theKey, const std::string &theBaseKey, const Json &theInfo, bool theIsPlant)
+{
+	auto aSet = [&](const char *theField, const char *theSuffix) {
+		std::string aValue;
+		auto anIt = theInfo.find(theField);
+		if (anIt != theInfo.end() && anIt->is_string())
+		{
+			aValue = anIt->get<std::string>();
+		}
+		else
+		{
+			aValue = CustomTypes::GetString(theBaseKey + theSuffix);
+		}
+		CustomTypes::SetString(theKey + theSuffix, aValue);
+	};
+	aSet("name", "");
+	aSet("description", "_DESCRIPTION");
+	aSet("descriptionHeader", "_DESCRIPTION_HEADER");
+	if (theIsPlant)
+	{
+		aSet("tooltip", "_TOOLTIP");
+	}
+}
+
+/// @brief Read "basedOn" as a game type; -1 (and a message) when it isn't one
+int ReadBase(const Json &theRoot, const KindInfo &theKind, const std::string &theWhere)
+{
+	const Json &aBasedOn = theRoot["basedOn"];
+	int64_t aBase;
+	if (!aBasedOn.is_string() || !EnumNames::ValueOf(theKind.mEnumKey, aBasedOn.get<std::string>().c_str(), aBase) ||
+	    aBase < 0 || aBase >= theKind.mCount)
+	{
+		Log(theWhere + ": \"basedOn\" must name one of the game's " + theKind.mKey + " types");
+		return -1;
+	}
+	return (int)aBase;
+}
+
+/// @brief Register a custom zombie type from its file; its type, or -1
+int RegisterCustomZombie(const Json &theRoot, const std::string &theTypeName, const KindInfo &theKind,
+                         const std::string &theWhere)
+{
+	int aBase = ReadBase(theRoot, theKind, theWhere);
+	if (aBase < 0)
+		return -1;
+
+	std::string anError;
+	CustomTypes::ZombieInfo *anInfo = CustomTypes::RegisterZombie(theTypeName, (ZombieType)aBase,
+	                                                              ReadInt(theRoot, "id", -1, theWhere), anError);
+	if (anInfo == nullptr)
+	{
+		Log(theWhere + ": " + anError);
+		return -1;
+	}
+	anInfo->mFile = theWhere;
+
+	// What the file doesn't say comes from the base
+	const ZombieDefinition &aBaseDef = GetZombieDefinition((ZombieType)aBase);
+	Json anInfoJson = theRoot.contains("info") ? theRoot["info"] : Json::object();
+	CheckInfoKeys(anInfoJson,
+	              { "name", "description", "descriptionHeader", "reanim", "value", "startingLevel", "firstAllowedWave",
+	                "pickWeight", "allowedLevels" },
+	              theWhere);
+
+	ZombieDefinition aDef = aBaseDef;
+	aDef.mZombieType = anInfo->mType;
+	ReadReanim(anInfoJson, aDef.mReanimationType, theWhere);
+	aDef.mZombieValue = ReadInt(anInfoJson, "value", aDef.mZombieValue, theWhere);
+	aDef.mStartingLevel = ReadInt(anInfoJson, "startingLevel", aDef.mStartingLevel, theWhere);
+	aDef.mFirstAllowedWave = ReadInt(anInfoJson, "firstAllowedWave", aDef.mFirstAllowedWave, theWhere);
+	// Out of the levels until the file opts in with a pick weight
+	aDef.mPickWeight = ReadInt(anInfoJson, "pickWeight", 0, theWhere);
+	aDef.mZombieName = anInfo->mTypeName.c_str();
+	anInfo->mDefinition = aDef;
+
+	// The adventure levels it can appear on
+	for (int i = 0; i < 50; i++)
+	{
+		anInfo->mAllowedOnLevel[i] = gZombieAllowedLevels[aBase].mAllowedOnLevel[i];
+	}
+	if (anInfoJson.contains("allowedLevels"))
+	{
+		const Json &aLevels = anInfoJson["allowedLevels"];
+		if (aLevels.is_array())
+		{
+			std::fill(std::begin(anInfo->mAllowedOnLevel), std::end(anInfo->mAllowedOnLevel), false);
+			for (const Json &aLevel : aLevels)
+			{
+				int aNumber = aLevel.is_number() ? (int)aLevel.get<double>() : 0;
+				if (aNumber >= 1 && aNumber <= 50)
+				{
+					anInfo->mAllowedOnLevel[aNumber - 1] = true;
+				}
+				else
+				{
+					Log(theWhere + ": \"allowedLevels\" holds level numbers from 1 to 50");
+				}
+			}
+		}
+		else
+		{
+			Log(theWhere + ": \"allowedLevels\" should be a list of level numbers");
+		}
+	}
+
+	SetTypeStrings(anInfo->mTypeName, aBaseDef.mZombieName, anInfoJson, false);
+	return anInfo->mType;
+}
+
+/// @brief Register a custom plant type from its file; its type, or -1
+int RegisterCustomPlant(const Json &theRoot, const std::string &theTypeName, const KindInfo &theKind,
+                        const std::string &theWhere)
+{
+	int aBase = ReadBase(theRoot, theKind, theWhere);
+	if (aBase < 0)
+		return -1;
+
+	std::string anError;
+	CustomTypes::PlantInfo *anInfo = CustomTypes::RegisterPlant(theTypeName, (SeedType)aBase,
+	                                                            ReadInt(theRoot, "id", -1, theWhere), anError);
+	if (anInfo == nullptr)
+	{
+		Log(theWhere + ": " + anError);
+		return -1;
+	}
+	anInfo->mFile = theWhere;
+
+	const PlantDefinition &aBaseDef = GetPlantDefinition((SeedType)aBase);
+	Json anInfoJson = theRoot.contains("info") ? theRoot["info"] : Json::object();
+	CheckInfoKeys(anInfoJson,
+	              { "name", "tooltip", "description", "descriptionHeader", "reanim", "cost", "refreshTime",
+	                "launchRate", "subClass" },
+	              theWhere);
+
+	PlantDefinition aDef = aBaseDef;
+	aDef.mSeedType = anInfo->mType;
+	ReadReanim(anInfoJson, aDef.mReanimationType, theWhere);
+	aDef.mSeedCost = ReadInt(anInfoJson, "cost", aDef.mSeedCost, theWhere);
+	aDef.mRefreshTime = ReadInt(anInfoJson, "refreshTime", aDef.mRefreshTime, theWhere);
+	aDef.mLaunchRate = ReadInt(anInfoJson, "launchRate", aDef.mLaunchRate, theWhere);
+	if (anInfoJson.contains("subClass"))
+	{
+		int64_t aSubClass;
+		const Json &aValue = anInfoJson["subClass"];
+		if (aValue.is_string() && EnumNames::ValueOf(EnumKey<PlantSubClass>(), aValue.get<std::string>().c_str(), aSubClass))
+		{
+			aDef.mSubClass = (PlantSubClass)aSubClass;
+		}
+		else
+		{
+			Log(theWhere + ": \"subClass\" should be SUBCLASS_NORMAL or SUBCLASS_SHOOTER");
+		}
+	}
+	aDef.mPlantName = anInfo->mTypeName.c_str();
+	anInfo->mDefinition = aDef;
+
+	SetTypeStrings(anInfo->mTypeName, aBaseDef.mPlantName, anInfoJson, true);
+	return anInfo->mType;
+}
 } // namespace
 
 void ComponentDefinitions::Load(const std::string &theFolder)
@@ -473,6 +723,7 @@ void ComponentDefinitions::Load(const std::string &theFolder)
 	aStore.mLoaded = true;
 	aStore.mDefinitions.clear();
 	aStore.mMessages.clear();
+	CustomTypes::BeginReload();
 
 	for (EntityKind aKindId : kKinds)
 	{
@@ -508,34 +759,75 @@ void ComponentDefinitions::Load(const std::string &theFolder)
 				continue;
 			}
 			std::string aTypeName = aRoot[aKind.mKey].get<std::string>();
-			int64_t aType;
-			if (!EnumNames::ValueOf(aKind.mEnumKey, aTypeName.c_str(), aType))
+
+			// A new type names what it's based on; a game type is redefined in place
+			bool isCustom = aRoot.contains("basedOn");
+			int aType = -1;
+			if (isCustom)
 			{
-				Log(aWhere + ": unknown " + aKind.mKey + " type \"" + aTypeName + "\"");
-				continue;
+				if (aKindId == EntityKind::Zombie)
+				{
+					aType = RegisterCustomZombie(aRoot, aTypeName, aKind, aWhere);
+				}
+				else if (aKindId == EntityKind::Plant)
+				{
+					aType = RegisterCustomPlant(aRoot, aTypeName, aKind, aWhere);
+				}
+				else
+				{
+					Log(aWhere + ": new " + aKind.mKey + " types aren't supported yet");
+				}
+				if (aType < 0)
+					continue;
 			}
-			if (!aRoot.contains("components") || !aRoot["components"].is_array())
+			else
+			{
+				int64_t aValue;
+				if (!EnumNames::ValueOf(aKind.mEnumKey, aTypeName.c_str(), aValue) || aValue < 0 ||
+				    aValue >= aKind.mCount)
+				{
+					Log(aWhere + ": unknown " + aKind.mKey + " type \"" + aTypeName +
+					    "\" (a new type needs \"basedOn\")");
+					continue;
+				}
+				aType = (int)aValue;
+			}
+
+			Json aComponents; // null: the base's components
+			if (aRoot.contains("components"))
+			{
+				if (!aRoot["components"].is_array())
+				{
+					Log(aWhere + ": \"components\" should be a list");
+					continue;
+				}
+				aComponents = aRoot["components"];
+			}
+			else if (!isCustom)
 			{
 				Log(aWhere + ": needs a \"components\" list");
 				continue;
 			}
 
-			auto aKey = std::make_pair(aKindId, (int)aType);
+			auto aKey = std::make_pair(aKindId, aType);
 			if (aStore.mDefinitions.count(aKey))
 			{
 				Log(aWhere + ": " + aTypeName + " is already defined by " + aStore.mDefinitions[aKey].mFile);
 				continue;
 			}
-			aStore.mDefinitions[aKey] = { aWhere, aRoot["components"] };
+			aStore.mDefinitions[aKey] = { aWhere, aComponents };
 
 			// Report unknown components and fields once, at load time
 			ComponentList aCheck;
 			std::vector<std::string> aMessages;
-			for (const Json &aComponent : aRoot["components"])
+			if (aComponents.is_array())
 			{
-				if (Component *aBuilt = ComponentFromJson(aComponent, aWhere, aMessages))
+				for (const Json &aComponent : aComponents)
 				{
-					aCheck.Add(aBuilt);
+					if (Component *aBuilt = ComponentFromJson(aComponent, aWhere, aMessages))
+					{
+						aCheck.Add(aBuilt);
+					}
 				}
 			}
 			for (const std::string &aMessage : aMessages)
@@ -544,6 +836,7 @@ void ComponentDefinitions::Load(const std::string &theFolder)
 			}
 		}
 	}
+	CustomTypes::EndReload();
 }
 
 void ComponentDefinitions::EnsureLoaded()
@@ -559,8 +852,20 @@ bool ComponentDefinitions::Build(EntityKind theKind, int theType, ComponentList 
 	EnsureLoaded();
 	Store &aStore = GetStore();
 	auto anIt = aStore.mDefinitions.find(std::make_pair(theKind, theType));
-	if (anIt == aStore.mDefinitions.end())
-		return false;
+	if (anIt == aStore.mDefinitions.end() || anIt->second.mComponents.is_null())
+	{
+		// A custom type without components of its own has its base's
+		int aBase = theType;
+		if (theKind == EntityKind::Zombie)
+		{
+			aBase = CustomTypes::PlaysAs((ZombieType)theType);
+		}
+		else if (theKind == EntityKind::Plant)
+		{
+			aBase = CustomTypes::PlaysAs((SeedType)theType);
+		}
+		return aBase != theType && Build(theKind, aBase, theOut);
+	}
 
 	std::vector<std::string> anIgnored; // reported when loading
 	for (const Json &aComponent : anIt->second.mComponents)
@@ -699,6 +1004,25 @@ int CheckDefinitions(const std::string &theFolder, std::ostream &theLog)
 			}
 		}
 	}
+	// The custom types: what they are based on and what they build
+	for (ZombieType aType : CustomTypes::CustomZombieTypes())
+	{
+		CustomTypes::ZombieInfo *anInfo = CustomTypes::GetZombie(aType);
+		ComponentList aComponents;
+		ComponentDefinitions::Build(EntityKind::Zombie, aType, aComponents);
+		theLog << "custom zombie " << anInfo->mTypeName << " = " << (int)aType << ", based on "
+		       << EnumNames::NameOf(anInfo->mBase) << ", " << aComponents.Get().size() << " components\n";
+	}
+	for (SeedType aType : CustomTypes::CustomPlantTypes())
+	{
+		CustomTypes::PlantInfo *anInfo = CustomTypes::GetPlant(aType);
+		ComponentList aComponents;
+		ComponentDefinitions::Build(EntityKind::Plant, aType, aComponents);
+		theLog << "custom plant " << anInfo->mTypeName << " = " << (int)aType << ", based on "
+		       << EnumNames::NameOf(anInfo->mBase) << ", cost " << anInfo->mDefinition.mSeedCost << ", "
+		       << aComponents.Get().size() << " components\n";
+	}
+
 	theLog << "Checked " << aChecked << " definitions: " << aDifferent << " different, "
 	       << ComponentDefinitions::GetMessages().size() << " messages\n";
 	return aDifferent == 0 && ComponentDefinitions::GetMessages().empty() ? 0 : 1;

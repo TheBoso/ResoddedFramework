@@ -1,0 +1,34 @@
+{
+  // A new plant: a Peashooter that shoots fire peas. Copy this file to assets/definitions/plants/ to add it.
+  "plant": "SEED_FIRE_PEASHOOTER",
+  "basedOn": "SEED_PEASHOOTER",
+  // Optional: a fixed ID keeps saves valid when other custom plants come and go (from FIRST_CUSTOM_SEED_TYPE up)
+  "id": 80,
+  "info": {
+    "name": "Fire Peashooter",
+    "tooltip": "Shoots flaming peas",
+    "descriptionHeader": "Fire Peashooter",
+    "description": "Fire Peashooters shoot peas that are already on fire.{SHORTLINE}Cost: 200",
+    "cost": 200,
+    "refreshTime": 750
+    // "reanim": "REANIM_PEASHOOTER" by default (its base's); a game reanimation or a .reanim file
+  },
+  "components": [
+    { "type": "TeamComponent", "team": 0, "nativeTeam": 0 },
+    { "type": "FacingComponent" },
+    { "type": "HypnotizableComponent", "hypnotizedTeam": 1 },
+    {
+      "type": "PlantShooterComponent",
+      "weapons": [
+        {
+          "projectile": "PROJECTILE_FIREBALL",
+          "foley": "FOLEY_THROW",
+          "muzzleAnchor": "PeaHead",
+          "muzzleX": 24,
+          "muzzleY": -33,
+          "shootDelay": 33
+        }
+      ]
+    }
+  ]
+}

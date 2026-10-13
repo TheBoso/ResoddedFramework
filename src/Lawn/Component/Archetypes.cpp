@@ -260,7 +260,7 @@ void Archetypes::ApplyPlantDefaults(Plant *thePlant, bool theFromOldSave)
 		return;
 
 	ComponentList aComponents;
-	if (!ComponentDefinitions::Build(EntityKind::Plant, thePlant->mSeedType, aComponents))
+	if (!ComponentDefinitions::Build(EntityKind::Plant, thePlant->mDefinitionType, aComponents))
 	{
 		BuildVanillaPlant(thePlant->mSeedType, thePlant->mLaunchRate, aComponents);
 	}
@@ -970,7 +970,7 @@ void Archetypes::ApplyZombieDefaults(Zombie *theZombie)
 	// Zombies outside a level (Almanac, Zombatar previews) get components too: Pogo and Bungee previews animate
 	// through their behaviours
 	ComponentList aComponents;
-	if (!ComponentDefinitions::Build(EntityKind::Zombie, theZombie->mZombieType, aComponents))
+	if (!ComponentDefinitions::Build(EntityKind::Zombie, theZombie->mDefinitionType, aComponents))
 	{
 		BuildVanillaZombie(theZombie->mZombieType, aComponents);
 	}

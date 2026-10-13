@@ -3,6 +3,7 @@
 #include "Zombie.h"
 #include "GridItem.h"
 #include "Cutscene.h"
+#include "Component/CustomTypes.h"
 #include "Challenge.h"
 #include "LawnMower.h"
 #include "SeedPacket.h"
@@ -311,7 +312,8 @@ void CutScene::FindAndPlaceZombie(ZombieType theZombieType, bool theZombieGrid[5
 
 bool CutScene::Is2x2Zombie(ZombieType theZombieType)
 {
-	return theZombieType == ZombieType::ZOMBIE_GARGANTUAR || theZombieType == ZombieType::ZOMBIE_REDEYE_GARGANTUAR;
+	ZombieType aPlaysAs = CustomTypes::PlaysAs(theZombieType);
+	return aPlaysAs == ZombieType::ZOMBIE_GARGANTUAR || aPlaysAs == ZombieType::ZOMBIE_REDEYE_GARGANTUAR;
 }
 
 void CutScene::PreloadResources()
@@ -489,7 +491,7 @@ void CutScene::PlaceStreetZombies()
 
 	int aZombieValueTotal = 0;
 	int aTotalZombieCount = 0;
-	int aZombieTypeCount[(int)ZombieType::NUM_ZOMBIE_TYPES] = { 0 };
+	int aZombieTypeCount[MAX_ZOMBIE_TYPES] = { 0 };
 	TOD_ASSERT(mBoard->mNumWaves <= MAX_ZOMBIE_WAVES);
 
 	for (int aWave = 0; aWave < mBoard->mNumWaves; aWave++)
@@ -504,25 +506,25 @@ void CutScene::PlaceStreetZombies()
 
 			aZombieValueTotal += GetZombieDefinition(aZombieType).mZombieValue;
 
-			if (aZombieType == ZombieType::ZOMBIE_FLAG)
+			ZombieType aPlaysAs = CustomTypes::PlaysAs(aZombieType);
+			if (aPlaysAs == ZombieType::ZOMBIE_FLAG)
 			{
 				continue;
 			}
-			if (aZombieType == ZombieType::ZOMBIE_YETI && !mApp->IsStormyNightLevel())
+			if (aPlaysAs == ZombieType::ZOMBIE_YETI && !mApp->IsStormyNightLevel())
 			{
 				continue;
 			}
-			if (aZombieType == ZombieType::ZOMBIE_BOBSLED &&
-			    mApp->mGameMode != GameMode::GAMEMODE_CHALLENGE_BOBSLED_BONANZA)
+			if (aPlaysAs == ZombieType::ZOMBIE_BOBSLED && mApp->mGameMode != GameMode::GAMEMODE_CHALLENGE_BOBSLED_BONANZA)
 			{
 				continue;
 			}
 
-			TOD_ASSERT(aZombieType >= 0 && aZombieType < ZombieType::NUM_ZOMBIE_TYPES);
+			TOD_ASSERT(aZombieType >= 0 && aZombieType < MAX_ZOMBIE_TYPES);
 
 			++aZombieTypeCount[aZombieType];
 			++aTotalZombieCount;
-			if (aZombieType == ZombieType::ZOMBIE_BUNGEE || aZombieType == ZombieType::ZOMBIE_BOBSLED)
+			if (aPlaysAs == ZombieType::ZOMBIE_BUNGEE || aPlaysAs == ZombieType::ZOMBIE_BOBSLED)
 			{
 				aZombieTypeCount[aZombieType] = 1;
 			}
@@ -531,9 +533,9 @@ void CutScene::PlaceStreetZombies()
 
 	if (mApp->mGameMode == GameMode::GAMEMODE_CHALLENGE_LAST_STAND)
 	{
-		for (int aZombieType = 0; aZombieType < (int)ZombieType::NUM_ZOMBIE_TYPES; aZombieType++)
+		for (ZombieType aZombieType : CustomTypes::AllZombieTypes())
 		{
-			if (aZombieType != ZombieType::ZOMBIE_YETI && mBoard->mZombieAllowed[aZombieType])
+			if (CustomTypes::PlaysAs(aZombieType) != ZombieType::ZOMBIE_YETI && mBoard->mZombieAllowed[aZombieType])
 			{
 				aZombieTypeCount[aZombieType] = std::max(aZombieTypeCount[aZombieType], 1);
 			}
@@ -555,20 +557,18 @@ void CutScene::PlaceStreetZombies()
 		aPreviewCapacity = 18;
 	}
 
-	for (ZombieType aZombieType = ZombieType::ZOMBIE_NORMAL; aZombieType < ZombieType::NUM_ZOMBIE_TYPES;
-	     aZombieType = (ZombieType)((int)aZombieType + 1))
+	for (ZombieType aZombieType : CustomTypes::AllZombieTypes())
 	{
 		if (aZombieTypeCount[(int)aZombieType] &&
-		    (Is2x2Zombie(aZombieType) || aZombieType == ZombieType::ZOMBIE_ZAMBONI))
+		    (Is2x2Zombie(aZombieType) || CustomTypes::PlaysAs(aZombieType) == ZombieType::ZOMBIE_ZAMBONI))
 		{
 			FindAndPlaceZombie(aZombieType, aZombieGrid);
 		}
 	}
-	for (ZombieType aZombieType = ZombieType::ZOMBIE_NORMAL; aZombieType < ZombieType::NUM_ZOMBIE_TYPES;
-	     aZombieType = (ZombieType)((int)aZombieType + 1))
+	for (ZombieType aZombieType : CustomTypes::AllZombieTypes())
 	{
 		if (aZombieTypeCount[(int)aZombieType] && !Is2x2Zombie(aZombieType) &&
-		    aZombieType != ZombieType::ZOMBIE_ZAMBONI)
+		    CustomTypes::PlaysAs(aZombieType) != ZombieType::ZOMBIE_ZAMBONI)
 		{
 			int aZombieNumInWave = aZombieTypeCount[(int)aZombieType];
 			int aZombiePreviewNum = aZombieNumInWave * aPreviewCapacity / aTotalZombieCount;

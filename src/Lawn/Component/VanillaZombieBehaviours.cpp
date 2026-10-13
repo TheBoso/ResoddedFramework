@@ -2684,7 +2684,7 @@ void BalloonBehaviour::OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn)
 	}
 
 	Reanimation *aPropellerReanim = theZombie->mApp->AddReanimation(
-	    0.0f, 0.0f, 0, GetZombieDefinition(theZombie->mZombieType).mReanimationType);
+	    0.0f, 0.0f, 0, GetZombieDefinition(theZombie->mDefinitionType).mReanimationType);
 	aPropellerReanim->SetFramesForLayer("Propeller");
 	aPropellerReanim->mLoopType = ReanimLoopType::REANIM_LOOP_FULL_LAST_FRAME;
 	aPropellerReanim->AttachToAnotherReanimation(aBodyReanim, "hat");

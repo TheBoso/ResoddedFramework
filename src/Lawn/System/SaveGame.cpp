@@ -25,7 +25,8 @@
 // 15: yucky face body data, bodies for the Jalapeno and Gatling zombies, swimmer under water
 // 16: zombie body spawn, Zombotany head and daisy data, armour from the archetype
 // 17: the last zombie body rules, dance troupe leader, a body for the Ducky Tube Zombie
-static constexpr uint32_t SAVE_VERSION = 17;
+// 18: custom zombie and plant types (Plant/Zombie::mDefinitionType)
+static constexpr uint32_t SAVE_VERSION = 18;
 
 template <typename T>
 void SaveContext::SyncVar(T &aValue, const std::string &aName)
@@ -87,7 +88,7 @@ void SaveContext::SyncReanimationDef(ReanimatorDefinition *&theDefinition, const
 		{
 			theDefinition = nullptr;
 		}
-		else if (aReanimType >= 0 && aReanimType < (int)ReanimationType::NUM_REANIMS)
+		else if (aReanimType >= 0 && aReanimType < gReanimatorDefCount)
 		{
 			ReanimatorEnsureDefinitionLoaded((ReanimationType)aReanimType, true);
 			theDefinition = &gReanimatorDefArray[aReanimType];
@@ -100,7 +101,7 @@ void SaveContext::SyncReanimationDef(ReanimatorDefinition *&theDefinition, const
 	else
 	{
 		int aReanimType = (int)ReanimationType::REANIM_NONE;
-		for (int i = 0; i < (int)ReanimationType::NUM_REANIMS; i++)
+		for (int i = 0; i < gReanimatorDefCount; i++)
 		{
 			ReanimatorDefinition *aDef = &gReanimatorDefArray[i];
 			if (theDefinition == aDef)

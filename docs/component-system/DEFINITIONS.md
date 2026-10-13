@@ -37,6 +37,80 @@ The file name doesn't matter; the type comes from the key inside the file.
 The components are attached in the order they're listed, and the type gets exactly those components. A type
 without a file falls back to the built-in tables in `Archetypes.cpp`.
 
+## New zombies and plants
+
+A file that names a type the game doesn't have, plus the game type it is `"basedOn"`, adds a new type. No code
+changes are needed. Examples are in `docs/component-system/examples/`: copy them into `assets/definitions/` to try
+them.
+
+```jsonc
+{
+  "zombie": "ZOMBIE_BLACK_FOOTBALL",      // the new type's name (also its key in the string table)
+  "basedOn": "ZOMBIE_FOOTBALL",           // a game type
+  "id": 40,                               // optional, see below
+  "info": { "name": "Black Football Zombie", "description": "...", "pickWeight": 500 },
+  "components": [ ... ]                   // optional: without it, the base's components
+}
+```
+
+**How a new type plays.** A new type is a variant of its base. In play its zombie or plant has the base's type
+(`mZombieType` / `mSeedType`), so every rule still written per type in the code treats it like the base: where it
+can be planted, how it enters the pool, special packets and so on. Its own type (`mDefinitionType`) picks:
+- its components (this file);
+- its animation;
+- its name and Almanac texts;
+- its cost and recharge;
+- for zombies, when it shows up in levels.
+
+**`info` for a zombie.** Every field is optional and defaults to the base's.
+
+| Field | Meaning |
+|---|---|
+| `name` | Name shown in the Almanac and on hover |
+| `description`, `descriptionHeader` | Almanac texts |
+| `reanim` | A game reanimation (`"REANIM_ZOMBIE_FOOTBALL"`) or a `.reanim` file (`"reanim/Zombie_blackfootball.reanim"`) |
+| `value` | Wave points it costs |
+| `startingLevel` | First adventure level it can appear on |
+| `firstAllowedWave` | First wave it can appear in |
+| `pickWeight` | How often it is picked for waves. **0 unless set**: a new zombie stays out of levels until this opts it in |
+| `allowedLevels` | Adventure levels (1-50) it may appear on |
+
+**`info` for a plant.** Every field is optional and defaults to the base's.
+
+| Field | Meaning |
+|---|---|
+| `name`, `tooltip`, `description`, `descriptionHeader` | Seed packet and Almanac texts |
+| `reanim` | As for zombies |
+| `cost` | Sun cost |
+| `refreshTime` | Recharge, in ticks (750 = 7.5 s) |
+| `launchRate` | How often its producer or shooter acts, when its components use the plant's rate |
+| `subClass` | `SUBCLASS_NORMAL` or `SUBCLASS_SHOOTER` |
+
+**Where they show up.**
+- New zombies stay out of levels until their `info` sets a `pickWeight`. With one, they join the waves of the
+  levels their base appears on (or `allowedLevels`), from `startingLevel` and `firstAllowedWave` (the base's
+  unless set).
+- New plants are unlocked when their base is, and appear on extra pages of the seed chooser. The "More Plants"
+  button sits above the Almanac button.
+- Both appear on extra pages of the Almanac, behind the "More Plants" / "More Zombies" button between Index and
+  Close.
+- Both are listed in the debugger's spawn menus.
+
+**IDs and saves.** New types get IDs after the game's own: zombies from 35 to 99, plants from 75 to 138. A save remembers types by
+ID. Without `"id"`, a file gets the next free ID in file-name order, so adding or removing other new types can
+shift it. Give each new type a fixed `"id"` once saves matter.
+
+**Custom animations.** `"reanim": "reanim/My_zombie.reanim"` loads a reanimation file that isn't one of the game's
+(up to 64 of them). Any reanimation field of a component can name such a file too. The images it uses must be
+listed in `properties/resources.xml`, like the game's own.
+
+**Limits for now.**
+- `basedOn` must be a game type, not another new type.
+- New projectile types aren't supported yet.
+- Zombies that bring others along spawn their base's companions: a new Dancer's backup dancers and a new Bobsled
+  team's followers are the vanilla ones.
+- Crazy Dave's picks, the Imitater and the random seed button only use the game's plants.
+
 ## Seeing problems
 
 Unknown component types, unknown fields (typos), wrong value kinds and unknown enum names are reported:

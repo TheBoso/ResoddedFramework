@@ -1,3 +1,4 @@
+#include "../Component/CustomTypes.h"
 #include "../LawnCommon.h"
 #include "../Board.h"
 #include "../Plant.h"
@@ -16,7 +17,22 @@
 #include "../../SexyAppFramework/WidgetManager.h"
 #include "../../SexyAppFramework/Font.h"
 
-bool gZombieDefeated[NUM_ZOMBIE_TYPES] = { false };
+// The custom plants and zombies fill the grids page by page: 5 rows of 8 packets, 5 rows of 5 windows
+static constexpr int kCustomPlantsPerPage = 40;
+static constexpr int kCustomZombiesPerPage = 25;
+
+/// @brief A custom type's place among the custom ones, or -1
+template <typename T> static int CustomSlot(const std::vector<T> &theCustomTypes, T theType)
+{
+	for (size_t i = 0; i < theCustomTypes.size(); i++)
+	{
+		if (theCustomTypes[i] == theType)
+			return (int)i;
+	}
+	return -1;
+}
+
+bool gZombieDefeated[MAX_ZOMBIE_TYPES] = { false };
 
 AlmanacDialog::AlmanacDialog(LawnApp *theApp)
     : LawnDialog(theApp, DIALOG_ALMANAC, true, "Almanac", "", "", BUTTONS_NONE)
@@ -80,6 +96,23 @@ AlmanacDialog::AlmanacDialog(LawnApp *theApp)
 	mZombieButton->mDrawStoneButton = true;
 	mZombieButton->mParentWidget = this;
 
+	// The seed chooser's small button, centred on the bottom strip between the Index and Close buttons
+	mMoreButton = new GameButton(AlmanacDialog::ALMANAC_BUTTON_MORE);
+	mMoreButton->mButtonImage = Sexy::IMAGE_SEEDCHOOSER_BUTTON2;
+	mMoreButton->mOverImage = Sexy::IMAGE_SEEDCHOOSER_BUTTON2_GLOW;
+	mMoreButton->mDownImage = nullptr;
+	mMoreButton->SetFont(Sexy::FONT_BRIANNETOD12);
+	mMoreButton->mColors[0] = Color(42, 42, 90);
+	mMoreButton->mColors[1] = Color(42, 42, 90);
+	int aMoreWidth = Sexy::IMAGE_SEEDCHOOSER_BUTTON2->GetWidth();
+	mMoreButton->Resize((BOARD_WIDTH - aMoreWidth) / 2, 567, aMoreWidth, Sexy::IMAGE_SEEDCHOOSER_BUTTON2_GLOW->GetHeight());
+	mMoreButton->mParentWidget = this;
+	mMoreButton->mTextOffsetY = 1;
+	mMoreButton->mBtnNoDraw = true;
+	mMoreButton->mDisabled = true;
+	mPlantPage = 0;
+	mZombiePage = 0;
+
 	mDescriptionScrollbar = new LawnScrollbar(mApp);
 	mDescriptionScrollbar->mSliderHeightPercent = 0.57f;
 	mDescriptionScrollbar->Resize(735, 377, 8, 140);
@@ -98,6 +131,8 @@ AlmanacDialog::~AlmanacDialog()
 		delete mPlantButton;
 	if (mZombieButton)
 		delete mZombieButton;
+	if (mMoreButton)
+		delete mMoreButton;
 	if (mDescriptionScrollbar)
 		delete mDescriptionScrollbar;
 
@@ -205,6 +240,7 @@ void AlmanacDialog::SetPage(AlmanacPage thePage)
 		mPlantButton->mBtnNoDraw = false;
 		mZombieButton->mBtnNoDraw = false;
 		mDescriptionScrollbar->mVisible = false;
+		UpdateMoreButton();
 	}
 	else
 	{
@@ -220,17 +256,22 @@ void AlmanacDialog::SetPage(AlmanacPage thePage)
 		mZombieButton->mBtnNoDraw = true;
 		mDescriptionScrollbar->mVisible = true;
 	}
+	UpdateMoreButton();
 }
 
 void AlmanacDialog::ShowPlant(SeedType theSeedType)
 {
 	mSelectedSeed = theSeedType;
+	int aCustomSlot = CustomSlot(CustomTypes::CustomPlantTypes(), theSeedType);
+	mPlantPage = aCustomSlot < 0 ? 0 : 1 + aCustomSlot / kCustomPlantsPerPage;
 	SetPage(ALMANAC_PAGE_PLANTS);
 }
 
 void AlmanacDialog::ShowZombie(ZombieType theZombieType)
 {
 	mSelectedZombie = theZombieType;
+	int aCustomSlot = CustomSlot(CustomTypes::CustomZombieTypes(), theZombieType);
+	mZombiePage = aCustomSlot < 0 ? 0 : 1 + aCustomSlot / kCustomZombiesPerPage;
 	SetPage(ALMANAC_PAGE_ZOMBIES);
 }
 
@@ -240,6 +281,7 @@ void AlmanacDialog::Update()
 	mIndexButton->Update();
 	mPlantButton->Update();
 	mZombieButton->Update();
+	mMoreButton->Update();
 	mDescriptionScrollbar->Update();
 	if (mPlant)
 		mPlant->Update();
@@ -257,7 +299,8 @@ void AlmanacDialog::Update()
 	int aMouseY = mApp->mWidgetManager->mLastMouseY;
 	ZombieType aZombieType = ZombieHitTest(aMouseX, aMouseY);
 	if (SeedHitTest(aMouseX, aMouseY) != SeedType::SEED_NONE || (aZombieType != ZombieType::ZOMBIE_INVALID && ZombieIsShown(aZombieType)) ||
-	    mCloseButton->IsMouseOver() || mIndexButton->IsMouseOver() || mPlantButton->IsMouseOver() || mZombieButton->IsMouseOver())
+	    mCloseButton->IsMouseOver() || mIndexButton->IsMouseOver() || mPlantButton->IsMouseOver() || mZombieButton->IsMouseOver() ||
+	    mMoreButton->IsMouseOver())
 	{
 		mApp->SetCursor(CURSOR_HAND);
 	}
@@ -272,6 +315,14 @@ void AlmanacDialog::Update()
 
 ZombieType AlmanacDialog::GetZombieType(int theIndex)
 {
+	if (mZombiePage > 0)
+	{
+		// A custom page
+		const std::vector<ZombieType> &aCustomTypes = CustomTypes::CustomZombieTypes();
+		size_t anIndex = (size_t)(mZombiePage - 1) * kCustomZombiesPerPage + theIndex;
+		return theIndex < kCustomZombiesPerPage && anIndex < aCustomTypes.size() ? aCustomTypes[anIndex]
+		                                                                          : ZOMBIE_INVALID;
+	}
 	return theIndex < NUM_ZOMBIE_TYPES ? (ZombieType)theIndex : ZOMBIE_INVALID;
 }
 
@@ -312,8 +363,7 @@ void AlmanacDialog::DrawPlants(Graphics *g)
 	              DrawStringJustification::DS_ALIGN_CENTER);
 
 	SeedType aSeedMouseOn = SeedHitTest(mApp->mWidgetManager->mLastMouseX, mApp->mWidgetManager->mLastMouseY);
-	for (SeedType aSeedType = SeedType::SEED_PEASHOOTER; aSeedType < NUM_ALMANAC_SEEDS;
-	     aSeedType = (SeedType)(aSeedType + 1))
+	for (SeedType aSeedType : PlantsOnPage())
 	{
 		int aPosX, aPosY;
 		GetSeedPosition(aSeedType, aPosX, aPosY);
@@ -334,10 +384,10 @@ void AlmanacDialog::DrawPlants(Graphics *g)
 		}
 	}
 
-	if (mSelectedSeed == SeedType::SEED_LILYPAD || mSelectedSeed == SeedType::SEED_TANGLEKELP ||
-	    mSelectedSeed == SeedType::SEED_CATTAIL || mSelectedSeed == SeedType::SEED_SEASHROOM)
+	if (CustomTypes::PlaysAs(mSelectedSeed) == SeedType::SEED_LILYPAD || CustomTypes::PlaysAs(mSelectedSeed) == SeedType::SEED_TANGLEKELP ||
+	    CustomTypes::PlaysAs(mSelectedSeed) == SeedType::SEED_CATTAIL || CustomTypes::PlaysAs(mSelectedSeed) == SeedType::SEED_SEASHROOM)
 	{
-		bool aNight = mSelectedSeed == SeedType::SEED_SEASHROOM;
+		bool aNight = CustomTypes::PlaysAs(mSelectedSeed) == SeedType::SEED_SEASHROOM;
 		g->DrawImage(aNight ? Sexy::IMAGE_ALMANAC_GROUNDNIGHTPOOL : Sexy::IMAGE_ALMANAC_GROUNDPOOL, 521, 107);
 
 		if (mApp->Is3DAccelerated())
@@ -351,10 +401,10 @@ void AlmanacDialog::DrawPlants(Graphics *g)
 	}
 	else
 	{
-		g->DrawImage(Plant::IsNocturnal(mSelectedSeed) || mSelectedSeed == SeedType::SEED_GRAVEBUSTER ||
-		                     mSelectedSeed == SeedType::SEED_PLANTERN
+		g->DrawImage(Plant::IsNocturnal(mSelectedSeed) || CustomTypes::PlaysAs(mSelectedSeed) == SeedType::SEED_GRAVEBUSTER ||
+		                     CustomTypes::PlaysAs(mSelectedSeed) == SeedType::SEED_PLANTERN
 		                 ? Sexy::IMAGE_ALMANAC_GROUNDNIGHT
-		             : mSelectedSeed == SeedType::SEED_FLOWERPOT ? Sexy::IMAGE_ALMANAC_GROUNDROOF
+		             : CustomTypes::PlaysAs(mSelectedSeed) == SeedType::SEED_FLOWERPOT ? Sexy::IMAGE_ALMANAC_GROUNDROOF
 		                                                         : Sexy::IMAGE_ALMANAC_GROUNDDAY,
 		             521,
 		             107);
@@ -465,11 +515,12 @@ void AlmanacDialog::DrawZombies(Graphics *g)
 				aZombieGraphics.Translate(aPosX + 1, aPosY - 6);
 				aZombieGraphics.mScaleX = 0.5f;
 				aZombieGraphics.mScaleY = 0.5f;
-				switch (aZombieType)
+				switch (CustomTypes::PlaysAs(aZombieType))
 				{
 				case ZombieType::ZOMBIE_POLEVAULTER:
 					aZombieGraphics.TranslateF(2, -3);
-					aZombieTypeToDraw = ZombieType::ZOMBIE_CACHED_POLEVAULTER_WITH_POLE;
+					if (!CustomTypes::IsCustom(aZombieType))
+						aZombieTypeToDraw = ZombieType::ZOMBIE_CACHED_POLEVAULTER_WITH_POLE;
 					break;
 				case ZombieType::ZOMBIE_FLAG:
 					aZombieGraphics.TranslateF(2, 10);
@@ -683,13 +734,80 @@ void AlmanacDialog::Draw(Graphics *g)
 	mIndexButton->Draw(g);
 	mPlantButton->Draw(g);
 	mZombieButton->Draw(g);
+	mMoreButton->Draw(g);
 	g->Translate(mDescriptionScrollbar->mX, mDescriptionScrollbar->mY);
 	mDescriptionScrollbar->Draw(g);
 	g->Translate(-mDescriptionScrollbar->mX, -mDescriptionScrollbar->mY);
 }
 
+
+int AlmanacDialog::NumPlantPages()
+{
+	int aCount = (int)CustomTypes::CustomPlantTypes().size();
+	return 1 + (aCount + kCustomPlantsPerPage - 1) / kCustomPlantsPerPage;
+}
+
+int AlmanacDialog::NumZombiePages()
+{
+	int aCount = (int)CustomTypes::CustomZombieTypes().size();
+	return 1 + (aCount + kCustomZombiesPerPage - 1) / kCustomZombiesPerPage;
+}
+
+std::vector<SeedType> AlmanacDialog::PlantsOnPage()
+{
+	std::vector<SeedType> aPlants;
+	if (mPlantPage == 0)
+	{
+		for (int i = SeedType::SEED_PEASHOOTER; i < NUM_ALMANAC_SEEDS; i++)
+		{
+			aPlants.push_back((SeedType)i);
+		}
+		return aPlants;
+	}
+
+	const std::vector<SeedType> &aCustomTypes = CustomTypes::CustomPlantTypes();
+	for (size_t i = (mPlantPage - 1) * kCustomPlantsPerPage;
+	     i < aCustomTypes.size() && i < (size_t)mPlantPage * kCustomPlantsPerPage; i++)
+	{
+		aPlants.push_back(aCustomTypes[i]);
+	}
+	return aPlants;
+}
+
+void AlmanacDialog::UpdateMoreButton()
+{
+	int aPages = mOpenPage == AlmanacPage::ALMANAC_PAGE_PLANTS    ? NumPlantPages()
+	             : mOpenPage == AlmanacPage::ALMANAC_PAGE_ZOMBIES ? NumZombiePages()
+	                                                              : 1;
+	bool isShown = aPages > 1;
+	mMoreButton->mBtnNoDraw = !isShown;
+	mMoreButton->mDisabled = !isShown;
+	if (!isShown)
+		return;
+
+	// The label says what the button shows next
+	int aPage = mOpenPage == AlmanacPage::ALMANAC_PAGE_PLANTS ? mPlantPage : mZombiePage;
+	int aNextPage = (aPage + 1) % aPages;
+	const char *aWhat = mOpenPage == AlmanacPage::ALMANAC_PAGE_PLANTS ? "Plants" : "Zombies";
+	if (aNextPage == 0)
+		mMoreButton->SetLabel(StrFormat("Game %s", aWhat));
+	else if (aPages == 2)
+		mMoreButton->SetLabel(StrFormat("More %s", aWhat));
+	else
+		mMoreButton->SetLabel(StrFormat("More %s %d/%d", aWhat, aNextPage, aPages - 1));
+}
+
 void AlmanacDialog::GetSeedPosition(SeedType theSeedType, int &x, int &y)
 {
+	int aCustomSlot = CustomSlot(CustomTypes::CustomPlantTypes(), theSeedType);
+	if (aCustomSlot >= 0)
+	{
+		aCustomSlot %= kCustomPlantsPerPage;
+		x = aCustomSlot % 8 * 52 + 26;
+		y = aCustomSlot / 8 * 78 + 92;
+		return;
+	}
+
 	if (theSeedType == SeedType::SEED_IMITATER)
 		x = 20, y = 23;
 	else
@@ -703,8 +821,7 @@ SeedType AlmanacDialog::SeedHitTest(int x, int y)
 {
 	if (mMouseVisible && mOpenPage == AlmanacPage::ALMANAC_PAGE_PLANTS)
 	{
-		for (SeedType aSeedType = SeedType::SEED_PEASHOOTER; aSeedType < NUM_ALMANAC_SEEDS;
-		     aSeedType = (SeedType)(aSeedType + 1))
+		for (SeedType aSeedType : PlantsOnPage())
 		{
 			if (mApp->SeedTypeAvailable(aSeedType))
 			{
@@ -723,7 +840,7 @@ SeedType AlmanacDialog::SeedHitTest(int x, int y)
 
 bool AlmanacDialog::ZombieHasSilhouette(ZombieType theZombieType)
 {
-	if (theZombieType != ZombieType::ZOMBIE_YETI || mApp->CanSpawnYetis())
+	if (CustomTypes::PlaysAs(theZombieType) != ZombieType::ZOMBIE_YETI || mApp->CanSpawnYetis())
 		return false;
 
 	return mApp->HasFinishedAdventure() ||
@@ -732,13 +849,15 @@ bool AlmanacDialog::ZombieHasSilhouette(ZombieType theZombieType)
 
 bool AlmanacDialog::ZombieIsShown(ZombieType theZombieType)
 {
-	if (mApp->IsTrialStageLocked() && theZombieType > ZombieType::ZOMBIE_SNORKEL)
+	// A custom zombie shows like its base, from its own starting level
+	ZombieType aPlaysAs = CustomTypes::PlaysAs(theZombieType);
+	if (mApp->IsTrialStageLocked() && aPlaysAs > ZombieType::ZOMBIE_SNORKEL)
 		return false;
 
-	if (theZombieType == ZombieType::ZOMBIE_YETI)
-		return mApp->CanSpawnYetis() || ZombieHasSilhouette(ZombieType::ZOMBIE_YETI);
+	if (aPlaysAs == ZombieType::ZOMBIE_YETI)
+		return mApp->CanSpawnYetis() || ZombieHasSilhouette(theZombieType);
 
-	if (theZombieType <= ZombieType::ZOMBIE_BOSS)
+	if (aPlaysAs <= ZombieType::ZOMBIE_BOSS)
 	{
 		if (mApp->HasFinishedAdventure())
 			return true;
@@ -757,7 +876,7 @@ bool AlmanacDialog::ZombieHasDescription(ZombieType theZombieType)
 	int aLevel = mApp->mPlayerInfo->GetLevel();
 	int aStart = GetZombieDefinition(theZombieType).mStartingLevel;
 
-	if (theZombieType == ZombieType::ZOMBIE_YETI)
+	if (CustomTypes::PlaysAs(theZombieType) == ZombieType::ZOMBIE_YETI)
 	{
 		if (!mApp->CanSpawnYetis())
 			return false;
@@ -772,6 +891,15 @@ bool AlmanacDialog::ZombieHasDescription(ZombieType theZombieType)
 
 void AlmanacDialog::GetZombiePosition(ZombieType theZombieType, int &x, int &y)
 {
+	int aCustomSlot = CustomSlot(CustomTypes::CustomZombieTypes(), theZombieType);
+	if (aCustomSlot >= 0)
+	{
+		aCustomSlot %= kCustomZombiesPerPage;
+		x = aCustomSlot % 5 * 85 + 22;
+		y = aCustomSlot / 5 * 80 + 86;
+		return;
+	}
+
 	if (theZombieType == ZombieType::ZOMBIE_BOSS)
 		x = 192, y = 486;
 	else
@@ -810,12 +938,21 @@ void AlmanacDialog::MouseUp(int x, int y, int theClickCount)
 		mApp->KillAlmanacDialog();
 	else if (mIndexButton->IsMouseOver())
 		SetPage(ALMANAC_PAGE_INDEX);
+	else if (mMoreButton->IsMouseOver())
+	{
+		if (mOpenPage == AlmanacPage::ALMANAC_PAGE_PLANTS)
+			mPlantPage = (mPlantPage + 1) % NumPlantPages();
+		else if (mOpenPage == AlmanacPage::ALMANAC_PAGE_ZOMBIES)
+			mZombiePage = (mZombiePage + 1) % NumZombiePages();
+		UpdateMoreButton();
+	}
 	mDescriptionScrollbar->MouseUp(x - mDescriptionScrollbar->mX, y - mDescriptionScrollbar->mY, theClickCount);
 }
 
 void AlmanacDialog::MouseDown(int x, int y, int theClickCount)
 {
-	if (mPlantButton->IsMouseOver() || mCloseButton->IsMouseOver() || mIndexButton->IsMouseOver())
+	if (mPlantButton->IsMouseOver() || mCloseButton->IsMouseOver() || mIndexButton->IsMouseOver() ||
+	    mMoreButton->IsMouseOver())
 		mApp->PlaySample(Sexy::SOUND_TAP);
 	if (mZombieButton->IsMouseOver())
 		mApp->PlaySample(Sexy::SOUND_GRAVEBUTTON);
@@ -845,7 +982,7 @@ void AlmanacDialog::MouseWheel(int theDelta)
 
 void AlmanacInitForPlayer()
 {
-	for (int i = 0; i < ZombieType::NUM_ZOMBIE_TYPES; i++)
+	for (int i = 0; i < MAX_ZOMBIE_TYPES; i++)
 		gZombieDefeated[i] = false;
 }
 

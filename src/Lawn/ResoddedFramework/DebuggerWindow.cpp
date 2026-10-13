@@ -20,6 +20,7 @@
 #include "../Component/ComponentRegistry.h"
 #include "../Component/EntityBuilder.h"
 #include "../Component/ComponentDefinitions.h"
+#include "../Component/CustomTypes.h"
 #include "../Component/Teams.h"
 
 using namespace Sexy;
@@ -29,12 +30,16 @@ using namespace Sexy;
 // ─────────────────────────────────────────────────────────────
 const char *DebuggerWindow::SeedTypeName(int i)
 {
+	if (CustomTypes::PlantInfo *aCustom = CustomTypes::GetPlant((SeedType)i))
+		return aCustom->mTypeName.c_str();
 	if (i < 0 || i >= (int)SeedType::NUM_SEED_TYPES)
 		return "???";
 	return gPlantDefs[i].mPlantName;
 }
 const char *DebuggerWindow::ZombieTypeName(int i)
 {
+	if (CustomTypes::ZombieInfo *aCustom = CustomTypes::GetZombie((ZombieType)i))
+		return aCustom->mTypeName.c_str();
 	if (i < 0 || i >= (int)ZombieType::NUM_ZOMBIE_TYPES)
 		return "???";
 	return gZombieDefs[i].mZombieName;
@@ -332,6 +337,24 @@ void DebuggerWindow::DrawBoardTab()
 			ImGui::SameLine();
 			ImGui::TextDisabled("(applies to what spawns from now on)");
 
+			if (ImGui::TreeNode("Custom types", "Custom types (%d zombies, %d plants)",
+			                    (int)CustomTypes::CustomZombieTypes().size(), (int)CustomTypes::CustomPlantTypes().size()))
+			{
+				for (ZombieType aType : CustomTypes::CustomZombieTypes())
+				{
+					CustomTypes::ZombieInfo *anInfo = CustomTypes::GetZombie(aType);
+					ImGui::BulletText("%s (%d), based on %s", anInfo->mTypeName.c_str(), (int)aType,
+					                  ZombieTypeName(anInfo->mBase));
+				}
+				for (SeedType aType : CustomTypes::CustomPlantTypes())
+				{
+					CustomTypes::PlantInfo *anInfo = CustomTypes::GetPlant(aType);
+					ImGui::BulletText("%s (%d), based on %s, cost %d", anInfo->mTypeName.c_str(), (int)aType,
+					                  SeedTypeName(anInfo->mBase), anInfo->mDefinition.mSeedCost);
+				}
+				ImGui::TreePop();
+			}
+
 			const std::vector<std::string> &aMessages = ComponentDefinitions::GetMessages();
 			if (aMessages.empty())
 			{
@@ -511,7 +534,7 @@ void DebuggerWindow::DrawBoardPlants()
 		if (ImGui::BeginCombo("Seed##qp", seedPreview))
 		{
 			ImGui::InputText("Filter", sSeedFilter, sizeof(sSeedFilter));
-			for (int i = 0; i < (int)SeedType::NUM_SEED_TYPES; i++)
+			for (int i : CustomTypes::AllPlantTypes())
 			{
 				const char *name = SeedTypeName(i);
 				if (sSeedFilter[0] != '\0' && strstr(name, sSeedFilter) == nullptr)
@@ -657,7 +680,7 @@ void DebuggerWindow::DrawBoardComponents()
 		ImGui::SetNextItemWidth(160);
 		if (ImGui::BeginCombo("Head##zt", SeedTypeName(mZombotanySeedIdx)))
 		{
-			for (int i = 0; i < (int)SeedType::NUM_SEED_TYPES; i++)
+			for (int i : CustomTypes::AllPlantTypes())
 			{
 				if (ImGui::Selectable(SeedTypeName(i), mZombotanySeedIdx == i))
 					mZombotanySeedIdx = i;
@@ -774,7 +797,7 @@ void DebuggerWindow::DrawBoardZombies()
 		if (ImGui::BeginCombo("Type##zsp", zPrev))
 		{
 			ImGui::InputText("Filter##zf", sZFilter, sizeof(sZFilter));
-			for (int i = 0; i < (int)ZombieType::NUM_ZOMBIE_TYPES; i++)
+			for (int i : CustomTypes::AllZombieTypes())
 			{
 				const char *n = ZombieTypeName(i);
 				if (sZFilter[0] && !strstr(n, sZFilter))
@@ -951,7 +974,7 @@ void DebuggerWindow::DrawBoardWaves()
 					ImGui::SetNextItemWidth(160);
 					if (ImGui::BeginCombo("##wzt", ZombieTypeName(cur)))
 					{
-						for (int t = 0; t < (int)ZombieType::NUM_ZOMBIE_TYPES; t++)
+						for (int t : CustomTypes::AllZombieTypes())
 						{
 							bool sel = (cur == t);
 							if (ImGui::Selectable(ZombieTypeName(t), sel))

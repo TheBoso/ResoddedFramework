@@ -1,6 +1,7 @@
 #ifndef __SEEDCHOOSERSCREEN_H__
 #define __SEEDCHOOSERSCREEN_H__
 
+#include <vector>
 #include "../../ConstEnums.h"
 #include "../../SexyAppFramework/Widget.h"
 using namespace Sexy;
@@ -46,7 +47,8 @@ class SeedChooserScreen : public Widget
 		SeedChooserScreen_Almanac = 103,
 		SeedChooserScreen_Menu = 104,
 		SeedChooserScreen_Store = 105,
-		SeedChooserScreen_Imitater = 106
+		SeedChooserScreen_Imitater = 106,
+		SeedChooserScreen_Page = 107
 	};
 
   public:
@@ -57,7 +59,13 @@ class SeedChooserScreen : public Widget
 	GameButton *mAlmanacButton;
 	GameButton *mMenuButton;
 	GameButton *mImitaterButton;
-	ChosenSeed mChosenSeeds[NUM_SEED_TYPES];
+	/// Switches between the game's plants and the custom ones (see Component/CustomTypes.h)
+	GameButton *mPageButton;
+	ChosenSeed mChosenSeeds[MAX_SEED_TYPES];
+	/// Every seed the chooser offers: the game's, then the custom plants
+	std::vector<SeedType> mChooserSeeds;
+	/// The page on show: 0 the game's plants, 1 and up the custom ones
+	int mPage;
 	LawnApp *mApp;
 	Board *mBoard;
 	int mNumSeedsToChoose;
@@ -81,6 +89,11 @@ class SeedChooserScreen : public Widget
 	void CrazyDavePickSeeds();
 	bool Has7Rows();
 	void GetSeedPositionInChooser(int theIndex, int &x, int &y);
+	int NumPages();
+	/// @brief The page a seed is shown on in the chooser
+	int PageOf(SeedType theSeedType);
+	bool IsOnShownPage(SeedType theSeedType);
+	void SetPage(int thePage);
 	void GetSeedPositionInBank(int theIndex, int &x, int &y);
 	unsigned int SeedNotRecommendedToPick(SeedType theSeedType);
 	bool SeedNotAllowedToPick(SeedType theSeedType);

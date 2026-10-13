@@ -21,6 +21,7 @@
 #include "../Sexy.TodLib/TodParticle.h"
 #include "Component/ComponentRegistry.h"
 #include "Component/Archetypes.h"
+#include "Component/CustomTypes.h"
 #include "Component/Teams.h"
 
 ZombieDefinition gZombieDefs[NUM_ZOMBIE_TYPES] = {
@@ -74,6 +75,14 @@ static ZombieType gBossZombieList[] = { ZombieType::ZOMBIE_TRAFFIC_CONE,
 
 ZombieDefinition &GetZombieDefinition(ZombieType theZombieType)
 {
+	if (CustomTypes::ZombieInfo *aCustom = CustomTypes::GetZombie(theZombieType))
+		return aCustom->mDefinition;
+	if (theZombieType < 0 || theZombieType >= NUM_ZOMBIE_TYPES)
+	{
+		// A custom type whose definition file is gone (from a save)
+		return gZombieDefs[ZombieType::ZOMBIE_NORMAL];
+	}
+
 	TOD_ASSERT(theZombieType >= 0 && theZombieType < NUM_ZOMBIE_TYPES);
 	TOD_ASSERT(gZombieDefs[theZombieType].mZombieType == theZombieType);
 
@@ -141,7 +150,11 @@ static void AttachVanillaPlantHead(Zombie *theZombie, const ZombieBodyComponent 
 
 void Zombie::ZombieInitialize(int theRow, ZombieType theType, bool theVariant, Zombie *theParentZombie, int theFromWave)
 {
-	TOD_ASSERT(theType >= 0 && theType <= ZombieType::NUM_ZOMBIE_TYPES);
+	if (!CustomTypes::Exists(theType))
+	{
+		// A custom type whose definition file is gone (from a save): a regular zombie instead
+		theType = ZombieType::ZOMBIE_NORMAL;
+	}
 
 	mFromWave = theFromWave;
 	mRow = theRow;
@@ -153,7 +166,9 @@ void Zombie::ZombieInitialize(int theRow, ZombieType theType, bool theVariant, Z
 	mHeight = 120;
 	mFrame = 0;
 	mPrevFrame = 0;
-	mZombieType = theType;
+	// A custom type plays as its base type (see Component/CustomTypes.h)
+	mDefinitionType = theType;
+	mZombieType = CustomTypes::PlaysAs(theType);
 	mVariant = theVariant;
 	mIsEating = false;
 	mJustGotShotCounter = 0;
@@ -227,7 +242,7 @@ void Zombie::ZombieInitialize(int theRow, ZombieType theType, bool theVariant, Z
 	mPosY += BodyOf(this).mRowYOffset; // GetPosYBasedOnRow ran before the body existed
 	PickRandomSpeed();
 
-	const ZombieDefinition &aZombieDef = GetZombieDefinition(mZombieType);
+	const ZombieDefinition &aZombieDef = GetZombieDefinition(mDefinitionType);
 	RenderLayer aRenderLayer = RenderLayer::RENDER_LAYER_ZOMBIE;
 	int aRenderOffset = 4;
 	if (aZombieDef.mReanimationType != ReanimationType::REANIM_NONE)
@@ -4317,6 +4332,7 @@ void Zombie::ConvertToNormalZombie()
 	mY = (int)mPosY;
 
 	mZombieType = ZombieType::ZOMBIE_NORMAL;
+	mDefinitionType = ZombieType::ZOMBIE_NORMAL;
 	mZombiePhase = ZombiePhase::PHASE_ZOMBIE_NORMAL;
 	mZombieAttackRect = Rect(50, 0, 20, 115);
 
@@ -4873,7 +4889,7 @@ void Zombie::DropLoot()
 	if (!IsOnBoard())
 		return;
 
-	AlmanacPlayerDefeatedZombie(mZombieType);
+	AlmanacPlayerDefeatedZombie(mDefinitionType);
 	RunBehaviours(this, &ZombieBehaviourComponent::OnKilled);
 
 	TrySpawnLevelAward();
@@ -7185,6 +7201,18 @@ void Zombie::DrawBossPart(Graphics *g, BossPart theBossPart)
 
 void Zombie::PreloadZombieResources(ZombieType theZombieType)
 {
+	if (CustomTypes::IsCustom(theZombieType))
+	{
+		// A custom type: its own animation, then whatever its base needs
+		const ZombieDefinition &aCustomDef = GetZombieDefinition(theZombieType);
+		if (aCustomDef.mReanimationType != ReanimationType::REANIM_NONE)
+		{
+			ReanimatorEnsureDefinitionLoaded(aCustomDef.mReanimationType, true);
+		}
+		PreloadZombieResources(CustomTypes::PlaysAs(theZombieType));
+		return;
+	}
+
 	const ZombieDefinition &aZombieDef = GetZombieDefinition(theZombieType);
 	if (aZombieDef.mReanimationType != ReanimationType::REANIM_NONE)
 	{
