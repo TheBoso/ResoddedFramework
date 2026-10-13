@@ -57,9 +57,9 @@ bool PlantHeadComponent::OnHeadDropped()
 
 void PlantHeadComponent::Serialize(ComponentArchive &theArchive)
 {
-	theArchive.Value(mSeedType);
-	theArchive.Value(mOffsetX);
-	theArchive.Value(mOffsetY);
-	theArchive.Value(mScale);
-	theArchive.Value(mHeadReanimID);
+	theArchive.Value("seedType", mSeedType);
+	theArchive.Value("offsetX", mOffsetX);
+	theArchive.Value("offsetY", mOffsetY);
+	theArchive.Value("scale", mScale);
+	theArchive.Value("headReanimID", mHeadReanimID);
 }

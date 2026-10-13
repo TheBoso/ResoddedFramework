@@ -1,0 +1,34 @@
+{
+  "zombie": "ZOMBIE_PAIL",
+  "components": [
+    {
+      "type": "TeamComponent",
+      "team": 1,
+      "nativeTeam": 1
+    },
+    {
+      "type": "FacingComponent",
+      "direction": -1,
+      "nativeDirection": -1
+    },
+    {
+      "type": "HypnotizableComponent"
+    },
+    {
+      "type": "ZombieBodyComponent",
+      "dancesInDanceMode": true,
+      "spawnShownPrefix": "anim_bucket",
+      "spawnHiddenPrefixes": [
+        "anim_hair",
+        "",
+        ""
+      ]
+    },
+    {
+      "type": "HelmComponent",
+      "health": 1100,
+      "maxHealth": 1100,
+      "helmType": "HELMTYPE_PAIL"
+    }
+  ]
+}

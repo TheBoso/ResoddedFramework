@@ -39,7 +39,7 @@ class ZombieBodyComponent : public Component
 	/// The particle the head flies off as (PARTICLE_NONE: the regular head, or its mowed/in-pool variants)
 	ParticleEffect mHeadParticle = ParticleEffect::PARTICLE_NONE;
 	/// ResourceId of the head image the particle shows, -1 for the particle's own image
-	int32_t mHeadImageId = -1;
+	ResourceId mHeadImageId = (ResourceId)-1;
 	/// Tracks hidden along with the head (a Dancer's sideburns...)
 	char mHeadHiddenPrefixes[2][32] = { "", "" };
 	/// Draw order of the flying head relative to the zombie (+1 in front, -1 behind)
@@ -113,9 +113,9 @@ class ZombieBodyComponent : public Component
 	char mArmTrack[48] = "Zombie_outerarm_lower";
 	/// The upper arm left behind shows this image (ResourceId, -1 to leave it as it is)
 	char mArmUpperTrack[48] = "Zombie_outerarm_upper";
-	int32_t mArmUpperImageId = ResourceId::IMAGE_REANIM_ZOMBIE_OUTERARM_UPPER2_ID;
+	ResourceId mArmUpperImageId = ResourceId::IMAGE_REANIM_ZOMBIE_OUTERARM_UPPER2_ID;
 	/// Image of the falling arm (ResourceId, -1 for the particle's own)
-	int32_t mArmImageId = -1;
+	ResourceId mArmImageId = (ResourceId)-1;
 
 	/// Shows the ice block when frozen (no for Dr. Zomboss)
 	bool mShowsIceTrap = true;

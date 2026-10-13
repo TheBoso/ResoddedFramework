@@ -1,0 +1,29 @@
+{
+  "plant": "SEED_SPIKEROCK",
+  "components": [
+    {
+      "type": "TeamComponent",
+      "team": 0,
+      "nativeTeam": 0
+    },
+    {
+      "type": "FacingComponent"
+    },
+    {
+      "type": "HypnotizableComponent",
+      "hypnotizedTeam": 1
+    },
+    {
+      "type": "LowProfileComponent"
+    },
+    {
+      "type": "SpikeweedBehaviour",
+      "firstHitTick": 69,
+      "secondHitTick": 33
+    },
+    {
+      "type": "SpikesComponent",
+      "survivesCrushing": true
+    }
+  ]
+}

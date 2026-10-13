@@ -1,0 +1,59 @@
+{
+  "plant": "SEED_CABBAGEPULT",
+  "components": [
+    {
+      "type": "TeamComponent",
+      "team": 0,
+      "nativeTeam": 0
+    },
+    {
+      "type": "FacingComponent"
+    },
+    {
+      "type": "HypnotizableComponent",
+      "hypnotizedTeam": 1
+    },
+    {
+      "type": "PlantShooterComponent",
+      "projectileType": "PROJECTILE_CABBAGE",
+      "arc": "Lobbed",
+      "pattern": "Catapult",
+      "weapons": [
+        {
+          "projectile": "PROJECTILE_CABBAGE",
+          "motion": "Lobbed",
+          "areaDamage": 0,
+          "foley": "FOLEY_THROW",
+          "extraFoley": "NUM_FOLEY",
+          "muzzleAnchor": "Plant",
+          "muzzleX": 5,
+          "muzzleY": -12,
+          "muzzleParticle": "PARTICLE_NONE",
+          "muzzleParticleX": 0,
+          "muzzleParticleY": 0,
+          "animTarget": "Auto",
+          "anim": "anim_shooting",
+          "animRate": 35.0,
+          "shootDelay": 32
+        },
+        {
+          "projectile": "PROJECTILE_PEA",
+          "motion": "Straight",
+          "areaDamage": 0,
+          "foley": "FOLEY_THROW",
+          "extraFoley": "NUM_FOLEY",
+          "muzzleAnchor": "Plant",
+          "muzzleX": 10,
+          "muzzleY": 5,
+          "muzzleParticle": "PARTICLE_NONE",
+          "muzzleParticleX": 0,
+          "muzzleParticleY": 0,
+          "animTarget": "Auto",
+          "anim": "anim_shooting",
+          "animRate": 35.0,
+          "shootDelay": 29
+        }
+      ]
+    }
+  ]
+}

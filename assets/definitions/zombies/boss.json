@@ -1,0 +1,68 @@
+{
+  "zombie": "ZOMBIE_BOSS",
+  "components": [
+    {
+      "type": "TeamComponent",
+      "team": 1,
+      "nativeTeam": 1
+    },
+    {
+      "type": "FacingComponent",
+      "direction": -1,
+      "nativeDirection": -1
+    },
+    {
+      "type": "HypnotizableComponent"
+    },
+    {
+      "type": "UnswallowableComponent"
+    },
+    {
+      "type": "BossBehaviour"
+    },
+    {
+      "type": "WalkerComponent",
+      "moveStyle": "Stand"
+    },
+    {
+      "type": "ZombieBodyComponent",
+      "burnsAsDamage": true,
+      "deathAnimRateMin": 18.0,
+      "deathAnimRateMax": 18.0,
+      "hasDeathFall": false,
+      "playsDeathAnimWhenDisintegrated": true,
+      "showsIceTrap": false,
+      "canBeButtered": false,
+      "hasYuckyFace": false,
+      "usesPlainZombieReanim": false,
+      "hitRect": [
+        700,
+        80,
+        90,
+        430
+      ],
+      "hasAttackRect": true,
+      "attackRect": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "hasSpawnX": true,
+      "renderLayer": "RENDER_LAYER_TOP",
+      "spansAllRows": true,
+      "groans": false,
+      "eatsPlants": false,
+      "isBoss": true,
+      "losesBodyParts": false,
+      "damagedBelow": [
+        4,
+        5
+      ],
+      "badlyDamagedBelow": [
+        1,
+        2
+      ]
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "plant": "SEED_SUNFLOWER",
+  "components": [
+    {
+      "type": "TeamComponent",
+      "team": 0,
+      "nativeTeam": 0
+    },
+    {
+      "type": "FacingComponent"
+    },
+    {
+      "type": "HypnotizableComponent",
+      "hypnotizedTeam": 1
+    },
+    {
+      "type": "ProducerComponent",
+      "bigTimeBonusCoin": "COIN_SUN"
+    }
+  ]
+}

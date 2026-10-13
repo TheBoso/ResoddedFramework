@@ -1,5 +1,6 @@
 #include <cstring>
 #include "Archetypes.h"
+#include "ComponentDefinitions.h"
 #include "../../Resources.h"
 #include "../../GameConstants.h"
 #include "../Board.h"
@@ -85,84 +86,171 @@ static ProducerComponent *CreateVanillaProducer(SeedType theSeedType, int theRat
 
 /// @brief The behaviour components of the vanilla plants (what used to be the seed switches in Plant::UpdateAbilities
 /// and Plant::DoSpecial)
-static void AddVanillaBehaviours(Plant *thePlant)
+static void AddVanillaBehaviours(SeedType theSeedType, ComponentList &theOut)
 {
-	switch (thePlant->mSeedType)
+	switch (theSeedType)
 	{
 	case SeedType::SEED_CHERRYBOMB:
-		thePlant->AddComponent(ExplodeComponent::CherryBomb());
+		theOut.Add(ExplodeComponent::CherryBomb());
 		break;
 	case SeedType::SEED_DOOMSHROOM:
-		thePlant->AddComponent<DoomFuseComponent>(100);
-		thePlant->AddComponent(ExplodeComponent::DoomShroom());
+		theOut.Add<DoomFuseComponent>(100);
+		theOut.Add(ExplodeComponent::DoomShroom());
 		break;
 	case SeedType::SEED_POTATOMINE:
-		thePlant->AddComponent<PotatoMineArmingBehaviour>();
-		thePlant->AddComponent(ExplodeComponent::PotatoMine());
+		theOut.Add<PotatoMineArmingBehaviour>();
+		theOut.Add(ExplodeComponent::PotatoMine());
 		break;
 	case SeedType::SEED_JALAPENO:
-		thePlant->AddComponent<BurnRowComponent>(0);
+		theOut.Add<BurnRowComponent>(0);
 		break;
 	case SeedType::SEED_ICESHROOM:
-		thePlant->AddComponent<FuseComponent>(100);
-		thePlant->AddComponent<FreezeAllComponent>();
+		theOut.Add<FuseComponent>(100);
+		theOut.Add<FreezeAllComponent>();
 		break;
 	case SeedType::SEED_SQUASH:
-		thePlant->AddComponent<SquashBehaviour>();
+		theOut.Add<SquashBehaviour>();
 		break;
 	case SeedType::SEED_CHOMPER:
-		thePlant->AddComponent<ChomperBehaviour>();
+		theOut.Add<ChomperBehaviour>();
 		break;
 	case SeedType::SEED_BLOVER:
-		thePlant->AddComponent<BloverBehaviour>();
+		theOut.Add<BloverBehaviour>();
 		break;
 	case SeedType::SEED_FLOWERPOT:
-		thePlant->AddComponent<FlowerPotBehaviour>();
+		theOut.Add<FlowerPotBehaviour>();
 		break;
 	case SeedType::SEED_LILYPAD:
-		thePlant->AddComponent<LilyPadBehaviour>();
+		theOut.Add<LilyPadBehaviour>();
 		break;
 	case SeedType::SEED_IMITATER:
-		thePlant->AddComponent<ImitaterBehaviour>();
+		theOut.Add<ImitaterBehaviour>();
 		break;
 	case SeedType::SEED_INSTANT_COFFEE:
-		thePlant->AddComponent<CoffeeBeanBehaviour>();
+		theOut.Add<CoffeeBeanBehaviour>();
 		break;
 	case SeedType::SEED_UMBRELLA:
-		thePlant->AddComponent<UmbrellaBehaviour>();
+		theOut.Add<UmbrellaBehaviour>();
 		break;
 	case SeedType::SEED_COBCANNON:
-		thePlant->AddComponent<CobCannonBehaviour>();
+		theOut.Add<CobCannonBehaviour>();
 		break;
 	case SeedType::SEED_CACTUS:
-		thePlant->AddComponent<CactusBehaviour>();
+		theOut.Add<CactusBehaviour>();
 		break;
 	case SeedType::SEED_MAGNETSHROOM:
-		thePlant->AddComponent<MagnetShroomBehaviour>();
+		theOut.Add<MagnetShroomBehaviour>();
 		break;
 	case SeedType::SEED_GOLD_MAGNET:
-		thePlant->AddComponent<GoldMagnetBehaviour>();
+		theOut.Add<GoldMagnetBehaviour>();
 		break;
 	case SeedType::SEED_SUNSHROOM:
-		thePlant->AddComponent<SunShroomGrowthBehaviour>();
+		theOut.Add<SunShroomGrowthBehaviour>();
 		break;
 	case SeedType::SEED_GRAVEBUSTER:
-		thePlant->AddComponent<GraveBusterBehaviour>();
+		theOut.Add<GraveBusterBehaviour>();
 		break;
 	case SeedType::SEED_SPIKEWEED:
-		thePlant->AddComponent<SpikeweedBehaviour>(20, 75, -1);
+		theOut.Add<SpikeweedBehaviour>(20, 75, -1);
 		break;
 	case SeedType::SEED_SPIKEROCK:
-		thePlant->AddComponent<SpikeweedBehaviour>(20, 69, 33);
+		theOut.Add<SpikeweedBehaviour>(20, 69, 33);
 		break;
 	case SeedType::SEED_TANGLEKELP:
-		thePlant->AddComponent<TangleKelpBehaviour>();
+		theOut.Add<TangleKelpBehaviour>();
 		break;
 	case SeedType::SEED_SCAREDYSHROOM:
-		thePlant->AddComponent<ScaredyShroomBehaviour>();
+		theOut.Add<ScaredyShroomBehaviour>();
 		break;
 	default:
 		break;
+	}
+}
+
+void ComponentList::AttachTo(GameObject *theOwner)
+{
+	for (Component *aComponent : mComponents)
+	{
+		theOwner->AddComponent(aComponent);
+	}
+	mComponents.clear();
+}
+
+void Archetypes::BuildVanillaPlant(SeedType theSeedType, int theLaunchRate, ComponentList &theOut)
+{
+	theOut.Add<TeamComponent>(TEAM_PLANTS);
+	theOut.Add<FacingComponent>(1);
+	theOut.Add<HypnotizableComponent>(TEAM_ZOMBIES, true);
+
+	if (Contains(gLowProfilePlants, theSeedType))
+	{
+		theOut.Add<LowProfileComponent>();
+	}
+	AddVanillaBehaviours(theSeedType, theOut);
+	if (PlantShooterComponent *aShooter = PlantShooterComponent::CreateVanilla(theSeedType))
+	{
+		theOut.Add(aShooter);
+	}
+
+	switch (theSeedType)
+	{
+	case SeedType::SEED_HYPNOSHROOM:
+		theOut.Add<HypnotizeOnEatenComponent>(true);
+		theOut.Add<InedibleComponent>(true, false);
+		break;
+	case SeedType::SEED_CHERRYBOMB:
+	case SeedType::SEED_JALAPENO:
+	case SeedType::SEED_DOOMSHROOM:
+		theOut.Add<InedibleComponent>(true, true);
+		break;
+	case SeedType::SEED_ICESHROOM:
+		theOut.Add<InedibleComponent>(true, true);
+		theOut.Add<ActivatesWhenEatenComponent>(true);
+		break;
+	case SeedType::SEED_BLOVER:
+		theOut.Add<InedibleComponent>(false, true);
+		theOut.Add<ActivatesWhenEatenComponent>(false);
+		break;
+	case SeedType::SEED_SQUASH:
+		theOut.Add<InedibleComponent>(false, true);
+		break;
+	case SeedType::SEED_TANGLEKELP:
+		theOut.Add<InedibleComponent>(false, false, true);
+		break;
+	case SeedType::SEED_POTATOMINE:
+		theOut.Add<MineComponent>();
+		break;
+	case SeedType::SEED_GARLIC:
+		theOut.Add<RepelOnEatenComponent>();
+		break;
+	case SeedType::SEED_SPIKEWEED:
+		theOut.Add<SpikesComponent>(false);
+		break;
+	case SeedType::SEED_SPIKEROCK:
+		theOut.Add<SpikesComponent>(true);
+		break;
+	case SeedType::SEED_WALLNUT:
+		theOut.Add<WallComponent>(true);
+		break;
+	case SeedType::SEED_TALLNUT:
+		theOut.Add<WallComponent>(true);
+		theOut.Add<TallComponent>();
+		break;
+	case SeedType::SEED_PUMPKINSHELL:
+		theOut.Add<WallComponent>(false);
+		break;
+	case SeedType::SEED_TORCHWOOD:
+		theOut.Add<ProjectileConverterComponent>()
+		    ->Convert(ProjectileType::PROJECTILE_PEA, ProjectileType::PROJECTILE_FIREBALL)
+		    .Convert(ProjectileType::PROJECTILE_SNOWPEA, ProjectileType::PROJECTILE_PEA);
+		break;
+	default:
+		break;
+	}
+
+	if (ProducerComponent *aProducer = CreateVanillaProducer(theSeedType, theLaunchRate))
+	{
+		theOut.Add(aProducer);
 	}
 }
 
@@ -171,165 +259,101 @@ void Archetypes::ApplyPlantDefaults(Plant *thePlant, bool theFromOldSave)
 	if (!thePlant->GetEntityRef())
 		return;
 
-	thePlant->AddComponent<TeamComponent>(TEAM_PLANTS);
-	thePlant->AddComponent<FacingComponent>(1);
-	thePlant->AddComponent<HypnotizableComponent>(TEAM_ZOMBIES, true);
-
-	if (Contains(gLowProfilePlants, thePlant->mSeedType))
+	ComponentList aComponents;
+	if (!ComponentDefinitions::Build(EntityKind::Plant, thePlant->mSeedType, aComponents))
 	{
-		thePlant->AddComponent<LowProfileComponent>();
-	}
-	AddVanillaBehaviours(thePlant);
-	if (PlantShooterComponent *aShooter = PlantShooterComponent::CreateVanilla(thePlant->mSeedType))
-	{
-		thePlant->AddComponent(aShooter);
+		BuildVanillaPlant(thePlant->mSeedType, thePlant->mLaunchRate, aComponents);
 	}
 
-	switch (thePlant->mSeedType)
+	if (theFromOldSave)
 	{
-	case SeedType::SEED_HYPNOSHROOM:
-		thePlant->AddComponent<HypnotizeOnEatenComponent>(true);
-		thePlant->AddComponent<InedibleComponent>(true, false);
-		break;
-	case SeedType::SEED_CHERRYBOMB:
-	case SeedType::SEED_JALAPENO:
-	case SeedType::SEED_DOOMSHROOM:
-		thePlant->AddComponent<InedibleComponent>(true, true);
-		break;
-	case SeedType::SEED_ICESHROOM:
-		thePlant->AddComponent<InedibleComponent>(true, true);
-		thePlant->AddComponent<ActivatesWhenEatenComponent>(true);
-		break;
-	case SeedType::SEED_BLOVER:
-		thePlant->AddComponent<InedibleComponent>(false, true);
-		thePlant->AddComponent<ActivatesWhenEatenComponent>(false);
-		break;
-	case SeedType::SEED_SQUASH:
-		thePlant->AddComponent<InedibleComponent>(false, true);
-		break;
-	case SeedType::SEED_TANGLEKELP:
-		thePlant->AddComponent<InedibleComponent>(false, false, true);
-		break;
-	case SeedType::SEED_POTATOMINE:
-		thePlant->AddComponent<MineComponent>();
-		break;
-	case SeedType::SEED_GARLIC:
-		thePlant->AddComponent<RepelOnEatenComponent>();
-		break;
-	case SeedType::SEED_SPIKEWEED:
-		thePlant->AddComponent<SpikesComponent>(false);
-		break;
-	case SeedType::SEED_SPIKEROCK:
-		thePlant->AddComponent<SpikesComponent>(true);
-		break;
-	case SeedType::SEED_WALLNUT:
-		thePlant->AddComponent<WallComponent>(true);
-		break;
-	case SeedType::SEED_TALLNUT:
-		thePlant->AddComponent<WallComponent>(true);
-		thePlant->AddComponent<TallComponent>();
-		break;
-	case SeedType::SEED_PUMPKINSHELL:
-		thePlant->AddComponent<WallComponent>(false);
-		break;
-	case SeedType::SEED_TORCHWOOD:
-		thePlant->AddComponent<ProjectileConverterComponent>()
-		    ->Convert(ProjectileType::PROJECTILE_PEA, ProjectileType::PROJECTILE_FIREBALL)
-		    .Convert(ProjectileType::PROJECTILE_SNOWPEA, ProjectileType::PROJECTILE_PEA);
-		break;
-	default:
-		break;
-	}
-
-	if (ProducerComponent *aProducer = CreateVanillaProducer(thePlant->mSeedType, thePlant->mLaunchRate))
-	{
-		if (theFromOldSave)
+		// Old saves kept the producer's countdown in the plant itself
+		if (ProducerComponent *aProducer = aComponents.Find<ProducerComponent>())
 		{
-			// Old saves kept the countdown in the plant itself
 			aProducer->mCountdown = std::max(thePlant->mLaunchCounter, 1);
 		}
-		thePlant->AddComponent(aProducer);
 	}
+	aComponents.AttachTo(thePlant);
 }
 
 /// @brief The behaviour components of the vanilla zombies (what used to be the zombie-type dispatch in
 /// Zombie::UpdateActions, UpdatePlaying and Update)
-static void AddVanillaZombieBehaviours(Zombie *theZombie)
+static void AddVanillaZombieBehaviours(ZombieType theType, ComponentList &theOut)
 {
-	switch (theZombie->mZombieType)
+	switch (theType)
 	{
 	case ZombieType::ZOMBIE_POLEVAULTER:
-		theZombie->AddComponent<PolevaulterBehaviour>();
+		theOut.Add<PolevaulterBehaviour>();
 		break;
 	case ZombieType::ZOMBIE_CATAPULT:
-		theZombie->AddComponent<CatapultBehaviour>();
+		theOut.Add<CatapultBehaviour>();
 		break;
 	case ZombieType::ZOMBIE_DOLPHIN_RIDER:
-		theZombie->AddComponent<DolphinRiderBehaviour>();
+		theOut.Add<DolphinRiderBehaviour>();
 		break;
 	case ZombieType::ZOMBIE_SNORKEL:
-		theZombie->AddComponent<SnorkelBehaviour>();
+		theOut.Add<SnorkelBehaviour>();
 		break;
 	case ZombieType::ZOMBIE_BALLOON:
-		theZombie->AddComponent<BalloonBehaviour>();
+		theOut.Add<BalloonBehaviour>();
 		break;
 	case ZombieType::ZOMBIE_NEWSPAPER:
-		theZombie->AddComponent<NewspaperBehaviour>();
+		theOut.Add<NewspaperBehaviour>();
 		break;
 	case ZombieType::ZOMBIE_DIGGER:
-		theZombie->AddComponent<DiggerBehaviour>();
+		theOut.Add<DiggerBehaviour>();
 		break;
 	case ZombieType::ZOMBIE_JACK_IN_THE_BOX:
-		theZombie->AddComponent<JackInTheBoxBehaviour>();
+		theOut.Add<JackInTheBoxBehaviour>();
 		break;
 	case ZombieType::ZOMBIE_GARGANTUAR:
 	case ZombieType::ZOMBIE_REDEYE_GARGANTUAR:
-		theZombie->AddComponent<GargantuarBehaviour>();
+		theOut.Add<GargantuarBehaviour>();
 		break;
 	case ZombieType::ZOMBIE_BOBSLED:
-		theZombie->AddComponent<BobsledBehaviour>();
+		theOut.Add<BobsledBehaviour>();
 		break;
 	case ZombieType::ZOMBIE_ZAMBONI:
-		theZombie->AddComponent<ZamboniBehaviour>();
+		theOut.Add<ZamboniBehaviour>();
 		break;
 	case ZombieType::ZOMBIE_LADDER:
-		theZombie->AddComponent<LadderBehaviour>();
+		theOut.Add<LadderBehaviour>();
 		break;
 	case ZombieType::ZOMBIE_YETI:
-		theZombie->AddComponent<YetiBehaviour>();
+		theOut.Add<YetiBehaviour>();
 		break;
 	case ZombieType::ZOMBIE_DANCER:
-		theZombie->AddComponent<DancerBehaviour>();
+		theOut.Add<DancerBehaviour>();
 		break;
 	case ZombieType::ZOMBIE_BACKUP_DANCER:
-		theZombie->AddComponent<BackupDancerBehaviour>();
+		theOut.Add<BackupDancerBehaviour>();
 		break;
 	case ZombieType::ZOMBIE_IMP:
-		theZombie->AddComponent<ImpBehaviour>();
+		theOut.Add<ImpBehaviour>();
 		break;
 	case ZombieType::ZOMBIE_PEA_HEAD:
-		theZombie->AddComponent<PeaHeadBehaviour>();
+		theOut.Add<PeaHeadBehaviour>();
 		break;
 	case ZombieType::ZOMBIE_JALAPENO_HEAD:
-		theZombie->AddComponent<JalapenoHeadBehaviour>();
+		theOut.Add<JalapenoHeadBehaviour>();
 		break;
 	case ZombieType::ZOMBIE_GATLING_HEAD:
-		theZombie->AddComponent<GatlingHeadBehaviour>();
+		theOut.Add<GatlingHeadBehaviour>();
 		break;
 	case ZombieType::ZOMBIE_SQUASH_HEAD:
-		theZombie->AddComponent<SquashHeadBehaviour>();
+		theOut.Add<SquashHeadBehaviour>();
 		break;
 	case ZombieType::ZOMBIE_BOSS:
-		theZombie->AddComponent<BossBehaviour>();
+		theOut.Add<BossBehaviour>();
 		break;
 	case ZombieType::ZOMBIE_BUNGEE:
-		theZombie->AddComponent<BungeeBehaviour>();
+		theOut.Add<BungeeBehaviour>();
 		break;
 	case ZombieType::ZOMBIE_POGO:
-		theZombie->AddComponent<PogoBehaviour>();
+		theOut.Add<PogoBehaviour>();
 		break;
 	case ZombieType::ZOMBIE_FLAG:
-		theZombie->AddComponent<FlagBearerBehaviour>();
+		theOut.Add<FlagBearerBehaviour>();
 		break;
 	default:
 		break;
@@ -337,59 +361,59 @@ static void AddVanillaZombieBehaviours(Zombie *theZombie)
 }
 
 /// @brief Traits and walking of the vanilla zombies (what used to be lists of zombie types)
-static void AddVanillaZombieTraits(Zombie *theZombie)
+static void AddVanillaZombieTraits(ZombieType theType, ComponentList &theOut)
 {
 	constexpr float kMin = WalkerComponent::kRegularMinSpeed;
 	constexpr float kMax = WalkerComponent::kRegularMaxSpeed;
-	switch (theZombie->mZombieType)
+	switch (theType)
 	{
 	case ZombieType::ZOMBIE_GARGANTUAR:
 	case ZombieType::ZOMBIE_REDEYE_GARGANTUAR:
-		theZombie->AddComponent<GiantComponent>();
-		theZombie->AddComponent<WalkerComponent>(kMin, kMax, -150);
+		theOut.Add<GiantComponent>();
+		theOut.Add<WalkerComponent>(kMin, kMax, -150);
 		break;
 	case ZombieType::ZOMBIE_POLEVAULTER:
-		theZombie->AddComponent<WalkerComponent>(kMin, kMax, -150);
+		theOut.Add<WalkerComponent>(kMin, kMax, -150);
 		break;
 	case ZombieType::ZOMBIE_ZAMBONI:
-		theZombie->AddComponent<VehicleComponent>(true, 200);
-		theZombie->AddComponent<WalkerComponent>(kMin, kMax, -175)->mMoveStyle = MoveStyle::Drive;
+		theOut.Add<VehicleComponent>(true, 200);
+		theOut.Add<WalkerComponent>(kMin, kMax, -175)->mMoveStyle = MoveStyle::Drive;
 		break;
 	case ZombieType::ZOMBIE_CATAPULT:
-		theZombie->AddComponent<VehicleComponent>(false, 200);
-		theZombie->AddComponent<WalkerComponent>(kMin, kMax, -175)->mMoveStyle = MoveStyle::Glide;
+		theOut.Add<VehicleComponent>(false, 200);
+		theOut.Add<WalkerComponent>(kMin, kMax, -175)->mMoveStyle = MoveStyle::Glide;
 		break;
 	case ZombieType::ZOMBIE_FOOTBALL:
-		theZombie->AddComponent<WalkerComponent>(0.66f, 0.68f, -175);
+		theOut.Add<WalkerComponent>(0.66f, 0.68f, -175);
 		break;
 	case ZombieType::ZOMBIE_DANCER:
 	case ZombieType::ZOMBIE_BACKUP_DANCER:
-		theZombie->AddComponent<DanceTroupeComponent>(theZombie->mZombieType == ZombieType::ZOMBIE_DANCER);
-		theZombie->AddComponent<WalkerComponent>(0.45f, 0.45f, -130);
+		theOut.Add<DanceTroupeComponent>(theType == ZombieType::ZOMBIE_DANCER);
+		theOut.Add<WalkerComponent>(0.45f, 0.45f, -130);
 		break;
 	case ZombieType::ZOMBIE_SNORKEL:
-		theZombie->AddComponent<SwimmerComponent>(true);
-		theZombie->AddComponent<WalkerComponent>(0.66f, 0.68f, -130);
+		theOut.Add<SwimmerComponent>(true);
+		theOut.Add<WalkerComponent>(0.66f, 0.68f, -130);
 		break;
 	case ZombieType::ZOMBIE_DOLPHIN_RIDER:
-		theZombie->AddComponent<SwimmerComponent>();
+		theOut.Add<SwimmerComponent>();
 		break;
 	case ZombieType::ZOMBIE_POGO:
 	case ZombieType::ZOMBIE_FLAG:
-		theZombie->AddComponent<WalkerComponent>(0.45f, 0.45f, WalkerComponent::kRegularHouseEdgeX);
+		theOut.Add<WalkerComponent>(0.45f, 0.45f, WalkerComponent::kRegularHouseEdgeX);
 		break;
 	case ZombieType::ZOMBIE_JACK_IN_THE_BOX:
-		theZombie->AddComponent<WalkerComponent>(0.66f, 0.68f, WalkerComponent::kRegularHouseEdgeX);
+		theOut.Add<WalkerComponent>(0.66f, 0.68f, WalkerComponent::kRegularHouseEdgeX);
 		break;
 	case ZombieType::ZOMBIE_SQUASH_HEAD:
-		theZombie->AddComponent<WalkerComponent>(0.79f, 0.81f, WalkerComponent::kRegularHouseEdgeX);
+		theOut.Add<WalkerComponent>(0.79f, 0.81f, WalkerComponent::kRegularHouseEdgeX);
 		break;
 	case ZombieType::ZOMBIE_YETI:
-		theZombie->AddComponent<WalkerComponent>(0.4f, 0.4f, WalkerComponent::kRegularHouseEdgeX);
+		theOut.Add<WalkerComponent>(0.4f, 0.4f, WalkerComponent::kRegularHouseEdgeX);
 		break;
 	case ZombieType::ZOMBIE_BUNGEE:
 	case ZombieType::ZOMBIE_BOSS:
-		theZombie->AddComponent<WalkerComponent>(kMin, kMax, WalkerComponent::kRegularHouseEdgeX)->mMoveStyle =
+		theOut.Add<WalkerComponent>(kMin, kMax, WalkerComponent::kRegularHouseEdgeX)->mMoveStyle =
 		    MoveStyle::Stand;
 		break;
 	default:
@@ -407,19 +431,19 @@ static void SetName(char (&theDest)[N], const char *theName)
 
 /// @brief The bodies of the vanilla zombies that differ from the regular zombie (shadow, flying head, death
 /// animation, charred remains, sounds, place in the house, walking and eating animation, lost arm, ice and butter, yucky face, daisies, what it spawns with)
-static void AddVanillaZombieBody(Zombie *theZombie)
+static void AddVanillaZombieBody(ZombieType theType, ComponentList &theOut)
 {
 	ZombieBodyComponent aBody;
 	auto aSetHead = [&aBody](int theImageId, const char *theHidden1 = "", const char *theHidden2 = "") {
-		aBody.mHeadImageId = theImageId;
+		aBody.mHeadImageId = (ResourceId)theImageId;
 		strncpy(aBody.mHeadHiddenPrefixes[0], theHidden1, sizeof(aBody.mHeadHiddenPrefixes[0]) - 1);
 		strncpy(aBody.mHeadHiddenPrefixes[1], theHidden2, sizeof(aBody.mHeadHiddenPrefixes[1]) - 1);
 	};
 	auto aSetArm = [&aBody](const char *theTrack, const char *theUpperTrack, int theUpperImageId, int theImageId) {
 		SetName(aBody.mArmTrack, theTrack);
 		SetName(aBody.mArmUpperTrack, theUpperTrack);
-		aBody.mArmUpperImageId = theUpperImageId;
-		aBody.mArmImageId = theImageId;
+		aBody.mArmUpperImageId = (ResourceId)theUpperImageId;
+		aBody.mArmImageId = (ResourceId)theImageId;
 	};
 	auto aHideArmTracks = [&aBody](const char *theTrack1, const char *theTrack2, const char *theTrack3 = "") {
 		aBody.mArmHiddenByPrefix = false;
@@ -473,7 +497,7 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 		aBody.mCharredY = theY;
 	};
 
-	switch (theZombie->mZombieType)
+	switch (theType)
 	{
 	case ZombieType::ZOMBIE_FOOTBALL:
 		aBody.mSmallScaleOffsetY = 20.0f;
@@ -630,7 +654,7 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 		aBody.mUsesPlainZombieReanim = false;
 		aBody.mSpawnWidth = 180;
 		aBody.mSpawnHeight = 180;
-		aBody.mSpawnHealth = theZombie->mZombieType == ZombieType::ZOMBIE_REDEYE_GARGANTUAR ? 6000 : 3000;
+		aBody.mSpawnHealth = theType == ZombieType::ZOMBIE_REDEYE_GARGANTUAR ? 6000 : 3000;
 		aBody.mAnimFrames = 24;
 		aBody.mAnimTicksPerFrame = 8;
 		aSetSpawnX(WIDE_BOARD_WIDTH + 45, 10);
@@ -880,72 +904,95 @@ static void AddVanillaZombieBody(Zombie *theZombie)
 		return;
 	}
 
-	theZombie->AddComponent(new ZombieBodyComponent(aBody));
+	theOut.Add(new ZombieBodyComponent(aBody));
 }
 
 /// @brief The armour the vanilla zombies spawn with (the Bobsled leader's helmet comes from its behaviour)
-static void AddVanillaZombieArmor(Zombie *theZombie)
+static void AddVanillaZombieArmor(ZombieType theType, ComponentList &theOut)
 {
-	switch (theZombie->mZombieType)
+	switch (theType)
 	{
 	case ZombieType::ZOMBIE_TRAFFIC_CONE:
-		theZombie->AddComponent<HelmComponent>(HelmType::HELMTYPE_TRAFFIC_CONE, 370);
+		theOut.Add<HelmComponent>(HelmType::HELMTYPE_TRAFFIC_CONE, 370);
 		break;
 	case ZombieType::ZOMBIE_PAIL:
-		theZombie->AddComponent<HelmComponent>(HelmType::HELMTYPE_PAIL, 1100);
+		theOut.Add<HelmComponent>(HelmType::HELMTYPE_PAIL, 1100);
 		break;
 	case ZombieType::ZOMBIE_FOOTBALL:
-		theZombie->AddComponent<HelmComponent>(HelmType::HELMTYPE_FOOTBALL, 1400);
+		theOut.Add<HelmComponent>(HelmType::HELMTYPE_FOOTBALL, 1400);
 		break;
 	case ZombieType::ZOMBIE_DIGGER:
-		theZombie->AddComponent<HelmComponent>(HelmType::HELMTYPE_DIGGER, 100);
+		theOut.Add<HelmComponent>(HelmType::HELMTYPE_DIGGER, 100);
 		break;
 	case ZombieType::ZOMBIE_WALLNUT_HEAD:
-		theZombie->AddComponent<HelmComponent>(HelmType::HELMTYPE_WALLNUT, 1100);
+		theOut.Add<HelmComponent>(HelmType::HELMTYPE_WALLNUT, 1100);
 		break;
 	case ZombieType::ZOMBIE_TALLNUT_HEAD:
-		theZombie->AddComponent<HelmComponent>(HelmType::HELMTYPE_TALLNUT, 2200);
+		theOut.Add<HelmComponent>(HelmType::HELMTYPE_TALLNUT, 2200);
 		break;
 	case ZombieType::ZOMBIE_DOOR:
-		theZombie->AddComponent<ShieldComponent>(ShieldType::SHIELDTYPE_DOOR, 1100);
+		theOut.Add<ShieldComponent>(ShieldType::SHIELDTYPE_DOOR, 1100);
 		break;
 	case ZombieType::ZOMBIE_LADDER:
-		theZombie->AddComponent<ShieldComponent>(ShieldType::SHIELDTYPE_LADDER, 500);
+		theOut.Add<ShieldComponent>(ShieldType::SHIELDTYPE_LADDER, 500);
 		break;
 	case ZombieType::ZOMBIE_NEWSPAPER:
-		theZombie->AddComponent<ShieldComponent>(ShieldType::SHIELDTYPE_NEWSPAPER, 150);
+		theOut.Add<ShieldComponent>(ShieldType::SHIELDTYPE_NEWSPAPER, 150);
 		break;
 	case ZombieType::ZOMBIE_BALLOON:
-		theZombie->AddComponent<FlyingComponent>(20);
+		theOut.Add<FlyingComponent>(20);
 		break;
 	default:
 		break;
 	}
 }
 
+void Archetypes::BuildVanillaZombie(ZombieType theType, ComponentList &theOut)
+{
+	theOut.Add<TeamComponent>(TEAM_ZOMBIES);
+	theOut.Add<FacingComponent>(-1);
+	theOut.Add<HypnotizableComponent>(TEAM_PLANTS, true);
+
+	if (theType == ZombieType::ZOMBIE_GARGANTUAR || theType == ZombieType::ZOMBIE_REDEYE_GARGANTUAR ||
+	    theType == ZombieType::ZOMBIE_BOSS)
+	{
+		theOut.Add<UnswallowableComponent>();
+	}
+
+	AddVanillaZombieBehaviours(theType, theOut);
+	AddVanillaZombieTraits(theType, theOut);
+	AddVanillaZombieBody(theType, theOut);
+	AddVanillaZombieArmor(theType, theOut);
+}
+
 void Archetypes::ApplyZombieDefaults(Zombie *theZombie)
 {
 	// Zombies outside a level (Almanac, Zombatar previews) get components too: Pogo and Bungee previews animate
 	// through their behaviours
-
-	// mMindControlled is already set for zombies that spawn hypnotized and for zombies from old saves
-	bool isHypnotized = theZombie->mMindControlled;
-	TeamComponent *aTeam = theZombie->AddComponent<TeamComponent>(TEAM_ZOMBIES);
-	aTeam->mTeam = isHypnotized ? TEAM_PLANTS : TEAM_ZOMBIES;
-	FacingComponent *aFacing = theZombie->AddComponent<FacingComponent>(-1);
-	aFacing->mDirection = isHypnotized ? 1 : -1;
-	theZombie->AddComponent<HypnotizableComponent>(TEAM_PLANTS, true);
-
-	if (theZombie->mZombieType == ZombieType::ZOMBIE_GARGANTUAR ||
-	    theZombie->mZombieType == ZombieType::ZOMBIE_REDEYE_GARGANTUAR || theZombie->mZombieType == ZombieType::ZOMBIE_BOSS)
+	ComponentList aComponents;
+	if (!ComponentDefinitions::Build(EntityKind::Zombie, theZombie->mZombieType, aComponents))
 	{
-		theZombie->AddComponent<UnswallowableComponent>();
+		BuildVanillaZombie(theZombie->mZombieType, aComponents);
 	}
 
-	AddVanillaZombieBehaviours(theZombie);
-	AddVanillaZombieTraits(theZombie);
-	AddVanillaZombieBody(theZombie);
-	AddVanillaZombieArmor(theZombie);
+	// mMindControlled is already set for zombies that spawn hypnotized and for zombies from old saves
+	if (theZombie->mMindControlled)
+	{
+		if (TeamComponent *aTeam = aComponents.Find<TeamComponent>())
+		{
+			aTeam->mTeam = TEAM_PLANTS;
+		}
+		if (FacingComponent *aFacing = aComponents.Find<FacingComponent>())
+		{
+			aFacing->mDirection = 1;
+		}
+	}
+	aComponents.AttachTo(theZombie);
+}
+
+void Archetypes::BuildVanillaProjectile(ProjectileType theType, ComponentList &theOut)
+{
+	theOut.Add<TeamComponent>(DefaultProjectileTeam(theType));
 }
 
 void Archetypes::ApplyProjectileDefaults(Projectile *theProjectile)
@@ -953,7 +1000,12 @@ void Archetypes::ApplyProjectileDefaults(Projectile *theProjectile)
 	if (!theProjectile->GetEntityRef())
 		return;
 
-	theProjectile->AddComponent<TeamComponent>(DefaultProjectileTeam(theProjectile->mProjectileType));
+	ComponentList aComponents;
+	if (!ComponentDefinitions::Build(EntityKind::Projectile, theProjectile->mProjectileType, aComponents))
+	{
+		BuildVanillaProjectile(theProjectile->mProjectileType, aComponents);
+	}
+	aComponents.AttachTo(theProjectile);
 }
 
 int Archetypes::DefaultProjectileTeam(ProjectileType theProjectileType)

@@ -108,16 +108,16 @@ void ProducerComponent::OnTick()
 
 void ProducerComponent::Serialize(ComponentArchive &theArchive)
 {
-	theArchive.Value(mCoinType);
-	theArchive.Value(mCoinsPerDrop);
-	theArchive.Value(mRate);
-	theArchive.Value(mCoinMotion);
-	theArchive.Value(mRareCoinType);
-	theArchive.Value(mRareChance);
-	theArchive.Value(mBigTimeBonusCoin);
-	theArchive.Value(mStopsAfterFinalWave);
-	theArchive.Value(mCountdown);
-	theArchive.Value(mFinalWaveCountdown);
+	theArchive.Value("coinType", mCoinType);
+	theArchive.Value("coinsPerDrop", mCoinsPerDrop);
+	theArchive.Value("rate", mRate);
+	theArchive.Value("coinMotion", mCoinMotion);
+	theArchive.Value("rareCoinType", mRareCoinType);
+	theArchive.Value("rareChance", mRareChance);
+	theArchive.Value("bigTimeBonusCoin", mBigTimeBonusCoin);
+	theArchive.Value("stopsAfterFinalWave", mStopsAfterFinalWave);
+	theArchive.Value("countdown", mCountdown);
+	theArchive.Value("finalWaveCountdown", mFinalWaveCountdown);
 }
 
 bool SunShroomProducerComponent::CanProduce()

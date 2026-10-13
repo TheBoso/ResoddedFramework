@@ -1,0 +1,53 @@
+{
+  "zombie": "ZOMBIE_YETI",
+  "components": [
+    {
+      "type": "TeamComponent",
+      "team": 1,
+      "nativeTeam": 1
+    },
+    {
+      "type": "FacingComponent",
+      "direction": -1,
+      "nativeDirection": -1
+    },
+    {
+      "type": "HypnotizableComponent"
+    },
+    {
+      "type": "YetiBehaviour"
+    },
+    {
+      "type": "WalkerComponent",
+      "minSpeed": 0.4,
+      "maxSpeed": 0.4
+    },
+    {
+      "type": "ZombieBodyComponent",
+      "hasShadowOffsets": true,
+      "shadowForwardX": 3.0,
+      "shadowBackwardX": 20.0,
+      "shadowY": 20.0,
+      "headImageId": "IMAGE_ZOMBIEYETIHEAD_ID",
+      "burnsInPlace": true,
+      "deathAnimRateMin": 14.0,
+      "deathAnimRateMax": 14.0,
+      "deathFallTime": 0.68,
+      "deathFallTimeAlt": 0.68,
+      "deathFallTimeSuperLong": 0.68,
+      "puffsWhenMowed": true,
+      "eatAnimRate": 20.0,
+      "drawOffsetY": -20.0,
+      "armTrack": "Zombie_outerarm_hand",
+      "armUpperTrack": "Zombie_yeti_outerarm_upper",
+      "armUpperImageId": "IMAGE_REANIM_ZOMBIE_YETI_OUTERARM_UPPER2_ID",
+      "armImageId": "IMAGE_REANIM_ZOMBIE_YETI_OUTERARM_HAND_ID",
+      "hasYuckyFace": false,
+      "spawnHealth": 1350,
+      "usesPlainZombieReanim": false,
+      "hasAttackRect": true,
+      "carriesObject": true,
+      "headlessDecay": 10
+    }
+  ]
+}

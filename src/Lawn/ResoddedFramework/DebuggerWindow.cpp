@@ -19,6 +19,7 @@
 #include "../../Sexy.TodLib/TodStringFile.h"
 #include "../Component/ComponentRegistry.h"
 #include "../Component/EntityBuilder.h"
+#include "../Component/ComponentDefinitions.h"
 #include "../Component/Teams.h"
 
 using namespace Sexy;
@@ -316,6 +317,34 @@ void DebuggerWindow::DrawBoardTab()
 		if (ImGui::BeginTabItem("Components"))
 		{
 			DrawBoardComponents();
+			ImGui::EndTabItem();
+		}
+		if (ImGui::BeginTabItem("Definitions"))
+		{
+			// The definition files (definitions/ in the game folder): what spawns with which components
+			ComponentDefinitions::EnsureLoaded();
+			ImGui::Text("%d definitions loaded from %s/", (int)ComponentDefinitions::GetCount(),
+			            ComponentDefinitions::kDefaultFolder);
+			if (ImGui::Button("Reload definitions"))
+			{
+				ComponentDefinitions::Load();
+			}
+			ImGui::SameLine();
+			ImGui::TextDisabled("(applies to what spawns from now on)");
+
+			const std::vector<std::string> &aMessages = ComponentDefinitions::GetMessages();
+			if (aMessages.empty())
+			{
+				ImGui::TextColored(ImVec4(0.4f, 0.9f, 0.4f, 1.0f), "No problems found");
+			}
+			else
+			{
+				ImGui::TextColored(ImVec4(1.0f, 0.6f, 0.3f, 1.0f), "%d problems:", (int)aMessages.size());
+				for (const std::string &aMessage : aMessages)
+				{
+					ImGui::BulletText("%s", aMessage.c_str());
+				}
+			}
 			ImGui::EndTabItem();
 		}
 		ImGui::EndTabBar();

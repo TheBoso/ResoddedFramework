@@ -1,0 +1,63 @@
+{
+  "plant": "SEED_SPLITPEA",
+  "components": [
+    {
+      "type": "TeamComponent",
+      "team": 0,
+      "nativeTeam": 0
+    },
+    {
+      "type": "FacingComponent"
+    },
+    {
+      "type": "HypnotizableComponent",
+      "hypnotizedTeam": 1
+    },
+    {
+      "type": "PlantShooterComponent",
+      "pattern": "SplitPea",
+      "weapons": [
+        {
+          "projectile": "PROJECTILE_PEA",
+          "motion": "Straight",
+          "areaDamage": 0,
+          "foley": "FOLEY_THROW",
+          "extraFoley": "NUM_FOLEY",
+          "muzzleAnchor": "PeaHead",
+          "muzzleX": 24,
+          "muzzleY": -33,
+          "muzzleParticle": "PARTICLE_NONE",
+          "muzzleParticleX": 0,
+          "muzzleParticleY": 0,
+          "animTarget": "Auto",
+          "anim": "anim_shooting",
+          "animRate": 45.0,
+          "shootDelay": 26
+        },
+        {
+          "projectile": "PROJECTILE_PEA",
+          "motion": "Backwards",
+          "areaDamage": 0,
+          "foley": "FOLEY_THROW",
+          "extraFoley": "NUM_FOLEY",
+          "muzzleAnchor": "PeaHead",
+          "muzzleX": -64,
+          "muzzleY": -33,
+          "muzzleParticle": "PARTICLE_NONE",
+          "muzzleParticleX": 0,
+          "muzzleParticleY": 0,
+          "animTarget": "Head2",
+          "anim": "anim_splitpea_shooting",
+          "animRate": 35.0,
+          "shootDelay": 26
+        }
+      ],
+      "launchWeapon": 1,
+      "extraLaunches": [
+        "1900000000000000",
+        "1900000001000000"
+      ],
+      "extraLaunchCount": 2
+    }
+  ]
+}

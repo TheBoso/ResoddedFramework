@@ -57,6 +57,9 @@ struct PlantWeaponDef
 	float mAnimRate = 35.0f;
 	/// Ticks between starting the animation and the shot (Plant::mShootingCounter)
 	int32_t mShootDelay = 29;
+
+	/// @brief Named fields for definition files (saves copy the whole struct)
+	void Serialize(ComponentArchive &theArchive);
 };
 
 /// @brief Plant-specific shooting code for the few plants that need their own rules

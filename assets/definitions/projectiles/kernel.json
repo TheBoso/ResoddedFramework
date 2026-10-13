@@ -1,0 +1,10 @@
+{
+  "projectile": "PROJECTILE_KERNEL",
+  "components": [
+    {
+      "type": "TeamComponent",
+      "team": 0,
+      "nativeTeam": 0
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "plant": "SEED_TORCHWOOD",
+  "components": [
+    {
+      "type": "TeamComponent",
+      "team": 0,
+      "nativeTeam": 0
+    },
+    {
+      "type": "FacingComponent"
+    },
+    {
+      "type": "HypnotizableComponent",
+      "hypnotizedTeam": 1
+    },
+    {
+      "type": "ProjectileConverterComponent",
+      "count": 2,
+      "from": [
+        "PROJECTILE_PEA",
+        "PROJECTILE_SNOWPEA",
+        "PROJECTILE_PEA",
+        "PROJECTILE_PEA"
+      ],
+      "to": [
+        "PROJECTILE_FIREBALL",
+        "PROJECTILE_PEA",
+        "PROJECTILE_PEA",
+        "PROJECTILE_PEA"
+      ]
+    }
+  ]
+}

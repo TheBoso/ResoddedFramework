@@ -1,0 +1,40 @@
+{
+  "plant": "SEED_POTATOMINE",
+  "components": [
+    {
+      "type": "TeamComponent",
+      "team": 0,
+      "nativeTeam": 0
+    },
+    {
+      "type": "FacingComponent"
+    },
+    {
+      "type": "HypnotizableComponent",
+      "hypnotizedTeam": 1
+    },
+    {
+      "type": "LowProfileComponent"
+    },
+    {
+      "type": "PotatoMineArmingBehaviour"
+    },
+    {
+      "type": "ExplodeComponent",
+      "radius": 60,
+      "rowRange": 0,
+      "burns": false,
+      "centerOffsetX": -20,
+      "foley1": "NUM_FOLEY",
+      "foley2": "NUM_FOLEY",
+      "soundId": 761,
+      "particle": "PARTICLE_POTATO_MINE",
+      "particleInRow": true,
+      "achievement": 4,
+      "achievementInIZombie": false
+    },
+    {
+      "type": "MineComponent"
+    }
+  ]
+}

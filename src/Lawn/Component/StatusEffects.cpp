@@ -37,7 +37,7 @@ void StatusEffectComponent::Expire()
 
 void StatusEffectComponent::Serialize(ComponentArchive &theArchive)
 {
-	theArchive.Value(mTicksLeft);
+	theArchive.Value("ticksLeft", mTicksLeft);
 }
 
 void ChilledStatus::OnExpired()

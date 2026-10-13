@@ -1,0 +1,26 @@
+{
+  "plant": "SEED_MARIGOLD",
+  "components": [
+    {
+      "type": "TeamComponent",
+      "team": 0,
+      "nativeTeam": 0
+    },
+    {
+      "type": "FacingComponent"
+    },
+    {
+      "type": "HypnotizableComponent",
+      "hypnotizedTeam": 1
+    },
+    {
+      "type": "ProducerComponent",
+      "coinType": "COIN_SILVER",
+      "coinMotion": "COIN_MOTION_COIN",
+      "rareCoinType": "COIN_GOLD",
+      "rareChance": 10,
+      "bigTimeBonusCoin": "COIN_SILVER",
+      "stopsAfterFinalWave": true
+    }
+  ]
+}

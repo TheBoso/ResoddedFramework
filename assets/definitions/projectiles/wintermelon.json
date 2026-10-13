@@ -1,0 +1,10 @@
+{
+  "projectile": "PROJECTILE_WINTERMELON",
+  "components": [
+    {
+      "type": "TeamComponent",
+      "team": 0,
+      "nativeTeam": 0
+    }
+  ]
+}

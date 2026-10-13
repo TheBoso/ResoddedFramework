@@ -44,7 +44,7 @@ void FuseComponent::UpdateBehaviour(Plant *thePlant)
 
 void FuseComponent::Serialize(ComponentArchive &theArchive)
 {
-	theArchive.Value(mFuseTicks);
+	theArchive.Value("fuseTicks", mFuseTicks);
 }
 
 void DoomFuseComponent::OnLit(Plant *thePlant)
@@ -160,22 +160,22 @@ void ExplodeComponent::DoSpecial(Plant *thePlant)
 
 void ExplodeComponent::Serialize(ComponentArchive &theArchive)
 {
-	theArchive.Value(mRadius);
-	theArchive.Value(mRowRange);
-	theArchive.Value(mBurns);
-	theArchive.Value(mCenterOffsetX);
-	theArchive.Value(mFoley1);
-	theArchive.Value(mFoley2);
-	theArchive.Value(mSoundId);
-	theArchive.Value(mParticle);
-	theArchive.Value(mParticleInRow);
-	theArchive.Value(mCraterTicks);
-	theArchive.Value(mKillsNearbyPlants);
-	theArchive.Value(mAchievement);
-	theArchive.Value(mAchievementMinZombies);
-	theArchive.Value(mAchievementRadius);
-	theArchive.Value(mAchievementRowRange);
-	theArchive.Value(mAchievementInIZombie);
+	theArchive.Value("radius", mRadius);
+	theArchive.Value("rowRange", mRowRange);
+	theArchive.Value("burns", mBurns);
+	theArchive.Value("centerOffsetX", mCenterOffsetX);
+	theArchive.Value("foley1", mFoley1);
+	theArchive.Value("foley2", mFoley2);
+	theArchive.Value("soundId", mSoundId);
+	theArchive.Value("particle", mParticle);
+	theArchive.Value("particleInRow", mParticleInRow);
+	theArchive.Value("craterTicks", mCraterTicks);
+	theArchive.Value("killsNearbyPlants", mKillsNearbyPlants);
+	theArchive.Value("achievement", mAchievement);
+	theArchive.Value("achievementMinZombies", mAchievementMinZombies);
+	theArchive.Value("achievementRadius", mAchievementRadius);
+	theArchive.Value("achievementRowRange", mAchievementRowRange);
+	theArchive.Value("achievementInIZombie", mAchievementInIZombie);
 }
 
 // ─── BurnRowComponent ────────────────────────────────────────────────────────
@@ -218,7 +218,7 @@ void BurnRowComponent::DoSpecial(Plant *thePlant)
 
 void BurnRowComponent::Serialize(ComponentArchive &theArchive)
 {
-	theArchive.Value(mRowSpread);
+	theArchive.Value("rowSpread", mRowSpread);
 }
 
 // ─── FreezeAllComponent ──────────────────────────────────────────────────────

@@ -1,0 +1,27 @@
+{
+  "plant": "SEED_CHERRYBOMB",
+  "components": [
+    {
+      "type": "TeamComponent",
+      "team": 0,
+      "nativeTeam": 0
+    },
+    {
+      "type": "FacingComponent"
+    },
+    {
+      "type": "HypnotizableComponent",
+      "hypnotizedTeam": 1
+    },
+    {
+      "type": "ExplodeComponent",
+      "achievement": 5,
+      "achievementMinZombies": 10,
+      "achievementRadius": 250,
+      "achievementRowRange": 3
+    },
+    {
+      "type": "InedibleComponent"
+    }
+  ]
+}

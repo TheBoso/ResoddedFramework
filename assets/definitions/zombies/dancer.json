@@ -1,0 +1,58 @@
+{
+  "zombie": "ZOMBIE_DANCER",
+  "components": [
+    {
+      "type": "TeamComponent",
+      "team": 1,
+      "nativeTeam": 1
+    },
+    {
+      "type": "FacingComponent",
+      "direction": -1,
+      "nativeDirection": -1
+    },
+    {
+      "type": "HypnotizableComponent"
+    },
+    {
+      "type": "DancerBehaviour"
+    },
+    {
+      "type": "DanceTroupeComponent",
+      "isLeader": true
+    },
+    {
+      "type": "WalkerComponent",
+      "minSpeed": 0.45,
+      "maxSpeed": 0.45,
+      "houseEdgeX": -130
+    },
+    {
+      "type": "ZombieBodyComponent",
+      "headImageId": "IMAGE_ZOMBIEDANCERHEAD_ID",
+      "headHiddenPrefixes": [
+        "Zombie_disco_chops",
+        "Zombie_disco_glasses"
+      ],
+      "headRenderOffset": -1,
+      "deathFallTime": 0.83,
+      "deathFallTimeAlt": 0.83,
+      "deathFallTimeSuperLong": 0.83,
+      "armHiddenTracks": [
+        "Zombie_disco_outerarm_lower",
+        "Zombie_disco_outerhand_point",
+        "Zombie_disco_outerhand"
+      ],
+      "armHiddenByPrefix": false,
+      "armTrack": "Zombie_disco_outerarm_lower",
+      "armUpperTrack": "Zombie_disco_outerarm_upper",
+      "armUpperImageId": "IMAGE_REANIM_ZOMBIE_DISCO_OUTERARM_UPPER2_ID",
+      "armImageId": "IMAGE_REANIM_ZOMBIE_DISCO_OUTERARM_HAND_ID",
+      "daisyX": 160.0,
+      "spawnHealth": 500,
+      "usesPlainZombieReanim": false,
+      "scale": 0.8,
+      "canHaveTongue": false
+    }
+  ]
+}

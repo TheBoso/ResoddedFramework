@@ -1,0 +1,60 @@
+{
+  "zombie": "ZOMBIE_CATAPULT",
+  "components": [
+    {
+      "type": "TeamComponent",
+      "team": 1,
+      "nativeTeam": 1
+    },
+    {
+      "type": "FacingComponent",
+      "direction": -1,
+      "nativeDirection": -1
+    },
+    {
+      "type": "HypnotizableComponent"
+    },
+    {
+      "type": "CatapultBehaviour"
+    },
+    {
+      "type": "VehicleComponent"
+    },
+    {
+      "type": "WalkerComponent",
+      "houseEdgeX": -175,
+      "moveStyle": "Glide"
+    },
+    {
+      "type": "ZombieBodyComponent",
+      "charredReanim": "REANIM_ZOMBIE_CHARRED_CATAPULT",
+      "charredX": -14.0,
+      "charredY": -30.0,
+      "hasDeathFall": false,
+      "drawOffsetX": -25.0,
+      "drawOffsetY": -18.0,
+      "iceTrapX": 32.0,
+      "butterHeadTrack": "Zombie_catapult_driver_head",
+      "hasYuckyFace": false,
+      "spawnHealth": 850,
+      "usesPlainZombieReanim": false,
+      "hitRect": [
+        0,
+        -13,
+        153,
+        140
+      ],
+      "hasAttackRect": true,
+      "attackRect": [
+        10,
+        -13,
+        133,
+        140
+      ],
+      "canHaveTongue": false,
+      "hasSpawnX": true,
+      "spawnX": 825.0,
+      "spawnXRandom": 10
+    }
+  ]
+}

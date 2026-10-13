@@ -155,9 +155,9 @@ void SquashBehaviour::DoSquashDamage(Plant *thePlant)
 
 void SquashBehaviour::Serialize(ComponentArchive &theArchive)
 {
-	theArchive.Value(mLookTicks);
-	theArchive.Value(mWindupTicks);
-	theArchive.Value(mDamage);
+	theArchive.Value("lookTicks", mLookTicks);
+	theArchive.Value("windupTicks", mWindupTicks);
+	theArchive.Value("damage", mDamage);
 }
 
 void ChomperBehaviour::UpdateBehaviour(Plant *thePlant)
@@ -244,9 +244,9 @@ void ChomperBehaviour::UpdateBehaviour(Plant *thePlant)
 
 void ChomperBehaviour::Serialize(ComponentArchive &theArchive)
 {
-	theArchive.Value(mBiteTicks);
-	theArchive.Value(mChewTicks);
-	theArchive.Value(mBiteDamage);
+	theArchive.Value("biteTicks", mBiteTicks);
+	theArchive.Value("chewTicks", mChewTicks);
+	theArchive.Value("biteDamage", mBiteDamage);
 }
 
 void BloverBehaviour::UpdateBehaviour(Plant *thePlant)
@@ -576,10 +576,10 @@ void MagnetShroomBehaviour::UpdateBehaviour(Plant *thePlant)
 
 void MagnetShroomBehaviour::Serialize(ComponentArchive &theArchive)
 {
-	theArchive.Value(mRange);
-	theArchive.Value(mRangeWhileEating);
-	theArchive.Value(mRowRange);
-	theArchive.Value(mRechargeTicks);
+	theArchive.Value("range", mRange);
+	theArchive.Value("rangeWhileEating", mRangeWhileEating);
+	theArchive.Value("rowRange", mRowRange);
+	theArchive.Value("rechargeTicks", mRechargeTicks);
 }
 
 void GoldMagnetBehaviour::UpdateBehaviour(Plant *thePlant)
@@ -664,9 +664,9 @@ void GoldMagnetBehaviour::UpdateBehaviour(Plant *thePlant)
 
 void GoldMagnetBehaviour::Serialize(ComponentArchive &theArchive)
 {
-	theArchive.Value(mRechargeMinTicks);
-	theArchive.Value(mRechargeMaxTicks);
-	theArchive.Value(mPullChance);
+	theArchive.Value("rechargeMinTicks", mRechargeMinTicks);
+	theArchive.Value("rechargeMaxTicks", mRechargeMaxTicks);
+	theArchive.Value("pullChance", mPullChance);
 }
 
 void SunShroomGrowthBehaviour::UpdateBehaviour(Plant *thePlant)
@@ -721,7 +721,7 @@ void GraveBusterBehaviour::UpdateBehaviour(Plant *thePlant)
 
 void GraveBusterBehaviour::Serialize(ComponentArchive &theArchive)
 {
-	theArchive.Value(mEatTicks);
+	theArchive.Value("eatTicks", mEatTicks);
 }
 
 void PotatoMineArmingBehaviour::UpdateBehaviour(Plant *thePlant)
@@ -806,9 +806,9 @@ void SpikeweedBehaviour::UpdateBehaviour(Plant *thePlant)
 
 void SpikeweedBehaviour::Serialize(ComponentArchive &theArchive)
 {
-	theArchive.Value(mDamage);
-	theArchive.Value(mFirstHitTick);
-	theArchive.Value(mSecondHitTick);
+	theArchive.Value("damage", mDamage);
+	theArchive.Value("firstHitTick", mFirstHitTick);
+	theArchive.Value("secondHitTick", mSecondHitTick);
 }
 
 void TangleKelpBehaviour::UpdateBehaviour(Plant *thePlant)
@@ -887,7 +887,7 @@ void TangleKelpBehaviour::UpdateBehaviour(Plant *thePlant)
 
 void TangleKelpBehaviour::Serialize(ComponentArchive &theArchive)
 {
-	theArchive.Value(mGrabTicks);
+	theArchive.Value("grabTicks", mGrabTicks);
 }
 
 void ScaredyShroomBehaviour::UpdateBehaviour(Plant *thePlant)
@@ -957,8 +957,8 @@ void ScaredyShroomBehaviour::UpdateBehaviour(Plant *thePlant)
 
 void ScaredyShroomBehaviour::Serialize(ComponentArchive &theArchive)
 {
-	theArchive.Value(mFearRadius);
-	theArchive.Value(mFearRowRange);
+	theArchive.Value("fearRadius", mFearRadius);
+	theArchive.Value("fearRowRange", mFearRowRange);
 }
 
 void BloverBehaviour::DoSpecial(Plant *thePlant)
@@ -996,10 +996,10 @@ void CoffeeBeanBehaviour::DoSpecial(Plant *thePlant)
 
 void UmbrellaBehaviour::Serialize(ComponentArchive &theArchive)
 {
-	theArchive.Value(mTriggerTicks);
+	theArchive.Value("triggerTicks", mTriggerTicks);
 }
 
 void CoffeeBeanBehaviour::Serialize(ComponentArchive &theArchive)
 {
-	theArchive.Value(mWakeTicks);
+	theArchive.Value("wakeTicks", mWakeTicks);
 }

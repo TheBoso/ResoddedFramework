@@ -81,47 +81,36 @@ void OnDeathComponent::OnOwnerDied()
 void OnDeathComponent::Serialize(ComponentArchive &theArchive)
 {
 	// Only named actions survive a save; plain lambdas are skipped
-	uint32_t aCount = 0;
+	std::vector<std::string> aNames;
 	if (!theArchive.IsReading())
-	{
-		for (Entry &anEntry : mEntries)
-		{
-			aCount += anEntry.mName.empty() ? 0 : 1;
-		}
-	}
-	theArchive.Value(aCount);
-
-	if (theArchive.IsReading())
-	{
-		mEntries.clear();
-		for (uint32_t i = 0; i < aCount; i++)
-		{
-			std::string aName;
-			theArchive.String(aName);
-			mEntries.push_back({ aName, nullptr });
-		}
-	}
-	else
 	{
 		for (Entry &anEntry : mEntries)
 		{
 			if (!anEntry.mName.empty())
 			{
-				theArchive.String(anEntry.mName);
+				aNames.push_back(anEntry.mName);
 			}
 		}
 	}
-	theArchive.Value(mHasRun);
+	theArchive.StringList("actions", aNames);
+
+	if (theArchive.IsReading())
+	{
+		mEntries.clear();
+		for (const std::string &aName : aNames)
+		{
+			mEntries.push_back({ aName, nullptr });
+		}
+	}
+	theArchive.Value("hasRun", mHasRun);
 }
 
 // ─── Built-in actions (examples, and pickable in the debugger) ───────────────
 
-static const bool gRegisteredDeathActions = []
-{
+static const bool gRegisteredDeathActions = [] {
 	// A zombie splits into an Imp, on the same team, where it died
 	OnDeathComponent::RegisterAction("SpawnImp",
-	                                 [](GameObject *theDead)
-	                                 {
+	                                 [](GameObject *theDead) {
 		                                 Zombie *aZombie = theDead->GetEntityRef().AsZombie(theDead->mBoard);
 		                                 if (aZombie == nullptr)
 			                                 return;
@@ -137,8 +126,7 @@ static const bool gRegisteredDeathActions = []
 
 	// Anything drops a sun where it died
 	OnDeathComponent::RegisterAction("DropSun",
-	                                 [](GameObject *theDead)
-	                                 {
+	                                 [](GameObject *theDead) {
 		                                 theDead->mBoard->AddCoin(theDead->mX, theDead->mY, CoinType::COIN_SUN,
 		                                                          CoinMotion::COIN_MOTION_FROM_PLANT);
 	                                 });

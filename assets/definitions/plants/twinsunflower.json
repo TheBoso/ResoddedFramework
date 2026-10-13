@@ -1,0 +1,21 @@
+{
+  "plant": "SEED_TWINSUNFLOWER",
+  "components": [
+    {
+      "type": "TeamComponent",
+      "team": 0,
+      "nativeTeam": 0
+    },
+    {
+      "type": "FacingComponent"
+    },
+    {
+      "type": "HypnotizableComponent",
+      "hypnotizedTeam": 1
+    },
+    {
+      "type": "ProducerComponent",
+      "coinsPerDrop": 2
+    }
+  ]
+}

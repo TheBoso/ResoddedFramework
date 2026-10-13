@@ -1,0 +1,58 @@
+{
+  "plant": "SEED_STARFRUIT",
+  "components": [
+    {
+      "type": "TeamComponent",
+      "team": 0,
+      "nativeTeam": 0
+    },
+    {
+      "type": "FacingComponent"
+    },
+    {
+      "type": "HypnotizableComponent",
+      "hypnotizedTeam": 1
+    },
+    {
+      "type": "PlantShooterComponent",
+      "projectileType": "PROJECTILE_STAR",
+      "pattern": "Starfruit",
+      "weapons": [
+        {
+          "projectile": "PROJECTILE_STAR",
+          "motion": "Star",
+          "areaDamage": 0,
+          "foley": "FOLEY_THROW",
+          "extraFoley": "NUM_FOLEY",
+          "muzzleAnchor": "Plant",
+          "muzzleX": 25,
+          "muzzleY": 25,
+          "muzzleParticle": "PARTICLE_NONE",
+          "muzzleParticleX": 0,
+          "muzzleParticleY": 0,
+          "animTarget": "Body",
+          "anim": "anim_shoot",
+          "animRate": 28.0,
+          "shootDelay": 40
+        },
+        {
+          "projectile": "PROJECTILE_PEA",
+          "motion": "Straight",
+          "areaDamage": 0,
+          "foley": "FOLEY_THROW",
+          "extraFoley": "NUM_FOLEY",
+          "muzzleAnchor": "Plant",
+          "muzzleX": 10,
+          "muzzleY": 5,
+          "muzzleParticle": "PARTICLE_NONE",
+          "muzzleParticleX": 0,
+          "muzzleParticleY": 0,
+          "animTarget": "Auto",
+          "anim": "anim_shooting",
+          "animRate": 35.0,
+          "shootDelay": 29
+        }
+      ]
+    }
+  ]
+}

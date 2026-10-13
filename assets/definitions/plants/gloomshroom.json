@@ -1,0 +1,74 @@
+{
+  "plant": "SEED_GLOOMSHROOM",
+  "components": [
+    {
+      "type": "TeamComponent",
+      "team": 0,
+      "nativeTeam": 0
+    },
+    {
+      "type": "FacingComponent"
+    },
+    {
+      "type": "HypnotizableComponent",
+      "hypnotizedTeam": 1
+    },
+    {
+      "type": "PlantShooterComponent",
+      "projectileType": -1,
+      "weapons": [
+        {
+          "projectile": -1,
+          "motion": "Straight",
+          "areaDamage": 20,
+          "foley": "NUM_FOLEY",
+          "extraFoley": "NUM_FOLEY",
+          "muzzleAnchor": "Plant",
+          "muzzleX": 10,
+          "muzzleY": 5,
+          "muzzleParticle": "PARTICLE_NONE",
+          "muzzleParticleX": 0,
+          "muzzleParticleY": 0,
+          "animTarget": "Body",
+          "anim": "anim_shooting",
+          "animRate": 14.0,
+          "shootDelay": 200
+        },
+        {
+          "projectile": "PROJECTILE_PEA",
+          "motion": "Straight",
+          "areaDamage": 0,
+          "foley": "FOLEY_THROW",
+          "extraFoley": "NUM_FOLEY",
+          "muzzleAnchor": "Plant",
+          "muzzleX": 10,
+          "muzzleY": 5,
+          "muzzleParticle": "PARTICLE_NONE",
+          "muzzleParticleX": 0,
+          "muzzleParticleY": 0,
+          "animTarget": "Auto",
+          "anim": "anim_shooting",
+          "animRate": 35.0,
+          "shootDelay": 29
+        }
+      ],
+      "fireTicks": [
+        126,
+        98,
+        70,
+        42
+      ],
+      "fireTickCount": 4,
+      "cloudParticle": "PARTICLE_GLOOMCLOUD",
+      "cloudX": 40,
+      "cloudY": 40,
+      "cloudTicks": [
+        136,
+        108,
+        80,
+        52
+      ],
+      "cloudTickCount": 4
+    }
+  ]
+}

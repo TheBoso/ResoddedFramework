@@ -1,0 +1,27 @@
+{
+  "plant": "SEED_BLOVER",
+  "components": [
+    {
+      "type": "TeamComponent",
+      "team": 0,
+      "nativeTeam": 0
+    },
+    {
+      "type": "FacingComponent"
+    },
+    {
+      "type": "HypnotizableComponent",
+      "hypnotizedTeam": 1
+    },
+    {
+      "type": "BloverBehaviour"
+    },
+    {
+      "type": "InedibleComponent",
+      "blocksChewing": false
+    },
+    {
+      "type": "ActivatesWhenEatenComponent"
+    }
+  ]
+}

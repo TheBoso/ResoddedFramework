@@ -1,0 +1,10 @@
+{
+  "projectile": "PROJECTILE_BASKETBALL",
+  "components": [
+    {
+      "type": "TeamComponent",
+      "team": 1,
+      "nativeTeam": 1
+    }
+  ]
+}

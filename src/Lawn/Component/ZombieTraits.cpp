@@ -9,24 +9,24 @@ REGISTER_COMPONENT(WalkerComponent)
 
 void VehicleComponent::Serialize(ComponentArchive &theArchive)
 {
-	theArchive.Value(mCrushesSpikes);
-	theArchive.Value(mBreakdownHealth);
+	theArchive.Value("crushesSpikes", mCrushesSpikes);
+	theArchive.Value("breakdownHealth", mBreakdownHealth);
 }
 
 void DanceTroupeComponent::Serialize(ComponentArchive &theArchive)
 {
-	theArchive.Value(mIsLeader);
+	theArchive.Value("isLeader", mIsLeader);
 }
 
 void SwimmerComponent::Serialize(ComponentArchive &theArchive)
 {
-	theArchive.Value(mSwimsUnderwater);
+	theArchive.Value("swimsUnderwater", mSwimsUnderwater);
 }
 
 void WalkerComponent::Serialize(ComponentArchive &theArchive)
 {
-	theArchive.Value(mMinSpeed);
-	theArchive.Value(mMaxSpeed);
-	theArchive.Value(mHouseEdgeX);
-	theArchive.Value(mMoveStyle);
+	theArchive.Value("minSpeed", mMinSpeed);
+	theArchive.Value("maxSpeed", mMaxSpeed);
+	theArchive.Value("houseEdgeX", mHouseEdgeX);
+	theArchive.Value("moveStyle", mMoveStyle);
 }

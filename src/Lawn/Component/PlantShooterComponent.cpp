@@ -774,24 +774,43 @@ void PlantShooterComponent::FireStars(Plant *thePlant)
 	}
 }
 
+void PlantWeaponDef::Serialize(ComponentArchive &theArchive)
+{
+	theArchive.Value("projectile", mProjectile);
+	theArchive.Value("motion", mMotion);
+	theArchive.Value("areaDamage", mAreaDamage);
+	theArchive.Value("foley", mFoley);
+	theArchive.Value("extraFoley", mExtraFoley);
+	theArchive.Value("muzzleAnchor", mMuzzleAnchor);
+	theArchive.Value("muzzleX", mMuzzleX);
+	theArchive.Value("muzzleY", mMuzzleY);
+	theArchive.Value("muzzleParticle", mMuzzleParticle);
+	theArchive.Value("muzzleParticleX", mMuzzleParticleX);
+	theArchive.Value("muzzleParticleY", mMuzzleParticleY);
+	theArchive.Value("animTarget", mAnimTarget);
+	theArchive.Value("anim", mAnim);
+	theArchive.Value("animRate", mAnimRate);
+	theArchive.Value("shootDelay", mShootDelay);
+}
+
 void PlantShooterComponent::Serialize(ComponentArchive &theArchive)
 {
 	ShooterComponent::Serialize(theArchive);
-	theArchive.Value(mPattern);
-	theArchive.Value(mWeapons);
-	theArchive.Value(mAutoLaunch);
-	theArchive.Value(mLaunchWeapon);
-	theArchive.Value(mExtraLaunches);
-	theArchive.Value(mExtraLaunchCount);
-	theArchive.Value(mFireTicks);
-	theArchive.Value(mFireTickCount);
-	theArchive.Value(mFireNeedsTarget);
-	theArchive.Value(mCloudParticle);
-	theArchive.Value(mCloudX);
-	theArchive.Value(mCloudY);
-	theArchive.Value(mCloudTicks);
-	theArchive.Value(mCloudTickCount);
-	theArchive.Value(mAltWeaponChance);
-	theArchive.Value(mAltWeaponPrefix);
-	theArchive.Value(mMainWeaponPrefix);
+	theArchive.Value("pattern", mPattern);
+	theArchive.Value("weapons", mWeapons);
+	theArchive.Value("autoLaunch", mAutoLaunch);
+	theArchive.Value("launchWeapon", mLaunchWeapon);
+	theArchive.Value("extraLaunches", mExtraLaunches);
+	theArchive.Value("extraLaunchCount", mExtraLaunchCount);
+	theArchive.Value("fireTicks", mFireTicks);
+	theArchive.Value("fireTickCount", mFireTickCount);
+	theArchive.Value("fireNeedsTarget", mFireNeedsTarget);
+	theArchive.Value("cloudParticle", mCloudParticle);
+	theArchive.Value("cloudX", mCloudX);
+	theArchive.Value("cloudY", mCloudY);
+	theArchive.Value("cloudTicks", mCloudTicks);
+	theArchive.Value("cloudTickCount", mCloudTickCount);
+	theArchive.Value("altWeaponChance", mAltWeaponChance);
+	theArchive.Value("altWeaponPrefix", mAltWeaponPrefix);
+	theArchive.Value("mainWeaponPrefix", mMainWeaponPrefix);
 }

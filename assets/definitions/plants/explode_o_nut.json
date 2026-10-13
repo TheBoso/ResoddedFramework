@@ -1,0 +1,17 @@
+{
+  "plant": "SEED_EXPLODE_O_NUT",
+  "components": [
+    {
+      "type": "TeamComponent",
+      "team": 0,
+      "nativeTeam": 0
+    },
+    {
+      "type": "FacingComponent"
+    },
+    {
+      "type": "HypnotizableComponent",
+      "hypnotizedTeam": 1
+    }
+  ]
+}

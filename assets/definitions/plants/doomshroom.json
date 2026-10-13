@@ -1,0 +1,34 @@
+{
+  "plant": "SEED_DOOMSHROOM",
+  "components": [
+    {
+      "type": "TeamComponent",
+      "team": 0,
+      "nativeTeam": 0
+    },
+    {
+      "type": "FacingComponent"
+    },
+    {
+      "type": "HypnotizableComponent",
+      "hypnotizedTeam": 1
+    },
+    {
+      "type": "DoomFuseComponent"
+    },
+    {
+      "type": "ExplodeComponent",
+      "radius": 250,
+      "rowRange": 3,
+      "foley1": "NUM_FOLEY",
+      "foley2": "NUM_FOLEY",
+      "soundId": 812,
+      "particle": "PARTICLE_DOOM",
+      "craterTicks": 18000,
+      "killsNearbyPlants": true
+    },
+    {
+      "type": "InedibleComponent"
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "plant": "SEED_KERNELPULT",
+  "components": [
+    {
+      "type": "TeamComponent",
+      "team": 0,
+      "nativeTeam": 0
+    },
+    {
+      "type": "FacingComponent"
+    },
+    {
+      "type": "HypnotizableComponent",
+      "hypnotizedTeam": 1
+    },
+    {
+      "type": "PlantShooterComponent",
+      "projectileType": "PROJECTILE_KERNEL",
+      "arc": "Lobbed",
+      "pattern": "Catapult",
+      "weapons": [
+        {
+          "projectile": "PROJECTILE_KERNEL",
+          "motion": "Lobbed",
+          "areaDamage": 0,
+          "foley": "FOLEY_THROW",
+          "extraFoley": "NUM_FOLEY",
+          "muzzleAnchor": "Plant",
+          "muzzleX": 19,
+          "muzzleY": -37,
+          "muzzleParticle": "PARTICLE_NONE",
+          "muzzleParticleX": 0,
+          "muzzleParticleY": 0,
+          "animTarget": "Auto",
+          "anim": "anim_shooting",
+          "animRate": 35.0,
+          "shootDelay": 30
+        },
+        {
+          "projectile": "PROJECTILE_BUTTER",
+          "motion": "Lobbed",
+          "areaDamage": 0,
+          "foley": "FOLEY_THROW",
+          "extraFoley": "NUM_FOLEY",
+          "muzzleAnchor": "Plant",
+          "muzzleX": 12,
+          "muzzleY": -56,
+          "muzzleParticle": "PARTICLE_NONE",
+          "muzzleParticleX": 0,
+          "muzzleParticleY": 0,
+          "animTarget": "Auto",
+          "anim": "anim_shooting",
+          "animRate": 35.0,
+          "shootDelay": 30
+        }
+      ],
+      "altWeaponChance": 4,
+      "altWeaponPrefix": "Cornpult_butter",
+      "mainWeaponPrefix": "Cornpult_kernal"
+    }
+  ]
+}

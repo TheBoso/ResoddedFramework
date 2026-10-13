@@ -8,23 +8,23 @@ REGISTER_COMPONENT(LowProfileComponent)
 
 void TeamComponent::Serialize(ComponentArchive &theArchive)
 {
-	theArchive.Value(mTeam);
-	theArchive.Value(mNativeTeam);
+	theArchive.Value("team", mTeam);
+	theArchive.Value("nativeTeam", mNativeTeam);
 }
 
 void FacingComponent::Serialize(ComponentArchive &theArchive)
 {
-	theArchive.Value(mDirection);
-	theArchive.Value(mNativeDirection);
+	theArchive.Value("direction", mDirection);
+	theArchive.Value("nativeDirection", mNativeDirection);
 }
 
 void HypnotizableComponent::Serialize(ComponentArchive &theArchive)
 {
-	theArchive.Value(mHypnotizedTeam);
-	theArchive.Value(mFlipFacing);
+	theArchive.Value("hypnotizedTeam", mHypnotizedTeam);
+	theArchive.Value("flipFacing", mFlipFacing);
 }
 
 void HypnotizeOnEatenComponent::Serialize(ComponentArchive &theArchive)
 {
-	theArchive.Value(mRequiresAwake);
+	theArchive.Value("requiresAwake", mRequiresAwake);
 }

@@ -264,18 +264,18 @@ void ShooterComponent::OnTick()
 
 void ShooterComponent::Serialize(ComponentArchive &theArchive)
 {
-	theArchive.Value(mProjectileType);
-	theArchive.Value(mArc);
-	theArchive.Value(mInterval);
-	theArchive.Value(mShotsPerVolley);
-	theArchive.Value(mShotSpacing);
-	theArchive.Value(mWindup);
-	theArchive.Value(mRange);
-	theArchive.Value(mDamageRangeFlags);
-	theArchive.Value(mRequiresTarget);
-	theArchive.Value(mMuzzleX);
-	theArchive.Value(mMuzzleY);
-	theArchive.Value(mCountdown);
-	theArchive.Value(mShotsLeft);
-	theArchive.Value(mShotTimer);
+	theArchive.Value("projectileType", mProjectileType);
+	theArchive.Value("arc", mArc);
+	theArchive.Value("interval", mInterval);
+	theArchive.Value("shotsPerVolley", mShotsPerVolley);
+	theArchive.Value("shotSpacing", mShotSpacing);
+	theArchive.Value("windup", mWindup);
+	theArchive.Value("range", mRange);
+	theArchive.Value("damageRangeFlags", mDamageRangeFlags);
+	theArchive.Value("requiresTarget", mRequiresTarget);
+	theArchive.Value("muzzleX", mMuzzleX);
+	theArchive.Value("muzzleY", mMuzzleY);
+	theArchive.Value("countdown", mCountdown);
+	theArchive.Value("shotsLeft", mShotsLeft);
+	theArchive.Value("shotTimer", mShotTimer);
 }

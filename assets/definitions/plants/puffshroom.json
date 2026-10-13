@@ -1,0 +1,60 @@
+{
+  "plant": "SEED_PUFFSHROOM",
+  "components": [
+    {
+      "type": "TeamComponent",
+      "team": 0,
+      "nativeTeam": 0
+    },
+    {
+      "type": "FacingComponent"
+    },
+    {
+      "type": "HypnotizableComponent",
+      "hypnotizedTeam": 1
+    },
+    {
+      "type": "LowProfileComponent"
+    },
+    {
+      "type": "PlantShooterComponent",
+      "projectileType": "PROJECTILE_PUFF",
+      "weapons": [
+        {
+          "projectile": "PROJECTILE_PUFF",
+          "motion": "Puff",
+          "areaDamage": 0,
+          "foley": "FOLEY_THROW",
+          "extraFoley": "FOLEY_PUFF",
+          "muzzleAnchor": "Plant",
+          "muzzleX": 40,
+          "muzzleY": 40,
+          "muzzleParticle": "PARTICLE_PUFFSHROOM_MUZZLE",
+          "muzzleParticleX": 18,
+          "muzzleParticleY": 13,
+          "animTarget": "Auto",
+          "anim": "anim_shooting",
+          "animRate": 35.0,
+          "shootDelay": 29
+        },
+        {
+          "projectile": "PROJECTILE_PEA",
+          "motion": "Straight",
+          "areaDamage": 0,
+          "foley": "FOLEY_THROW",
+          "extraFoley": "NUM_FOLEY",
+          "muzzleAnchor": "Plant",
+          "muzzleX": 10,
+          "muzzleY": 5,
+          "muzzleParticle": "PARTICLE_NONE",
+          "muzzleParticleX": 0,
+          "muzzleParticleY": 0,
+          "animTarget": "Auto",
+          "anim": "anim_shooting",
+          "animRate": 35.0,
+          "shootDelay": 29
+        }
+      ]
+    }
+  ]
+}

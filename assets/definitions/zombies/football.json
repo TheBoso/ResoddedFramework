@@ -1,0 +1,76 @@
+{
+  "zombie": "ZOMBIE_FOOTBALL",
+  "components": [
+    {
+      "type": "TeamComponent",
+      "team": 1,
+      "nativeTeam": 1
+    },
+    {
+      "type": "FacingComponent",
+      "direction": -1,
+      "nativeDirection": -1
+    },
+    {
+      "type": "HypnotizableComponent"
+    },
+    {
+      "type": "WalkerComponent",
+      "minSpeed": 0.66,
+      "maxSpeed": 0.68,
+      "houseEdgeX": -175
+    },
+    {
+      "type": "ZombieBodyComponent",
+      "hasShadowOffsets": true,
+      "shadowForwardX": 20.0,
+      "shadowForwardXPerScale": 21.0,
+      "shadowBackwardXPerScale": -11.0,
+      "shadowY": 16.0,
+      "headImageId": "IMAGE_ZOMBIEFOOTBALLHEAD_ID",
+      "deathAnimRateMax": 24.0,
+      "deathFallTime": 0.52,
+      "deathFallTimeAlt": 0.52,
+      "deathFallTimeSuperLong": 0.52,
+      "poolHouseX": -10.0,
+      "roofHouseX": -14.0,
+      "footDustTimes": [
+        0.03,
+        0.61
+      ],
+      "drawOffsetY": -16.0,
+      "armHiddenTracks": [
+        "Zombie_football_leftarm_lower",
+        "Zombie_football_leftarm_hand",
+        ""
+      ],
+      "armTrack": "Zombie_football_leftarm_hand",
+      "armUpperTrack": "Zombie_football_leftarm_upper",
+      "armUpperImageId": "IMAGE_REANIM_ZOMBIE_FOOTBALL_LEFTARM_UPPER2_ID",
+      "armImageId": "IMAGE_REANIM_ZOMBIE_FOOTBALL_LEFTARM_HAND_ID",
+      "hasYuckyFace": false,
+      "daisyX": 160.0,
+      "usesPlainZombieReanim": false,
+      "spawnHiddenPrefixes": [
+        "anim_hair",
+        "",
+        ""
+      ],
+      "hitRect": [
+        50,
+        0,
+        57,
+        115
+      ],
+      "animTicksPerFrame": 6,
+      "canHaveTongue": false,
+      "smallScaleOffsetY": 20.0
+    },
+    {
+      "type": "HelmComponent",
+      "health": 1400,
+      "maxHealth": 1400,
+      "helmType": "HELMTYPE_FOOTBALL"
+    }
+  ]
+}

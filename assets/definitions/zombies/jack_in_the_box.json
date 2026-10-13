@@ -1,0 +1,47 @@
+{
+  "zombie": "ZOMBIE_JACK_IN_THE_BOX",
+  "components": [
+    {
+      "type": "TeamComponent",
+      "team": 1,
+      "nativeTeam": 1
+    },
+    {
+      "type": "FacingComponent",
+      "direction": -1,
+      "nativeDirection": -1
+    },
+    {
+      "type": "HypnotizableComponent"
+    },
+    {
+      "type": "JackInTheBoxBehaviour"
+    },
+    {
+      "type": "WalkerComponent",
+      "minSpeed": 0.66,
+      "maxSpeed": 0.68
+    },
+    {
+      "type": "ZombieBodyComponent",
+      "deathFallTime": 0.64,
+      "deathFallTimeAlt": 0.64,
+      "deathFallTimeSuperLong": 0.64,
+      "songFoley": "FOLEY_JACKINTHEBOX",
+      "eatAnimRate": 20.0,
+      "chewTimes": [
+        0.53,
+        0.53
+      ],
+      "armTrack": "Zombie_jackbox_outerarm_lower",
+      "armUpperTrack": "Zombie_jackbox_outerarm_lower",
+      "armUpperImageId": "IMAGE_REANIM_ZOMBIE_JACKBOX_OUTERARM_LOWER2_ID",
+      "armImageId": "IMAGE_ZOMBIEJACKBOXARM_ID",
+      "hasYuckyFace": false,
+      "spawnHealth": 500,
+      "usesPlainZombieReanim": false,
+      "hasAttackRect": true,
+      "animTicksPerFrame": 6
+    }
+  ]
+}

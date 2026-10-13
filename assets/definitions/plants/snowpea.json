@@ -1,0 +1,57 @@
+{
+  "plant": "SEED_SNOWPEA",
+  "components": [
+    {
+      "type": "TeamComponent",
+      "team": 0,
+      "nativeTeam": 0
+    },
+    {
+      "type": "FacingComponent"
+    },
+    {
+      "type": "HypnotizableComponent",
+      "hypnotizedTeam": 1
+    },
+    {
+      "type": "PlantShooterComponent",
+      "projectileType": "PROJECTILE_SNOWPEA",
+      "weapons": [
+        {
+          "projectile": "PROJECTILE_SNOWPEA",
+          "motion": "Straight",
+          "areaDamage": 0,
+          "foley": "FOLEY_THROW",
+          "extraFoley": "FOLEY_SNOW_PEA_SPARKLES",
+          "muzzleAnchor": "PeaHead",
+          "muzzleX": 24,
+          "muzzleY": -33,
+          "muzzleParticle": "PARTICLE_SNOWPEA_PUFF",
+          "muzzleParticleX": 8,
+          "muzzleParticleY": 13,
+          "animTarget": "Auto",
+          "anim": "anim_shooting",
+          "animRate": 35.0,
+          "shootDelay": 33
+        },
+        {
+          "projectile": "PROJECTILE_PEA",
+          "motion": "Straight",
+          "areaDamage": 0,
+          "foley": "FOLEY_THROW",
+          "extraFoley": "NUM_FOLEY",
+          "muzzleAnchor": "Plant",
+          "muzzleX": 10,
+          "muzzleY": 5,
+          "muzzleParticle": "PARTICLE_NONE",
+          "muzzleParticleX": 0,
+          "muzzleParticleY": 0,
+          "animTarget": "Auto",
+          "anim": "anim_shooting",
+          "animRate": 35.0,
+          "shootDelay": 29
+        }
+      ]
+    }
+  ]
+}

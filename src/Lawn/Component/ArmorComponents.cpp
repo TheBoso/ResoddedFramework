@@ -143,8 +143,8 @@ void ArmorComponent::Break(unsigned int theDamageFlags)
 
 void ArmorComponent::Serialize(ComponentArchive &theArchive)
 {
-	theArchive.Value(mHealth);
-	theArchive.Value(mMaxHealth);
+	theArchive.Value("health", mHealth);
+	theArchive.Value("maxHealth", mMaxHealth);
 }
 
 // ─── HelmComponent ───────────────────────────────────────────────────────────
@@ -219,7 +219,7 @@ void HelmComponent::OnBroken(unsigned int theDamageFlags)
 void HelmComponent::Serialize(ComponentArchive &theArchive)
 {
 	ArmorComponent::Serialize(theArchive);
-	theArchive.Value(mType);
+	theArchive.Value("helmType", mType);
 }
 
 // ─── ShieldComponent ─────────────────────────────────────────────────────────
@@ -279,7 +279,7 @@ void ShieldComponent::OnBroken(unsigned int theDamageFlags)
 void ShieldComponent::Serialize(ComponentArchive &theArchive)
 {
 	ArmorComponent::Serialize(theArchive);
-	theArchive.Value(mType);
+	theArchive.Value("shieldType", mType);
 }
 
 // ─── FlyingComponent ─────────────────────────────────────────────────────────

@@ -1,0 +1,26 @@
+{
+  "plant": "SEED_TANGLEKELP",
+  "components": [
+    {
+      "type": "TeamComponent",
+      "team": 0,
+      "nativeTeam": 0
+    },
+    {
+      "type": "FacingComponent"
+    },
+    {
+      "type": "HypnotizableComponent",
+      "hypnotizedTeam": 1
+    },
+    {
+      "type": "TangleKelpBehaviour"
+    },
+    {
+      "type": "InedibleComponent",
+      "blocksChewing": false,
+      "blocksVehicles": false,
+      "ignoredByZombies": true
+    }
+  ]
+}

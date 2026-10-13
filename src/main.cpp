@@ -1,14 +1,20 @@
 #include <clocale>
 
 #include "LawnApp.h"
+#include "Lawn/Component/ComponentDefinitions.h"
 #include "Sexy.TodLib/TodStringFile.h"
 
 bool (*gAppCloseRequest)();
 bool (*gAppHasUsedCheatKeys)();
 SexyString (*gGetCurrentLevelName)();
 
-int LawnMain()
+int LawnMain(int argc, char **argv)
 {
+	// Definition tools (-exportdefinitions=, -checkdefinitions=) run without starting the game
+	int aToolExitCode;
+	if (ComponentDefinitions::RunCommandLineTool(argc, argv, aToolExitCode))
+		return aToolExitCode;
+
 	// make locale UTF-8 so console output displays correctly
 	std::setlocale(LC_ALL, "en_us.UTF-8");
 
@@ -49,12 +55,12 @@ int WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		SetConsoleCP(CP_UTF8);
 		SetConsoleOutputCP(CP_UTF8);
 	}
-	return LawnMain();
+	return LawnMain(__argc, __argv);
 }
 #endif
 
 // Console/GNU/UNIX entrypoint
 int main(int argc, char **argv)
 {
-	return LawnMain();
+	return LawnMain(argc, argv);
 };

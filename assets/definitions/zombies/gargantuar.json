@@ -1,0 +1,82 @@
+{
+  "zombie": "ZOMBIE_GARGANTUAR",
+  "components": [
+    {
+      "type": "TeamComponent",
+      "team": 1,
+      "nativeTeam": 1
+    },
+    {
+      "type": "FacingComponent",
+      "direction": -1,
+      "nativeDirection": -1
+    },
+    {
+      "type": "HypnotizableComponent"
+    },
+    {
+      "type": "UnswallowableComponent"
+    },
+    {
+      "type": "GargantuarBehaviour"
+    },
+    {
+      "type": "GiantComponent"
+    },
+    {
+      "type": "WalkerComponent",
+      "houseEdgeX": -150
+    },
+    {
+      "type": "ZombieBodyComponent",
+      "hasShadowOffsets": true,
+      "shadowForwardX": 27.0,
+      "shadowBackwardX": 27.0,
+      "shadowY": 7.0,
+      "shadowScale": 1.5,
+      "charredReanim": "REANIM_ZOMBIE_CHARRED_GARGANTUAR",
+      "charredX": 7.0,
+      "charredY": -20.0,
+      "deathAnimRateMin": 14.0,
+      "deathAnimRateMax": 14.0,
+      "deathFallTime": 0.86,
+      "deathFallTimeAlt": 0.86,
+      "deathFallTimeSuperLong": 0.86,
+      "houseY": 30.0,
+      "roofHouseY": 5.0,
+      "drawOffsetY": -8.0,
+      "iceTrapX": -20.0,
+      "iceTrapY": -7.0,
+      "iceTrapScale": 1.6,
+      "butterX": -5.0,
+      "butterY": -15.0,
+      "butterScale": 1.2,
+      "hasYuckyFace": false,
+      "spawnHealth": 3000,
+      "usesPlainZombieReanim": false,
+      "hitRect": [
+        -17,
+        -38,
+        125,
+        154
+      ],
+      "hasAttackRect": true,
+      "attackRect": [
+        -30,
+        -38,
+        89,
+        154
+      ],
+      "spawnWidth": 180,
+      "spawnHeight": 180,
+      "animFrames": 24,
+      "animTicksPerFrame": 8,
+      "carriesObject": true,
+      "canHaveTongue": false,
+      "hasSpawnX": true,
+      "spawnX": 845.0,
+      "spawnXRandom": 10,
+      "renderOffset": 8
+    }
+  ]
+}

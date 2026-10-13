@@ -401,7 +401,7 @@ void ZombieBodyComponent::DrawInspector()
 		ImGui::DragFloat("Shadow Y", &mShadowY, 0.5f);
 		ImGui::DragFloat("Shadow scale", &mShadowScale, 0.01f, 0.1f, 4.0f);
 	}
-	ImGui::InputInt("Head image id", &mHeadImageId);
+	ImGui::InputInt("Head image id", (int *)&mHeadImageId);
 	ImGui::DragFloat("Charred X", &mCharredX, 0.5f);
 	ImGui::DragFloat("Charred Y", &mCharredY, 0.5f);
 	ImGui::Checkbox("Burns in place", &mBurnsInPlace);
@@ -445,8 +445,8 @@ void ZombieBodyComponent::DrawInspector()
 		ImGui::Checkbox("Can have tongue", &mCanHaveTongue);
 		ImGui::TreePop();
 	}
-	ImGui::InputInt("Arm image id", &mArmImageId);
-	ImGui::InputInt("Upper arm image id", &mArmUpperImageId);
+	ImGui::InputInt("Arm image id", (int *)&mArmImageId);
+	ImGui::InputInt("Upper arm image id", (int *)&mArmUpperImageId);
 	ImGui::Checkbox("Shows ice trap", &mShowsIceTrap);
 	ImGui::DragFloat("Ice trap X", &mIceTrapX, 0.5f);
 	ImGui::DragFloat("Ice trap Y", &mIceTrapY, 0.5f);

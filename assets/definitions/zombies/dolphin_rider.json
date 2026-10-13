@@ -1,0 +1,44 @@
+{
+  "zombie": "ZOMBIE_DOLPHIN_RIDER",
+  "components": [
+    {
+      "type": "TeamComponent",
+      "team": 1,
+      "nativeTeam": 1
+    },
+    {
+      "type": "FacingComponent",
+      "direction": -1,
+      "nativeDirection": -1
+    },
+    {
+      "type": "HypnotizableComponent"
+    },
+    {
+      "type": "DolphinRiderBehaviour"
+    },
+    {
+      "type": "SwimmerComponent"
+    },
+    {
+      "type": "ZombieBodyComponent",
+      "hasShadowOffsets": true,
+      "shadowForwardX": 19.0,
+      "shadowBackwardX": 15.0,
+      "shadowY": 11.0,
+      "headImageId": "IMAGE_ZOMBIEDOLPHINRIDERHEAD_ID",
+      "hasDeathFall": false,
+      "puffsWhenMowed": true,
+      "appearFoley": "FOLEY_DOLPHIN_APPEARS",
+      "armUpperTrack": "Zombie_dolphinrider_outerarm_upper",
+      "armUpperImageId": "IMAGE_REANIM_ZOMBIE_DOLPHINRIDER_OUTERARM_UPPER2_ID",
+      "armImageId": "IMAGE_REANIM_ZOMBIE_OUTERARM_HAND_ID",
+      "hasYuckyFace": false,
+      "spawnHealth": 500,
+      "usesPlainZombieReanim": false,
+      "animTicksPerFrame": 6,
+      "canHaveTongue": false,
+      "spriteGlides": true
+    }
+  ]
+}

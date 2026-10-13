@@ -1,0 +1,70 @@
+{
+  "plant": "SEED_CATTAIL",
+  "components": [
+    {
+      "type": "TeamComponent",
+      "team": 0,
+      "nativeTeam": 0
+    },
+    {
+      "type": "FacingComponent"
+    },
+    {
+      "type": "HypnotizableComponent",
+      "hypnotizedTeam": 1
+    },
+    {
+      "type": "PlantShooterComponent",
+      "projectileType": "PROJECTILE_SPIKE",
+      "weapons": [
+        {
+          "projectile": "PROJECTILE_SPIKE",
+          "motion": "Homing",
+          "areaDamage": 0,
+          "foley": "FOLEY_THROW",
+          "extraFoley": "NUM_FOLEY",
+          "muzzleAnchor": "Plant",
+          "muzzleX": 20,
+          "muzzleY": -3,
+          "muzzleParticle": "PARTICLE_NONE",
+          "muzzleParticleX": 0,
+          "muzzleParticleY": 0,
+          "animTarget": "Body",
+          "anim": "anim_shooting",
+          "animRate": 30.0,
+          "shootDelay": 50
+        },
+        {
+          "projectile": "PROJECTILE_PEA",
+          "motion": "Straight",
+          "areaDamage": 0,
+          "foley": "FOLEY_THROW",
+          "extraFoley": "NUM_FOLEY",
+          "muzzleAnchor": "Plant",
+          "muzzleX": 10,
+          "muzzleY": 5,
+          "muzzleParticle": "PARTICLE_NONE",
+          "muzzleParticleX": 0,
+          "muzzleParticleY": 0,
+          "animTarget": "Auto",
+          "anim": "anim_shooting",
+          "animRate": 35.0,
+          "shootDelay": 29
+        }
+      ],
+      "extraLaunches": [
+        "3200000000000000",
+        "0000000000000000"
+      ],
+      "extraLaunchCount": 1,
+      "fireTicks": [
+        19,
+        0,
+        0,
+        0
+      ],
+      "fireTickCount": 1,
+      "fireNeedsTarget": true
+    }
+  ]
+}

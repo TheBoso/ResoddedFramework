@@ -1,0 +1,66 @@
+{
+  "zombie": "ZOMBIE_BALLOON",
+  "components": [
+    {
+      "type": "TeamComponent",
+      "team": 1,
+      "nativeTeam": 1
+    },
+    {
+      "type": "FacingComponent",
+      "direction": -1,
+      "nativeDirection": -1
+    },
+    {
+      "type": "HypnotizableComponent"
+    },
+    {
+      "type": "BalloonBehaviour"
+    },
+    {
+      "type": "ZombieBodyComponent",
+      "hasShadowOffsets": true,
+      "shadowForwardX": 23.0,
+      "shadowBackwardX": 11.0,
+      "shadowY": 13.0,
+      "headParticle": "PARTICLE_ZOMBIE_BALLOON_HEAD",
+      "charredY": 21.0,
+      "deathFallTime": 0.68,
+      "deathFallTimeAlt": 0.68,
+      "deathFallTimeSuperLong": 0.68,
+      "appearFoley": "FOLEY_BALLOONINFLATE",
+      "eatAnimRate": 20.0,
+      "drawOffsetY": 17.0,
+      "armUpperImageId": "IMAGE_REANIM_ZOMBIE_BALLOON_OUTERARM_UPPER2_ID",
+      "armImageId": "IMAGE_REANIM_ZOMBIE_OUTERARM_HAND_ID",
+      "iceTrapX": -9.0,
+      "iceTrapY": 27.0,
+      "hasYuckyFace": false,
+      "daisyX": 110.0,
+      "daisyY": 30.0,
+      "usesPlainZombieReanim": false,
+      "hitRect": [
+        36,
+        30,
+        42,
+        115
+      ],
+      "hasAttackRect": true,
+      "attackRect": [
+        20,
+        30,
+        50,
+        115
+      ],
+      "canHaveTongue": false,
+      "chewEffectY": 47.0,
+      "rowYOffset": -30.0,
+      "spriteGlides": true
+    },
+    {
+      "type": "FlyingComponent",
+      "health": 20,
+      "maxHealth": 20
+    }
+  ]
+}

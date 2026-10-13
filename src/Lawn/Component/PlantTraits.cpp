@@ -12,24 +12,24 @@ REGISTER_COMPONENT(ProjectileConverterComponent)
 
 void SpikesComponent::Serialize(ComponentArchive &theArchive)
 {
-	theArchive.Value(mSurvivesCrushing);
+	theArchive.Value("survivesCrushing", mSurvivesCrushing);
 }
 
 void WallComponent::Serialize(ComponentArchive &theArchive)
 {
-	theArchive.Value(mShowsChewMarks);
+	theArchive.Value("showsChewMarks", mShowsChewMarks);
 }
 
 void InedibleComponent::Serialize(ComponentArchive &theArchive)
 {
-	theArchive.Value(mBlocksChewing);
-	theArchive.Value(mBlocksVehicles);
-	theArchive.Value(mIgnoredByZombies);
+	theArchive.Value("blocksChewing", mBlocksChewing);
+	theArchive.Value("blocksVehicles", mBlocksVehicles);
+	theArchive.Value("ignoredByZombies", mIgnoredByZombies);
 }
 
 void ActivatesWhenEatenComponent::Serialize(ComponentArchive &theArchive)
 {
-	theArchive.Value(mRequiresAwake);
+	theArchive.Value("requiresAwake", mRequiresAwake);
 }
 
 // ─── ProjectileConverterComponent ────────────────────────────────────────────
@@ -82,7 +82,7 @@ void ProjectileConverterComponent::OnTick()
 
 void ProjectileConverterComponent::Serialize(ComponentArchive &theArchive)
 {
-	theArchive.Value(mCount);
-	theArchive.Value(mFrom);
-	theArchive.Value(mTo);
+	theArchive.Value("count", mCount);
+	theArchive.Value("from", mFrom);
+	theArchive.Value("to", mTo);
 }
