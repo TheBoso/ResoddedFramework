@@ -95,6 +95,10 @@ class ZombieBodyComponent : public Component
 	int32_t mWalkAnimVariant = -1;
 	/// Dances instead of walking with the dance cheat (the plain zombies)
 	bool mDancesInDanceMode = false;
+	/// Leaves a trail of daisies when it dies in Daisy mode, offset from the regular spot
+	bool mLeavesDaisies = true;
+	float mDaisyX = 0.0f;
+	float mDaisyY = 0.0f;
 	/// Has the regular zombie head, which can pull the grossed-out face after biting garlic; without it the zombie
 	/// just turns away
 	bool mHasYuckyFace = true;
@@ -126,4 +130,46 @@ class ZombieBodyComponent : public Component
 	float mButterX = 0.0f;
 	float mButterY = 0.0f;
 	float mButterScale = 1.0f;
+
+	// What the zombie spawns with (Zombie::ZombieInitialize); what it does as it appears is in its behaviour's OnSpawn
+	int32_t mSpawnHealth = 270;
+	/// The regular zombie animation and its layers (cone, bucket, screen door, duck tube, flag...)
+	bool mUsesPlainZombieReanim = true;
+	char mSpawnShownPrefix[32] = "";
+	char mSpawnHiddenPrefixes[3][32] = { "", "", "" };
+	/// Animation it starts in on the lawn ("" for its own)
+	char mSpawnFrames[32] = "";
+	/// Where it can be hit, relative to its position (x, y, width, height)
+	int32_t mHitRect[4] = { 36, 0, 42, 115 };
+	/// Where it bites (x, y, width, height); without one, the regular zombie's
+	bool mHasAttackRect = false;
+	int32_t mAttackRect[4] = { 20, 0, 50, 115 };
+	int32_t mSpawnWidth = 120;
+	int32_t mSpawnHeight = 120;
+	/// Sprite animation frames and ticks per frame (0: the regular ones)
+	int32_t mAnimFrames = 0;
+	int32_t mAnimTicksPerFrame = 0;
+	float mScale = 1.0f;
+	/// Carries something it can lose (pole, flag, ladder...)
+	bool mCarriesObject = false;
+	/// Can be the tongue-out variant
+	bool mCanHaveTongue = true;
+	/// Enters at this x (plus up to mSpawnXRandom) instead of the regular spot
+	bool mHasSpawnX = false;
+	float mSpawnX = 0.0f;
+	int32_t mSpawnXRandom = 0;
+	/// Extra x on top of where it enters (the Tall-nut zombie starts further back)
+	float mSpawnXOffset = 0.0f;
+	RenderLayer mRenderLayer = RenderLayer::RENDER_LAYER_ZOMBIE;
+	int32_t mRenderOffset = 4;
+
+	/// The Zombotany head: a plant animation attached to one of the zombie's tracks (REANIM_NONE: none)
+	ReanimationType mPlantHeadReanim = ReanimationType::REANIM_NONE;
+	char mPlantHeadAnim[32] = "anim_idle";
+	char mPlantHeadTrack[32] = "anim_head1";
+	/// Blanks the track's own image (a head track carrying the plant head)
+	bool mPlantHeadBlanksTrack = true;
+	float mPlantHeadX = 0.0f;
+	float mPlantHeadY = 0.0f;
+	float mPlantHeadScale = 1.0f;
 };

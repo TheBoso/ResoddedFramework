@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Component.h"
+#include "../../ConstEnums.h"
 
 namespace Sexy
 {
@@ -9,6 +10,17 @@ class Graphics;
 
 class Zombie;
 class ZombieDrawPosition;
+
+/// @brief What a spawning zombie's behaviours can still change (Zombie::ZombieInitialize)
+struct ZombieSpawn
+{
+	/// The zombie that brought this one along (the Bobsled leader for its team)
+	Zombie *mParent = nullptr;
+	RenderLayer mRenderLayer = RenderLayer::RENDER_LAYER_ZOMBIE;
+	int mRenderOffset = 4;
+	/// The zombie removed itself while spawning (a Bungee with nothing to grab)
+	bool mCancelled = false;
+};
 
 /// @brief Base of zombie behaviours (what used to be the zombie-type checks in Zombie.cpp). The hooks run exactly
 /// where those checks were, so timing and the frozen/buttered rules are unchanged.
@@ -19,6 +31,7 @@ class ZombieDrawPosition;
 ///  - UpdateAlways:  the zombie updates at all, including outside a level (Almanac previews)
 ///
 /// Events (the bool ones: return true to say the behaviour took care of it):
+///  - OnSpawn (what the zombie does as it appears, after its body data was applied)
 ///  - OnLoseHead, OnLoseArm, OnButtered, OnButterRemoved, OnBodyDamaged, OnHitByMower, OnMowed, OnBurned
 ///  - HasDeathAnim, OnDying, UpdateDying, OnRemoved
 ///  - PlaceBody, DrawBody (zombies drawn their own way)
@@ -40,6 +53,13 @@ class ZombieBehaviourComponent : public Component
 	virtual void UpdateAlways(Zombie *theZombie)
 	{
 		(void)theZombie;
+	}
+	/// @brief The zombie is spawning: its body data (health, hitbox, where it enters...) is applied and its
+	/// animation loaded. Set up its starting phase and animation here.
+	virtual void OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn)
+	{
+		(void)theZombie;
+		(void)theSpawn;
 	}
 	/// @brief The zombie just lost its head (called from Zombie::DropHead before the head flies off)
 	virtual void OnLoseHead(Zombie *theZombie, unsigned int theDamageFlags)
@@ -152,11 +172,12 @@ class ZombieBehaviourComponent : public Component
 // They play the original zombie's animation tracks, so on a zombie whose animation lacks those tracks they act
 // without animating.
 
-#define ZOMBIE_BEHAVIOUR(ClassName, Hook)                      \
-	class ClassName : public ZombieBehaviourComponent          \
-	{                                                          \
-		COMPONENT_SUBTYPE(ClassName, ZombieBehaviourComponent) \
-		void Hook(Zombie *theZombie) override;                 \
+#define ZOMBIE_BEHAVIOUR(ClassName, Hook)                                \
+	class ClassName : public ZombieBehaviourComponent                    \
+	{                                                                    \
+		COMPONENT_SUBTYPE(ClassName, ZombieBehaviourComponent)           \
+		void Hook(Zombie *theZombie) override;                           \
+		void OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn) override; \
 	};
 
 ZOMBIE_BEHAVIOUR(DiggerBehaviour, UpdateActions)
@@ -173,6 +194,7 @@ ZOMBIE_BEHAVIOUR(JalapenoHeadBehaviour, UpdateActions)
 class PolevaulterBehaviour : public ZombieBehaviourComponent
 {
 	COMPONENT_SUBTYPE(PolevaulterBehaviour, ZombieBehaviourComponent)
+	void OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn) override;
 	void UpdateActions(Zombie *theZombie) override;
 	void OnLoseHead(Zombie *theZombie, unsigned int theDamageFlags) override;
 	void OnMowed(Zombie *theZombie) override;
@@ -182,6 +204,7 @@ class PolevaulterBehaviour : public ZombieBehaviourComponent
 class NewspaperBehaviour : public ZombieBehaviourComponent
 {
 	COMPONENT_SUBTYPE(NewspaperBehaviour, ZombieBehaviourComponent)
+	void OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn) override;
 	void UpdateActions(Zombie *theZombie) override;
 	void OnMowed(Zombie *theZombie) override;
 };
@@ -190,6 +213,7 @@ class NewspaperBehaviour : public ZombieBehaviourComponent
 class BalloonBehaviour : public ZombieBehaviourComponent
 {
 	COMPONENT_SUBTYPE(BalloonBehaviour, ZombieBehaviourComponent)
+	void OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn) override;
 	void UpdateActions(Zombie *theZombie) override;
 	void OnLoseHead(Zombie *theZombie, unsigned int theDamageFlags) override;
 	void OnButtered(Zombie *theZombie) override;
@@ -202,6 +226,7 @@ class BalloonBehaviour : public ZombieBehaviourComponent
 class PogoBehaviour : public ZombieBehaviourComponent
 {
 	COMPONENT_SUBTYPE(PogoBehaviour, ZombieBehaviourComponent)
+	void OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn) override;
 	void UpdateAlways(Zombie *theZombie) override;
 	void OnLoseHead(Zombie *theZombie, unsigned int theDamageFlags) override;
 	void OnLoseArm(Zombie *theZombie) override;
@@ -214,6 +239,7 @@ class PogoBehaviour : public ZombieBehaviourComponent
 class FlagBearerBehaviour : public ZombieBehaviourComponent
 {
 	COMPONENT_SUBTYPE(FlagBearerBehaviour, ZombieBehaviourComponent)
+	void OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn) override;
 	void OnLoseHead(Zombie *theZombie, unsigned int theDamageFlags) override;
 	void OnLoseArm(Zombie *theZombie) override;
 	void OnMowed(Zombie *theZombie) override;
@@ -223,6 +249,7 @@ class FlagBearerBehaviour : public ZombieBehaviourComponent
 class PeaHeadBehaviour : public ZombieBehaviourComponent
 {
 	COMPONENT_SUBTYPE(PeaHeadBehaviour, ZombieBehaviourComponent)
+	void OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn) override;
 	void UpdateActions(Zombie *theZombie) override;
 	void OnButterRemoved(Zombie *theZombie) override;
 };
@@ -231,6 +258,7 @@ class PeaHeadBehaviour : public ZombieBehaviourComponent
 class GatlingHeadBehaviour : public ZombieBehaviourComponent
 {
 	COMPONENT_SUBTYPE(GatlingHeadBehaviour, ZombieBehaviourComponent)
+	void OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn) override;
 	void UpdateActions(Zombie *theZombie) override;
 	void OnButterRemoved(Zombie *theZombie) override;
 };
@@ -239,6 +267,7 @@ class GatlingHeadBehaviour : public ZombieBehaviourComponent
 class DolphinRiderBehaviour : public ZombieBehaviourComponent
 {
 	COMPONENT_SUBTYPE(DolphinRiderBehaviour, ZombieBehaviourComponent)
+	void OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn) override;
 	void UpdateActions(Zombie *theZombie) override;
 	bool HasDeathAnim(Zombie *theZombie) override;
 	bool PlaceBody(Zombie *theZombie, ZombieDrawPosition &theDrawPos) override;
@@ -248,6 +277,7 @@ class DolphinRiderBehaviour : public ZombieBehaviourComponent
 class SnorkelBehaviour : public ZombieBehaviourComponent
 {
 	COMPONENT_SUBTYPE(SnorkelBehaviour, ZombieBehaviourComponent)
+	void OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn) override;
 	void UpdateActions(Zombie *theZombie) override;
 	bool PlaceBody(Zombie *theZombie, ZombieDrawPosition &theDrawPos) override;
 };
@@ -256,6 +286,7 @@ class SnorkelBehaviour : public ZombieBehaviourComponent
 class DancerBehaviour : public ZombieBehaviourComponent
 {
 	COMPONENT_SUBTYPE(DancerBehaviour, ZombieBehaviourComponent)
+	void OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn) override;
 	void UpdateActions(Zombie *theZombie) override;
 	bool DrawBody(Zombie *theZombie, Sexy::Graphics *g, const ZombieDrawPosition &theDrawPos,
 	              int theBaseRenderGroup) override;
@@ -265,6 +296,7 @@ class DancerBehaviour : public ZombieBehaviourComponent
 class CatapultBehaviour : public ZombieBehaviourComponent
 {
 	COMPONENT_SUBTYPE(CatapultBehaviour, ZombieBehaviourComponent)
+	void OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn) override;
 	void UpdateActions(Zombie *theZombie) override;
 	bool OnBodyDamaged(Zombie *theZombie, unsigned int theDamageFlags, int theHealthBefore, int theDamageIndexBefore,
 	                   int theDamageIndexAfter) override;
@@ -276,6 +308,7 @@ class CatapultBehaviour : public ZombieBehaviourComponent
 class ZamboniBehaviour : public ZombieBehaviourComponent
 {
 	COMPONENT_SUBTYPE(ZamboniBehaviour, ZombieBehaviourComponent)
+	void OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn) override;
 	void UpdateActions(Zombie *theZombie) override;
 	bool OnBodyDamaged(Zombie *theZombie, unsigned int theDamageFlags, int theHealthBefore, int theDamageIndexBefore,
 	                   int theDamageIndexAfter) override;
@@ -287,6 +320,7 @@ class ZamboniBehaviour : public ZombieBehaviourComponent
 class GargantuarBehaviour : public ZombieBehaviourComponent
 {
 	COMPONENT_SUBTYPE(GargantuarBehaviour, ZombieBehaviourComponent)
+	void OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn) override;
 	void UpdateActions(Zombie *theZombie) override;
 	bool OnBodyDamaged(Zombie *theZombie, unsigned int theDamageFlags, int theHealthBefore, int theDamageIndexBefore,
 	                   int theDamageIndexAfter) override;
@@ -296,6 +330,7 @@ class GargantuarBehaviour : public ZombieBehaviourComponent
 class BobsledBehaviour : public ZombieBehaviourComponent
 {
 	COMPONENT_SUBTYPE(BobsledBehaviour, ZombieBehaviourComponent)
+	void OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn) override;
 	void UpdateActions(Zombie *theZombie) override;
 	void OnBurned(Zombie *theZombie) override;
 	void OnRemoved(Zombie *theZombie) override;
@@ -309,6 +344,7 @@ class BobsledBehaviour : public ZombieBehaviourComponent
 class SquashHeadBehaviour : public ZombieBehaviourComponent
 {
 	COMPONENT_SUBTYPE(SquashHeadBehaviour, ZombieBehaviourComponent)
+	void OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn) override;
 	void UpdateActions(Zombie *theZombie) override;
 	void OnDying(Zombie *theZombie) override;
 	void OnBurned(Zombie *theZombie) override;
@@ -318,6 +354,7 @@ class SquashHeadBehaviour : public ZombieBehaviourComponent
 class BungeeBehaviour : public ZombieBehaviourComponent
 {
 	COMPONENT_SUBTYPE(BungeeBehaviour, ZombieBehaviourComponent)
+	void OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn) override;
 	void UpdateAlways(Zombie *theZombie) override;
 	void OnRemoved(Zombie *theZombie) override;
 	bool CanBeTargeted(Zombie *theZombie) override;
@@ -330,6 +367,7 @@ class BungeeBehaviour : public ZombieBehaviourComponent
 class BossBehaviour : public ZombieBehaviourComponent
 {
 	COMPONENT_SUBTYPE(BossBehaviour, ZombieBehaviourComponent)
+	void OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn) override;
 	void UpdatePlaying(Zombie *theZombie) override;
 	bool OnBodyDamaged(Zombie *theZombie, unsigned int theDamageFlags, int theHealthBefore, int theDamageIndexBefore,
 	                   int theDamageIndexAfter) override;

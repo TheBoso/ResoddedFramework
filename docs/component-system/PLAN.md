@@ -244,8 +244,19 @@ hypnosis, team-based projectile collision, generic shooter, plant heads, produce
   the garlic face (true by default, like the regular zombie; the zombies with their own head turn it off, and the
   Jalapeno and Gatling zombies got bodies for it). Zombie.cpp is down to 50 `mZombieType ==` checks.
   `SAVE_VERSION` 15.
-- Still type-checked: the legacy sprite path of `UpdateZombieWalking` (zombies without a body animation), Daisy
-  mode, the sprite drawing in `DrawZombie` and the type setup in `ZombieInitialize`.
+- Done: spawning and Daisy mode. The 33-case switch in `Zombie::ZombieInitialize` is gone. The armour the
+  zombies spawn with comes from the archetype (`AddVanillaZombieArmor`; only the Bobsled leader's helmet stays in
+  its behaviour, since it depends on the team). What a zombie spawns with is body data: health, the plain zombie
+  animation and its shown/hidden layers, hit and attack rects, size, sprite frames, scale, carrying an object, the
+  tongue variant, where it enters, its render layer and the Zombotany head (plant animation, track, offset,
+  scale). What it does as it appears (starting phase and animation, Jack-in-the-Box fuse, Gargantuar pole, Bobsled
+  seats, the Flag Zombie's flag and Zombatar...) is the new `OnSpawn(zombie, ZombieSpawn&)` hook; `ZombieSpawn`
+  carries the parent zombie, the render layer/offset and a cancel flag (a Bungee with nothing to grab). The
+  shield is attached after the behaviours spawn. Daisy mode reads `mLeavesDaisies` and the daisy offset from the
+  body. Random numbers are drawn in the same order as before. Zombie.cpp is down to 45 `mZombieType ==` checks and
+  29 `case` labels. `SAVE_VERSION` 16.
+- Still type-checked: the legacy sprite path of `UpdateZombieWalking` (zombies without a body animation), the
+  sprite drawing in `DrawZombie`, and `SetupReanimLayers` (shared with the Almanac).
 - Next: the remaining checks are mostly single types tied to that zombie's own animation and state (Zamboni ice
   trail, Catapult basketball count, Snorkel/Dolphin pool animations, Dr. Zomboss parts). They move into hooks on the
   zombie's behaviour component (e.g. `OnDeathAnim`, `GetDrawPosition`) so the shared code asks the behaviour instead

@@ -2389,3 +2389,388 @@ bool BobsledBehaviour::CanBeTargetedOffScreen(Zombie *theZombie)
 	(void)theZombie;
 	return true;
 }
+
+// ─── Spawning ────────────────────────────────────────────────────────────────
+// What each zombie does when it appears, after its body data (health, hitbox, spawn x...) was applied
+
+void YetiBehaviour::OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn)
+{
+	(void)theSpawn;
+	theZombie->mPhaseCounter = RandRangeInt(1500, 2000);
+}
+
+void LadderBehaviour::OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn)
+{
+	(void)theSpawn;
+	if (theZombie->IsOnBoard())
+	{
+		theZombie->mZombiePhase = ZombiePhase::PHASE_LADDER_CARRYING;
+		theZombie->StartWalkAnim(0);
+	}
+}
+
+void BungeeBehaviour::OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn)
+{
+	theZombie->mAltitude = BUNGEE_ZOMBIE_HEIGHT + RandRangeInt(0, 150);
+	theZombie->mVelX = 0.0f;
+
+	if (theZombie->IsOnBoard())
+	{
+		theZombie->PickBungeeZombieTarget(-1);
+
+		// Nothing to grab: it is gone already
+		if (theZombie->mDead)
+		{
+			theSpawn.mCancelled = true;
+			return;
+		}
+
+		theZombie->mZombiePhase = ZombiePhase::PHASE_BUNGEE_DIVING;
+	}
+	else
+	{
+		theZombie->mZombiePhase = ZombiePhase::PHASE_BUNGEE_CUTSCENE;
+		theZombie->mPhaseCounter = RandRangeInt(0, 200);
+	}
+
+	theZombie->PlayZombieReanim("anim_drop", ReanimLoopType::REANIM_LOOP, 0, 24.0f);
+	Reanimation *aBodyReanim = theZombie->mApp->ReanimationGet(theZombie->mBodyReanimID);
+	aBodyReanim->AssignRenderGroupToPrefix("Zombie_bungi_rightarm_lower2", RENDER_GROUP_ARMS);
+	aBodyReanim->AssignRenderGroupToPrefix("Zombie_bungi_rightarm_hand2", RENDER_GROUP_ARMS);
+	aBodyReanim->AssignRenderGroupToPrefix("Zombie_bungi_leftarm_lower2", RENDER_GROUP_ARMS);
+	aBodyReanim->AssignRenderGroupToPrefix("Zombie_bungi_leftarm_hand2", RENDER_GROUP_ARMS);
+	aBodyReanim->SetTruncateDisappearingFrames(nullptr, false);
+}
+
+void DiggerBehaviour::OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn)
+{
+	Reanimation *aBodyReanim = theZombie->mApp->ReanimationGet(theZombie->mBodyReanimID);
+	aBodyReanim->SetTruncateDisappearingFrames(nullptr, false);
+
+	if (!theZombie->IsOnBoard())
+	{
+		theZombie->mZombiePhase = ZombiePhase::PHASE_DIGGER_CUTSCENE;
+	}
+	else
+	{
+		theZombie->mZombiePhase = ZombiePhase::PHASE_DIGGER_TUNNELING;
+		theZombie->AddAttachedParticle(60, 100, ParticleEffect::PARTICLE_DIGGER_TUNNEL);
+		theSpawn.mRenderOffset = 7;
+		theZombie->PlayZombieReanim("anim_dig", ReanimLoopType::REANIM_LOOP_FULL_LAST_FRAME, 0, 12.0f);
+		theZombie->PickRandomSpeed();
+	}
+}
+
+void PolevaulterBehaviour::OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn)
+{
+	(void)theSpawn;
+	theZombie->mZombiePhase = ZombiePhase::PHASE_POLEVAULTER_PRE_VAULT;
+	if (theZombie->IsOnBoard())
+	{
+		theZombie->PlayZombieReanim("anim_run", ReanimLoopType::REANIM_LOOP, 0, 0.0f);
+		theZombie->PickRandomSpeed();
+	}
+	if (theZombie->mApp->IsWallnutBowlingLevel())
+	{
+		theZombie->mZombieAttackRect = Rect(-229, 0, 270, 115);
+	}
+	else
+	{
+		theZombie->mZombieAttackRect = Rect(-29, 0, 70, 115);
+	}
+}
+
+void DolphinRiderBehaviour::OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn)
+{
+	(void)theSpawn;
+	theZombie->mZombiePhase = ZombiePhase::PHASE_DOLPHIN_WALKING;
+	if (theZombie->IsOnBoard())
+	{
+		theZombie->PlayZombieReanim("anim_walkdolphin", ReanimLoopType::REANIM_LOOP, 0, 0.0f);
+		theZombie->PickRandomSpeed();
+	}
+	theZombie->SetupWaterTrack("zombie_dolphinrider_whitewater");
+	theZombie->SetupWaterTrack("zombie_dolphinrider_dolphininwater");
+}
+
+void GargantuarBehaviour::OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn)
+{
+	(void)theSpawn;
+	// Now and then it carries a zombie or a duck crossing sign instead of a telephone pole
+	int aPoleHit = Rand(100);
+	int aPoleVariant;
+	if (!theZombie->IsOnBoard() || theZombie->mBoard->mLevel == 48)
+	{
+		aPoleVariant = 0;
+	}
+	else
+	{
+		aPoleVariant = aPoleHit < 10 ? 2 : aPoleHit < 35 ? 1 : 0;
+	}
+
+	Reanimation *aBodyReanim = theZombie->mApp->ReanimationGet(theZombie->mBodyReanimID);
+	if (aPoleVariant == 2)
+	{
+		aBodyReanim->SetImageOverride("Zombie_gargantuar_telephonepole", IMAGE_REANIM_ZOMBIE_GARGANTUAR_ZOMBIE);
+	}
+	else if (aPoleVariant == 1)
+	{
+		aBodyReanim->SetImageOverride("Zombie_gargantuar_telephonepole", IMAGE_REANIM_ZOMBIE_GARGANTUAR_DUCKXING);
+	}
+
+	if (theZombie->mZombieType == ZombieType::ZOMBIE_REDEYE_GARGANTUAR)
+	{
+		aBodyReanim->SetImageOverride("anim_head1", IMAGE_REANIM_ZOMBIE_GARGANTUAR_HEAD_REDEYE);
+	}
+}
+
+void ZamboniBehaviour::OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn)
+{
+	(void)theSpawn;
+	theZombie->PlayZombieReanim("anim_drive", ReanimLoopType::REANIM_LOOP, 0, 12.0f);
+}
+
+void CatapultBehaviour::OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn)
+{
+	(void)theSpawn;
+	theZombie->mSummonCounter = 20;
+	if (theZombie->IsOnBoard())
+	{
+		theZombie->PlayZombieReanim("anim_walk", ReanimLoopType::REANIM_LOOP, 0, 5.5f);
+	}
+	else
+	{
+		theZombie->PlayZombieReanim("anim_idle", ReanimLoopType::REANIM_LOOP, 0, 8.0f);
+	}
+}
+
+void SnorkelBehaviour::OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn)
+{
+	(void)theSpawn;
+	theZombie->SetupWaterTrack("Zombie_snorkle_whitewater");
+	theZombie->SetupWaterTrack("Zombie_snorkle_whitewater2");
+	theZombie->mZombiePhase = ZombiePhase::PHASE_SNORKEL_WALKING;
+}
+
+void JackInTheBoxBehaviour::OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn)
+{
+	(void)theSpawn;
+	// How far it walks before the box pops
+	int aDistance = 450 + Rand(300);
+	if (Rand(20) == 0)
+	{
+		aDistance /= 3;
+	}
+	theZombie->mPhaseCounter = (int)(aDistance / theZombie->mVelX) * ZOMBIE_LIMP_SPEED_FACTOR;
+
+	if (theZombie->mApp->IsScaryPotterLevel())
+	{
+		theZombie->mPhaseCounter = 10;
+	}
+	if (theZombie->IsOnBoard())
+	{
+		theZombie->mZombiePhase = ZombiePhase::PHASE_JACK_IN_THE_BOX_RUNNING;
+	}
+}
+
+void BobsledBehaviour::OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn)
+{
+	Zombie *aParent = theSpawn.mParent;
+	if (aParent)
+	{
+		// A follower takes the next free seat behind the leader
+		int aPosition = 0;
+		while (aPosition < NUM_BOBSLED_FOLLOWERS && aParent->mFollowerZombieID[aPosition] != ZombieID::ZOMBIEID_NULL)
+		{
+			aPosition++;
+		}
+		TOD_ASSERT(aPosition < 3);
+		aParent->mFollowerZombieID[aPosition] = theZombie->mBoard->ZombieGetID(theZombie);
+		theZombie->mRelatedZombieID = theZombie->mBoard->ZombieGetID(aParent);
+
+		theZombie->mPosX = aParent->mPosX + (aPosition + 1) * 50;
+		if (aPosition == 0)
+		{
+			theSpawn.mRenderOffset = 1;
+			theZombie->mAltitude = 9.0f;
+		}
+		else if (aPosition == 1)
+		{
+			theSpawn.mRenderOffset = 2;
+			theZombie->mAltitude = -7.0f;
+		}
+		else
+		{
+			theSpawn.mRenderOffset = 0;
+			theZombie->mAltitude = 9.0f;
+		}
+	}
+	else
+	{
+		theZombie->mPosX = WIDE_BOARD_WIDTH + 80;
+		theZombie->mZombieRect = Rect(-50, 0, 275, 115);
+		theZombie->AddComponent<HelmComponent>(HelmType::HELMTYPE_BOBSLED, 300);
+		theZombie->mAltitude = -10.0f;
+	}
+
+	theZombie->mVelX = 0.6f;
+	theZombie->mZombiePhase = ZombiePhase::PHASE_BOBSLED_SLIDING;
+	theZombie->mPhaseCounter = 500;
+
+	if (theZombie->mFromWave == Zombie::ZOMBIE_WAVE_CUTSCENE)
+	{
+		theZombie->PlayZombieReanim("anim_jump", ReanimLoopType::REANIM_PLAY_ONCE_AND_HOLD, 0, 20.0f);
+		theZombie->mApp->ReanimationGet(theZombie->mBodyReanimID)->mAnimTime = 1.0f;
+		theZombie->mAltitude = 18.0f;
+	}
+	else if (theZombie->IsOnBoard())
+	{
+		theZombie->PlayZombieReanim("anim_push", ReanimLoopType::REANIM_LOOP, 0, 30.0f);
+	}
+}
+
+void FlagBearerBehaviour::OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn)
+{
+	(void)theSpawn;
+	LawnApp *anApp = theZombie->mApp;
+	Reanimation *aBodyReanim = anApp->ReanimationGet(theZombie->mBodyReanimID);
+	Reanimation *aFlagReanim = anApp->AddReanimation(0.0f, 0.0f, 0, ReanimationType::REANIM_FLAG);
+	aFlagReanim->PlayReanim("Zombie_flag", ReanimLoopType::REANIM_LOOP, 0, 15.0f);
+	theZombie->mSpecialHeadReanimID = anApp->ReanimationGetID(aFlagReanim);
+	ReanimatorTrackInstance *aTrackInstance = aBodyReanim->GetTrackInstanceByName("Zombie_flaghand");
+	AttachReanim(aTrackInstance->mAttachmentID, aFlagReanim, 0.0f, 0.0f);
+	aBodyReanim->mFrameBasePose = 0;
+
+	// The player's Zombatar leads the wave
+	if (anApp->mPlayerInfo != nullptr && anApp->mPlayerInfo->mNumZombatars > 0 &&
+	    anApp->mPlayerInfo->mZombatarIndex > -1)
+	{
+		theZombie->SetupZombatar();
+		theZombie->UpdateZombatar(anApp->mPlayerInfo->mZombatars[anApp->mPlayerInfo->mZombatarIndex]);
+	}
+}
+
+void PogoBehaviour::OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn)
+{
+	(void)theSpawn;
+	theZombie->mZombiePhase = ZombiePhase::PHASE_POGO_BOUNCING;
+	theZombie->mPhaseCounter = Rand(POGO_BOUNCE_TIME) + 1;
+	theZombie->PlayZombieReanim("anim_pogo", ReanimLoopType::REANIM_PLAY_ONCE_AND_HOLD, 0, 40.0f);
+	theZombie->mApp->ReanimationGet(theZombie->mBodyReanimID)->mAnimTime = 1.0f;
+}
+
+void NewspaperBehaviour::OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn)
+{
+	(void)theSpawn;
+	theZombie->mZombiePhase = ZombiePhase::PHASE_NEWSPAPER_READING;
+}
+
+void BalloonBehaviour::OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn)
+{
+	(void)theSpawn;
+	Reanimation *aBodyReanim = theZombie->mApp->ReanimationGet(theZombie->mBodyReanimID);
+	aBodyReanim->SetTruncateDisappearingFrames(nullptr, false);
+
+	if (theZombie->IsOnBoard())
+	{
+		theZombie->mAltitude = 25.0f;
+		theZombie->mZombiePhase = ZombiePhase::PHASE_BALLOON_FLYING;
+		theZombie->PlayZombieReanim("anim_idle", ReanimLoopType::REANIM_LOOP, 0, aBodyReanim->mAnimRate);
+	}
+	else
+	{
+		float aAnimRate = RandRangeFloat(8.0f, 10.0f);
+		theZombie->SetAnimRate(aAnimRate);
+	}
+
+	Reanimation *aPropellerReanim = theZombie->mApp->AddReanimation(
+	    0.0f, 0.0f, 0, GetZombieDefinition(theZombie->mZombieType).mReanimationType);
+	aPropellerReanim->SetFramesForLayer("Propeller");
+	aPropellerReanim->mLoopType = ReanimLoopType::REANIM_LOOP_FULL_LAST_FRAME;
+	aPropellerReanim->AttachToAnotherReanimation(aBodyReanim, "hat");
+}
+
+void DancerBehaviour::OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn)
+{
+	(void)theSpawn;
+	if (!theZombie->IsOnBoard())
+	{
+		theZombie->PlayZombieReanim("anim_moonwalk", ReanimLoopType::REANIM_LOOP, 0, 12.0f);
+	}
+	else
+	{
+		theZombie->mZombiePhase = ZombiePhase::PHASE_DANCER_DANCING_IN;
+		theZombie->mVelX = 0.5f;
+		theZombie->mPhaseCounter = 300 + Rand(12);
+		theZombie->PlayZombieReanim("anim_moonwalk", ReanimLoopType::REANIM_LOOP, 0, 24.0f);
+	}
+}
+
+void BackupDancerBehaviour::OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn)
+{
+	(void)theSpawn;
+	if (!theZombie->IsOnBoard())
+	{
+		theZombie->PlayZombieReanim("anim_armraise", ReanimLoopType::REANIM_LOOP, 0, 12.0f);
+	}
+	theZombie->mZombiePhase = ZombiePhase::PHASE_DANCER_DANCING_LEFT;
+}
+
+void ImpBehaviour::OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn)
+{
+	(void)theSpawn;
+	if (!theZombie->IsOnBoard())
+	{
+		theZombie->PlayZombieReanim("anim_walk", ReanimLoopType::REANIM_LOOP, 0, 12.0f);
+	}
+	// I, Zombie Imps are flimsy
+	if (theZombie->mApp->IsIZombieLevel())
+	{
+		theZombie->Health().mHealth = 70;
+	}
+}
+
+void BossBehaviour::OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn)
+{
+	(void)theSpawn;
+	theZombie->mPosY = 0.0f;
+	theZombie->Health().mHealth = theZombie->mApp->IsAdventureMode() ? 40000 : 60000;
+	if (theZombie->IsOnBoard())
+	{
+		theZombie->PlayZombieReanim("anim_enter", ReanimLoopType::REANIM_PLAY_ONCE_AND_HOLD, 0, 12.0f);
+		theZombie->mSummonCounter = 500;
+		theZombie->mBossHeadCounter = 5000;
+		theZombie->mZombiePhase = ZombiePhase::PHASE_BOSS_ENTER;
+	}
+	else
+	{
+		theZombie->PlayZombieReanim("anim_head_idle", ReanimLoopType::REANIM_LOOP, 0, 12.0f);
+	}
+	theZombie->BossSetupReanim();
+}
+
+void PeaHeadBehaviour::OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn)
+{
+	(void)theSpawn;
+	theZombie->mPhaseCounter = 150;
+}
+
+void GatlingHeadBehaviour::OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn)
+{
+	(void)theSpawn;
+	theZombie->mPhaseCounter = 150;
+}
+
+void JalapenoHeadBehaviour::OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn)
+{
+	(void)theSpawn;
+	// How far it walks before it explodes
+	int aDistance = 275 + Rand(175);
+	theZombie->mPhaseCounter = (int)(aDistance / theZombie->mVelX) * ZOMBIE_LIMP_SPEED_FACTOR;
+}
+
+void SquashHeadBehaviour::OnSpawn(Zombie *theZombie, ZombieSpawn &theSpawn)
+{
+	(void)theSpawn;
+	theZombie->mZombiePhase = ZombiePhase::PHASE_SQUASH_PRE_LAUNCH;
+}

@@ -418,6 +418,21 @@ void ZombieBodyComponent::DrawInspector()
 	ImGui::DragFloat("Draw offset Y", &mDrawOffsetY, 0.5f);
 	ImGui::Checkbox("Dances in dance mode", &mDancesInDanceMode);
 	ImGui::Checkbox("Has yucky face", &mHasYuckyFace);
+	ImGui::Checkbox("Leaves daisies", &mLeavesDaisies);
+	if (ImGui::TreeNode("Spawn (next zombie of this kind)"))
+	{
+		ImGui::InputInt("Health", &mSpawnHealth);
+		ImGui::InputInt4("Hit rect", mHitRect);
+		ImGui::Checkbox("Own attack rect", &mHasAttackRect);
+		if (mHasAttackRect)
+		{
+			ImGui::InputInt4("Attack rect", mAttackRect);
+		}
+		ImGui::DragFloat("Scale", &mScale, 0.01f, 0.1f, 4.0f);
+		ImGui::Checkbox("Carries an object", &mCarriesObject);
+		ImGui::Checkbox("Can have tongue", &mCanHaveTongue);
+		ImGui::TreePop();
+	}
 	ImGui::InputInt("Arm image id", &mArmImageId);
 	ImGui::InputInt("Upper arm image id", &mArmUpperImageId);
 	ImGui::Checkbox("Shows ice trap", &mShowsIceTrap);

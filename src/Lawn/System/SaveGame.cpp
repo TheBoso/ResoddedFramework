@@ -23,7 +23,8 @@
 // 13: walker move style, body walk/eat animation data, bodies for the plain zombies, Flag and Peashooter zombie
 // 14: zombie body arm, ice trap and butter data, bodies for the Wall-nut, Tall-nut and Squash zombies
 // 15: yucky face body data, bodies for the Jalapeno and Gatling zombies, swimmer under water
-static constexpr uint32_t SAVE_VERSION = 15;
+// 16: zombie body spawn, Zombotany head and daisy data, armour from the archetype
+static constexpr uint32_t SAVE_VERSION = 16;
 
 template <typename T>
 void SaveContext::SyncVar(T &aValue, const std::string &aName)
