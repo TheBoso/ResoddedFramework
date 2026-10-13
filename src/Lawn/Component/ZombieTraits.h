@@ -49,6 +49,17 @@ class DanceTroupeComponent : public Component
 class SwimmerComponent : public Component
 {
 	COMPONENT_TYPE(SwimmerComponent)
+
+	SwimmerComponent() = default;
+	explicit SwimmerComponent(bool theSwimsUnderwater)
+	    : mSwimsUnderwater(theSwimsUnderwater)
+	{
+	}
+	void Serialize(ComponentArchive &theArchive) override;
+	void DrawInspector() override;
+
+	/// Swims under water (Snorkel): while swimming and not eating, only what reaches under water can hit it
+	bool mSwimsUnderwater = false;
 };
 
 /// @brief How a zombie moves across the lawn

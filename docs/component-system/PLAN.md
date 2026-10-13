@@ -237,9 +237,15 @@ hypnosis, team-based projectile collision, generic shooter, plant heads, produce
   one. A Dancer now hides its pointing hand's track with its arm even when the arm leaves no particle (it never
   swims, and a disintegrated zombie leaves no body, so this doesn't show). Zombie.cpp went from 66 to 58
   `mZombieType ==` checks and 110 to 62 `case` labels. `SAVE_VERSION` 14.
+- Done: targeting and the yucky face. New hooks `CanBeTargeted` (a Bungee only at the bottom of its drop,
+  Dr. Zomboss only with his head down, the Bobsled team only its leader) and `CanBeTargetedOffScreen` (the Bobsled
+  team). `SwimmerComponent::mSwimsUnderwater` (Snorkel) drives `Zombie::IsSubmerged()`, used for targeting and
+  where Tangle Kelp grabs. `ZombieBodyComponent::mHasYuckyFace` says the zombie has the regular head that can pull
+  the garlic face (true by default, like the regular zombie; the zombies with their own head turn it off, and the
+  Jalapeno and Gatling zombies got bodies for it). Zombie.cpp is down to 50 `mZombieType ==` checks.
+  `SAVE_VERSION` 15.
 - Still type-checked: the legacy sprite path of `UpdateZombieWalking` (zombies without a body animation), Daisy
-  mode, the yucky face, `IsTargetableBy`, the sprite drawing in `DrawZombie` and the type setup in
-  `ZombieInitialize`.
+  mode, the sprite drawing in `DrawZombie` and the type setup in `ZombieInitialize`.
 - Next: the remaining checks are mostly single types tied to that zombie's own animation and state (Zamboni ice
   trail, Catapult basketball count, Snorkel/Dolphin pool animations, Dr. Zomboss parts). They move into hooks on the
   zombie's behaviour component (e.g. `OnDeathAnim`, `GetDrawPosition`) so the shared code asks the behaviour instead

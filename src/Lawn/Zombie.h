@@ -269,6 +269,8 @@ class Zombie : public GameObject
 	bool IsVehicle();
 	bool IsInDanceTroupe();
 	bool IsSwimmer();
+	/// @brief Swims under water right now (a Snorkel in the pool, not eating)
+	bool IsSubmerged();
 	/// @brief Drives over / smashes spiky plants instead of being stopped by them (Gargantuars, Zamboni)
 	bool CrushesSpikes();
 

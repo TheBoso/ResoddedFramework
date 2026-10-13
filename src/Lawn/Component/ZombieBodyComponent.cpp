@@ -85,4 +85,5 @@ void ZombieBodyComponent::Serialize(ComponentArchive &theArchive)
 	theArchive.Value(mButterX);
 	theArchive.Value(mButterY);
 	theArchive.Value(mButterScale);
+	theArchive.Value(mHasYuckyFace);
 }

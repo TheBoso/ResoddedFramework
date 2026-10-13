@@ -22,6 +22,7 @@ class ZombieDrawPosition;
 ///  - OnLoseHead, OnLoseArm, OnButtered, OnButterRemoved, OnBodyDamaged, OnHitByMower, OnMowed, OnBurned
 ///  - HasDeathAnim, OnDying, UpdateDying, OnRemoved
 ///  - PlaceBody, DrawBody (zombies drawn their own way)
+///  - CanBeTargeted, CanBeTargetedOffScreen (Zombie::IsTargetableBy)
 ///
 /// A zombie can have several behaviours; they run in the order they were added.
 class ZombieBehaviourComponent : public Component
@@ -112,6 +113,19 @@ class ZombieBehaviourComponent : public Component
 	virtual void OnRemoved(Zombie *theZombie)
 	{
 		(void)theZombie;
+	}
+	/// @brief false: nothing can target the zombie right now (a Bungee in the air, Dr. Zomboss without his head
+	/// down, the Bobsled team behind the leader)
+	virtual bool CanBeTargeted(Zombie *theZombie)
+	{
+		(void)theZombie;
+		return true;
+	}
+	/// @brief true: the zombie can be targeted before it walks onto the screen (the Bobsled team)
+	virtual bool CanBeTargetedOffScreen(Zombie *theZombie)
+	{
+		(void)theZombie;
+		return false;
 	}
 	/// @brief Where the body is drawn and clipped this frame (Zombie::GetDrawPos). Return true when the behaviour
 	/// placed it (Dolphin Rider, Snorkel, Bungee) instead of the regular placement.
@@ -285,6 +299,8 @@ class BobsledBehaviour : public ZombieBehaviourComponent
 	void UpdateActions(Zombie *theZombie) override;
 	void OnBurned(Zombie *theZombie) override;
 	void OnRemoved(Zombie *theZombie) override;
+	bool CanBeTargeted(Zombie *theZombie) override;
+	bool CanBeTargetedOffScreen(Zombie *theZombie) override;
 	bool DrawBody(Zombie *theZombie, Sexy::Graphics *g, const ZombieDrawPosition &theDrawPos,
 	              int theBaseRenderGroup) override;
 };
@@ -304,6 +320,7 @@ class BungeeBehaviour : public ZombieBehaviourComponent
 	COMPONENT_SUBTYPE(BungeeBehaviour, ZombieBehaviourComponent)
 	void UpdateAlways(Zombie *theZombie) override;
 	void OnRemoved(Zombie *theZombie) override;
+	bool CanBeTargeted(Zombie *theZombie) override;
 	bool PlaceBody(Zombie *theZombie, ZombieDrawPosition &theDrawPos) override;
 	bool DrawBody(Zombie *theZombie, Sexy::Graphics *g, const ZombieDrawPosition &theDrawPos,
 	              int theBaseRenderGroup) override;
@@ -320,4 +337,5 @@ class BossBehaviour : public ZombieBehaviourComponent
 	void OnDying(Zombie *theZombie) override;
 	bool UpdateDying(Zombie *theZombie) override;
 	void OnRemoved(Zombie *theZombie) override;
+	bool CanBeTargeted(Zombie *theZombie) override;
 };

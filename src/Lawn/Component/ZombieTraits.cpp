@@ -13,6 +13,11 @@ void VehicleComponent::Serialize(ComponentArchive &theArchive)
 	theArchive.Value(mBreakdownHealth);
 }
 
+void SwimmerComponent::Serialize(ComponentArchive &theArchive)
+{
+	theArchive.Value(mSwimsUnderwater);
+}
+
 void WalkerComponent::Serialize(ComponentArchive &theArchive)
 {
 	theArchive.Value(mMinSpeed);

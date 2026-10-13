@@ -3014,11 +3014,7 @@ bool Zombie::HasYuckyFaceImage()
 	if (mBoard->mFutureMode)
 		return false;
 
-	return mZombieType == ZombieType::ZOMBIE_NORMAL || mZombieType == ZombieType::ZOMBIE_TRAFFIC_CONE ||
-	       mZombieType == ZombieType::ZOMBIE_PAIL || mZombieType == ZombieType::ZOMBIE_FLAG ||
-	       mZombieType == ZombieType::ZOMBIE_DOOR || mZombieType == ZombieType::ZOMBIE_DUCKY_TUBE ||
-	       IsInDanceTroupe() ||
-	       mZombieType == ZombieType::ZOMBIE_NEWSPAPER || mZombieType == ZombieType::ZOMBIE_POLEVAULTER;
+	return BodyOf(this).mHasYuckyFace;
 }
 
 void Zombie::ShowYuckyFace(bool theShow)
@@ -5986,6 +5982,12 @@ bool Zombie::IsSwimmer()
 	return HasComponent<SwimmerComponent>();
 }
 
+bool Zombie::IsSubmerged()
+{
+	SwimmerComponent *aSwimmer = GetComponent<SwimmerComponent>();
+	return aSwimmer && aSwimmer->mSwimsUnderwater && mInPool && !mIsEating;
+}
+
 bool Zombie::CrushesSpikes()
 {
 	VehicleComponent *aVehicle = GetComponent<VehicleComponent>();
@@ -5999,38 +6001,13 @@ bool Zombie::IsTargetableBy(unsigned int theDamageRangeFlags)
 		return false;
 	}
 
-	if (mZombieType == ZombieType::ZOMBIE_BUNGEE && mZombiePhase != ZombiePhase::PHASE_BUNGEE_AT_BOTTOM &&
-	    mZombiePhase != ZombiePhase::PHASE_BUNGEE_GRABBING)
+	// Zombies that can't be targeted at times (Bungee in the air, Dr. Zomboss, the Bobsled team) say so themselves
+	if (AnyBehaviour(this, [this](ZombieBehaviourComponent &theBehaviour) { return !theBehaviour.CanBeTargeted(this); }))
 	{
 		return false;
 	}
 
 	if (mZombieHeight == ZombieHeight::HEIGHT_GETTING_BUNGEE_DROPPED)
-	{
-		return false;
-	}
-
-	if (mZombieType == ZombieType::ZOMBIE_BOSS)
-	{
-		Reanimation *aBodyReanim = mApp->ReanimationGet(mBodyReanimID);
-		if (mZombiePhase == ZombiePhase::PHASE_BOSS_HEAD_ENTER && aBodyReanim->mAnimTime < 0.5f)
-		{
-			return false;
-		}
-		if (mZombiePhase == ZombiePhase::PHASE_BOSS_HEAD_LEAVE && aBodyReanim->mAnimTime > 0.5f)
-		{
-			return false;
-		}
-
-		if (mZombiePhase != ZombiePhase::PHASE_BOSS_HEAD_IDLE_BEFORE_SPIT &&
-		    mZombiePhase != ZombiePhase::PHASE_BOSS_HEAD_IDLE_AFTER_SPIT &&
-		    mZombiePhase != ZombiePhase::PHASE_BOSS_HEAD_SPIT)
-		{
-			return false;
-		}
-	}
-
-	if (mZombieType == ZombieType::ZOMBIE_BOBSLED && GetBobsledPosition() > 0)
 	{
 		return false;
 	}
@@ -6047,12 +6024,14 @@ bool Zombie::IsTargetableBy(unsigned int theDamageRangeFlags)
 		return TestBit(theDamageRangeFlags, (int)DamageRangeFlags::DAMAGES_OFF_GROUND);
 	}
 
-	if (mZombieType != ZombieType::ZOMBIE_BOBSLED && GetZombieRect().mX > WIDE_BOARD_WIDTH)
+	if (GetZombieRect().mX > WIDE_BOARD_WIDTH &&
+	    !AnyBehaviour(this, [this](ZombieBehaviourComponent &theBehaviour)
+	                  { return theBehaviour.CanBeTargetedOffScreen(this); }))
 	{
 		return false;
 	}
 
-	bool submerged = mZombieType == ZombieType::ZOMBIE_SNORKEL && mInPool && !mIsEating;
+	bool submerged = IsSubmerged();
 	if (TestBit(theDamageRangeFlags, (int)DamageRangeFlags::DAMAGES_SUBMERGED) && submerged)
 	{
 		return true;

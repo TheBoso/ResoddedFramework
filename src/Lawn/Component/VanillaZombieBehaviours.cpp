@@ -2355,3 +2355,37 @@ void GatlingHeadBehaviour::OnButterRemoved(Zombie *theZombie)
 {
 	ResumeShootingHead(theZombie, 38.0f);
 }
+
+// ─── Targeting ───────────────────────────────────────────────────────────────
+
+bool BungeeBehaviour::CanBeTargeted(Zombie *theZombie)
+{
+	return theZombie->mZombiePhase == ZombiePhase::PHASE_BUNGEE_AT_BOTTOM ||
+	       theZombie->mZombiePhase == ZombiePhase::PHASE_BUNGEE_GRABBING;
+}
+
+bool BossBehaviour::CanBeTargeted(Zombie *theZombie)
+{
+	// Only his head can be hit, and only while it is down
+	Reanimation *aBodyReanim = theZombie->mApp->ReanimationGet(theZombie->mBodyReanimID);
+	ZombiePhase aPhase = theZombie->mZombiePhase;
+	if (aPhase == ZombiePhase::PHASE_BOSS_HEAD_ENTER && aBodyReanim->mAnimTime < 0.5f)
+		return false;
+	if (aPhase == ZombiePhase::PHASE_BOSS_HEAD_LEAVE && aBodyReanim->mAnimTime > 0.5f)
+		return false;
+
+	return aPhase == ZombiePhase::PHASE_BOSS_HEAD_IDLE_BEFORE_SPIT ||
+	       aPhase == ZombiePhase::PHASE_BOSS_HEAD_IDLE_AFTER_SPIT || aPhase == ZombiePhase::PHASE_BOSS_HEAD_SPIT;
+}
+
+bool BobsledBehaviour::CanBeTargeted(Zombie *theZombie)
+{
+	// The team behind the leader is shielded by the sled
+	return theZombie->GetBobsledPosition() <= 0;
+}
+
+bool BobsledBehaviour::CanBeTargetedOffScreen(Zombie *theZombie)
+{
+	(void)theZombie;
+	return true;
+}

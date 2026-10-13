@@ -95,6 +95,9 @@ class ZombieBodyComponent : public Component
 	int32_t mWalkAnimVariant = -1;
 	/// Dances instead of walking with the dance cheat (the plain zombies)
 	bool mDancesInDanceMode = false;
+	/// Has the regular zombie head, which can pull the grossed-out face after biting garlic; without it the zombie
+	/// just turns away
+	bool mHasYuckyFace = true;
 	/// Where the body is drawn, relative to the regular zombie
 	float mDrawOffsetX = 0.0f;
 	float mDrawOffsetY = 0.0f;

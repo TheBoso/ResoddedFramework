@@ -360,6 +360,11 @@ void VehicleComponent::DrawInspector()
 	ImGui::InputInt("Breaks down below health", &mBreakdownHealth);
 }
 
+void SwimmerComponent::DrawInspector()
+{
+	ImGui::Checkbox("Swims under water", &mSwimsUnderwater);
+}
+
 void WalkerComponent::DrawInspector()
 {
 	ImGui::DragFloat("Min speed", &mMinSpeed, 0.01f, 0.0f, 5.0f);
@@ -412,6 +417,7 @@ void ZombieBodyComponent::DrawInspector()
 	ImGui::DragFloat("Draw offset X", &mDrawOffsetX, 0.5f);
 	ImGui::DragFloat("Draw offset Y", &mDrawOffsetY, 0.5f);
 	ImGui::Checkbox("Dances in dance mode", &mDancesInDanceMode);
+	ImGui::Checkbox("Has yucky face", &mHasYuckyFace);
 	ImGui::InputInt("Arm image id", &mArmImageId);
 	ImGui::InputInt("Upper arm image id", &mArmUpperImageId);
 	ImGui::Checkbox("Shows ice trap", &mShowsIceTrap);
@@ -552,6 +558,9 @@ void ZombieBodyComponent::DrawInspector()
 {
 }
 void VehicleComponent::DrawInspector()
+{
+}
+void SwimmerComponent::DrawInspector()
 {
 }
 void WalkerComponent::DrawInspector()

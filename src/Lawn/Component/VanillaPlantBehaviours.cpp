@@ -825,7 +825,9 @@ void TangleKelpBehaviour::UpdateBehaviour(Plant *thePlant)
 
 			float aVinesPosX = -13.0f;
 			float aVinesPosY = 15.0f;
-			if (aZombie->mZombieType == ZombieType::ZOMBIE_SNORKEL)
+			// Under water swimmers (Snorkel) are grabbed lower
+			SwimmerComponent *aSwimmer = aZombie->GetComponent<SwimmerComponent>();
+			if (aSwimmer && aSwimmer->mSwimsUnderwater)
 			{
 				aVinesPosX = -43.0f;
 				aVinesPosY = 55.0f;
